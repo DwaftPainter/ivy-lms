@@ -22,14 +22,10 @@ import TeamSwitcher from "./team-switcher";
 import { NavMain } from "./nav-main";
 import { NavUser } from "./nav-user";
 import { NavProjects } from "./nav-project";
+import { useAuthStore } from "@/store/auth.store";
 
 // This is sample data.
 const data = {
-    user: {
-        name: "shadcn",
-        email: "m@example.com",
-        avatar: "/avatars/shadcn.jpg"
-    },
     teams: [
         {
             name: "Acme Inc",
@@ -90,6 +86,7 @@ const data = {
 };
 
 const AppSidebar = ({ ...props }: React.ComponentProps<typeof Sidebar>) => {
+    const { user } = useAuthStore();
     return (
         <Sidebar collapsible="icon" {...props}>
             <SidebarHeader>
@@ -98,9 +95,7 @@ const AppSidebar = ({ ...props }: React.ComponentProps<typeof Sidebar>) => {
             <SidebarContent>
                 <NavMain items={data.navMain} />
             </SidebarContent>
-            <SidebarFooter>
-                <NavUser user={data.user} />
-            </SidebarFooter>
+            <SidebarFooter>{user && <NavUser user={user} />}</SidebarFooter>
             <SidebarRail />
         </Sidebar>
     );

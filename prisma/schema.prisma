@@ -62,17 +62,24 @@ enum CourseLevel {
   ADVANCED // Band 6.5–9
 }
 
+enum AuthProvider {
+  LOCAL
+  GOOGLE
+}
+
 model User {
-  id        String   @id @default(uuid())
-  email     String   @unique
-  password  String
-  firstName String
-  lastName  String
-  avatarUrl String?
-  role      Role
-  isActive  Boolean  @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id           String       @id @default(uuid())
+  email        String       @unique
+  // phone     String   @unique
+  password     String?
+  firstName    String
+  lastName     String
+  avatarUrl    String?
+  role         Role
+  isActive     Boolean      @default(true)
+  authProvider AuthProvider
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
 
   // Relations
   teacherProfile TeacherProfile?

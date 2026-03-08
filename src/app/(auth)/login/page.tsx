@@ -9,8 +9,10 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { validation } from "@/config/message";
 import { passwordRegex } from "@/config/regex";
+import { useAuth0 } from "@auth0/auth0-react";
 import Link from "next/link";
 import googleIcon from "@/assets/icons/google.svg";
+import { useAuthStore } from "@/store/auth.store";
 
 const formSchema = z.object({
     email: z
@@ -24,6 +26,8 @@ const formSchema = z.object({
 });
 
 const Login = () => {
+    const { login } = useAuthStore();
+    const { loginWithRedirect } = useAuth0();
     const form = useForm({
         resolver: zodResolver(formSchema),
         defaultValues: {
@@ -35,8 +39,8 @@ const Login = () => {
     return (
         <Form {...form}>
             <form
-                onSubmit={form.handleSubmit(() => {})}
-                className="flex flex-col lg:basis-1/2 lg:p-28 md:p-14 p-7 w-full justify-center md:gap-8 gap-5"
+                onSubmit={form.handleSubmit(login)}
+                className="flex flex-col lg:basis-1/2 lg:p-22 md:p-14 p-7 w-full justify-center md:gap-8 gap-5"
             >
                 <div className="flex-col flex gap-4">
                     <img src="/IVY_IELTS_Logo.svg" alt="" className="h-10 w-10 -ml-1" />
@@ -60,15 +64,15 @@ const Login = () => {
                     className="py-3 h-fit bg-transparent! border cursor-pointer"
                     variant={"ghost"}
                     type="button"
-                    // onClick={() =>
-                    //     loginWithRedirect({
-                    //         authorizationParams: {
-                    //             connection: "google-oauth2"
-                    //         }
-                    //     }).then((response) => {
-                    //         console.log(response);
-                    //     })
-                    // }
+                    onClick={() =>
+                        loginWithRedirect({
+                            authorizationParams: {
+                                connection: "google-oauth2"
+                            }
+                        }).then((response) => {
+                            console.log(response);
+                        })
+                    }
                 >
                     <img src={googleIcon.src} className="w-5 h-5" />
                     Continue With Google
