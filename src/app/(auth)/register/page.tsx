@@ -8,9 +8,13 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { validation } from "@/config/message";
-import { passwordRegex } from "@/config/regex";
+import { passwordRegex, phoneRegex } from "@/config/regex";
 import Link from "next/link";
 import googleIcon from "@/assets/icons/google.svg";
+import { useAuthStore } from "@/store/auth.store";
+import React from "react";
+import { useRouter } from "next/router";
+import { useAuth0 } from "@auth0/auth0-react";
 
 const formSchema = z.object({
     email: z
@@ -21,25 +25,33 @@ const formSchema = z.object({
         .string()
         .min(1, { message: validation.required.password })
         .regex(passwordRegex, { message: validation.format.password }),
-    username: z.string().min(1, { message: validation.required.username }),
+    // phone: z
+    //     .string()
+    //     .min(10, { message: validation.required.phone })
+    //     .regex(phoneRegex, { message: validation.format.phone }),
+
     firstName: z.string().min(1, { message: validation.required.firstName }),
     lastName: z.string().min(1, { message: validation.required.lastName })
 });
 
 const Register = () => {
+    const { register } = useAuthStore();
+    const { loginWithRedirect } = useAuth0();
     const form = useForm({
         resolver: zodResolver(formSchema),
         defaultValues: {
             email: "",
-            password: ""
+            password: "",
+            firstName: "",
+            lastName: ""
         }
     });
 
     return (
         <Form {...form}>
             <form
-                onSubmit={form.handleSubmit(() => {})}
-                className="flex flex-col lg:basis-1/2 lg:p-28 md:p-14 p-7 w-full justify-center md:gap-8 gap-5"
+                onSubmit={form.handleSubmit(register)}
+                className="flex flex-col lg:basis-1/2 lg:p-22 md:p-14 p-7 w-full justify-center md:gap-8 gap-5"
             >
                 <div className="flex-col flex gap-4">
                     <img src="/IVY_IELTS_Logo.svg" alt="" className="h-10 w-10 -ml-1" />
@@ -60,13 +72,13 @@ const Register = () => {
                     className="py-3 h-fit bg-transparent! border cursor-pointer"
                     variant={"ghost"}
                     type="button"
-                    // onClick={() =>
-                    //     loginWithRedirect({
-                    //         authorizationParams: {
-                    //             connection: "google-oauth2"
-                    //         }
-                    //     })
-                    // }
+                    onClick={() =>
+                        loginWithRedirect({
+                            authorizationParams: {
+                                connection: "google-oauth2"
+                            }
+                        })
+                    }
                 >
                     <img src={googleIcon.src} className="w-5 h-5" />
                     Continue With Google
@@ -108,19 +120,19 @@ const Register = () => {
                         )}
                     />
                 </div>
-                <FormField
-                    name="username"
+                {/* <FormField
+                    name="phone"
                     control={form.control}
                     render={({ field }) => (
                         <FormItem>
-                            <FormLabel className="flex justify-between items-center mb-2">Username</FormLabel>
+                            <FormLabel className="flex justify-between items-center mb-2">Phone</FormLabel>
                             <FormControl>
                                 <Input className="py-3 h-fit" {...field} />
                             </FormControl>
                             <FormMessage />
                         </FormItem>
                     )}
-                />
+                /> */}
                 <FormField
                     control={form.control}
                     name="email"

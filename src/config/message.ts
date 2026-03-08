@@ -1,11 +1,12 @@
 export const validation = {
     format: {
         email: "Invalid email!",
+        phone: "Invalid email!",
         password:
             "Password must be at least 6 characters long and include at least one uppercase letter and one number."
     },
     required: {
-        username: "Username is required!",
+        phone: "Phone is required!",
         firstName: "First name is required!",
         lastName: "Last name is required!",
         email: "Email is required!",
