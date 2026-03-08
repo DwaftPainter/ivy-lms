@@ -4,31 +4,26 @@ import * as React from "react";
 import {
     AudioWaveform,
     BookIcon,
-    BookOpen,
-    Bot,
     Calendar,
     Command,
-    Frame,
     GalleryVerticalEnd,
     LayoutGridIcon,
-    Map,
-    PieChart,
-    Settings2,
-    SquareTerminal
+    Settings2
 } from "lucide-react";
 
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarRail } from "@/components/ui/sidebar";
 import TeamSwitcher from "./team-switcher";
 import { NavMain } from "./nav-main";
 import { NavUser } from "./nav-user";
-import { NavProjects } from "./nav-project";
+import { mockUser } from "@/mock";
+import { mergeName } from "@/utils";
 
 // This is sample data.
 const data = {
     user: {
-        name: "shadcn",
-        email: "m@example.com",
-        avatar: "/avatars/shadcn.jpg"
+        name: mergeName(mockUser.firstName, mockUser.lastName),
+        email: mockUser.email,
+        avatar: mockUser.avatar
     },
     teams: [
         {

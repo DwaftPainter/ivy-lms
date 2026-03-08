@@ -3,8 +3,9 @@ import UpcomingClasses from "@/components/dashboard/upcoming-classes";
 import AppSidebar from "@/components/layout/app-sidebar";
 import { Separator } from "@/components/ui/separator";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
-import { BellIcon, MessageSquareIcon } from "lucide-react";
+import { BellIcon, EarthIcon, MessageSquareIcon } from "lucide-react";
 import { mockUser } from "@/mock";
+import ButtonIcon from "@/components/customs/button-icon";
 
 export default function Page() {
     return (
@@ -17,9 +18,10 @@ export default function Page() {
                         <Separator orientation="vertical" className="mr-2 data-[orientation=vertical]:h-4" />
                         <p className="text-text-secondary font-semibold">Dashboard</p>
                     </div>
-                    <div className="flex gap-2">
-                        <BellIcon className="text-text-secondary size-4" />
-                        <MessageSquareIcon className="text-text-secondary size-4" />
+                    <div className="flex gap-3">
+                        <ButtonIcon icon={BellIcon} size="sm" />
+                        <ButtonIcon icon={MessageSquareIcon} size="sm" />
+                        <ButtonIcon icon={EarthIcon} size="sm" />
                     </div>
                 </header>
                 <main className="flex-1 overflow-auto bg-[rgb(241,241,241)]">
