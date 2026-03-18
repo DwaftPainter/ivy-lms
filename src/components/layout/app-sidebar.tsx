@@ -7,24 +7,19 @@ import {
     Calendar,
     Command,
     GalleryVerticalEnd,
+    Grid3X3Icon,
     LayoutGridIcon,
-    Settings2
+    Settings
 } from "lucide-react";
 
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarRail } from "@/components/ui/sidebar";
 import TeamSwitcher from "./team-switcher";
 import { NavMain } from "./nav-main";
 import { NavUser } from "./nav-user";
-import { mockUser } from "@/mock";
-import { mergeName } from "@/utils";
+import { useAuthStore } from "@/store/auth.store";
 
 // This is sample data.
 const data = {
-    user: {
-        name: mergeName(mockUser.firstName, mockUser.lastName),
-        email: mockUser.email,
-        avatar: mockUser.avatar
-    },
     teams: [
         {
             name: "Acme Inc",
@@ -55,36 +50,21 @@ const data = {
             icon: BookIcon
         },
         {
-            title: "Schedule",
+            title: "Extension",
             url: "#",
-            icon: Calendar
+            icon: Grid3X3Icon
         },
         {
             title: "Settings",
             url: "#",
-            icon: Settings2
+            icon: Settings
         }
     ]
-    // projects: [
-    //     {
-    //         name: "Design Engineering",
-    //         url: "#",
-    //         icon: Frame
-    //     },
-    //     {
-    //         name: "Sales & Marketing",
-    //         url: "#",
-    //         icon: PieChart
-    //     },
-    //     {
-    //         name: "Travel",
-    //         url: "#",
-    //         icon: Map
-    //     }
-    // ]
 };
 
 const AppSidebar = ({ ...props }: React.ComponentProps<typeof Sidebar>) => {
+    const { user } = useAuthStore();
+    console.log('🚀 ~ AppSidebar ~ user:', user)
     return (
         <Sidebar collapsible="icon" {...props}>
             <SidebarHeader>
@@ -93,9 +73,7 @@ const AppSidebar = ({ ...props }: React.ComponentProps<typeof Sidebar>) => {
             <SidebarContent>
                 <NavMain items={data.navMain} />
             </SidebarContent>
-            <SidebarFooter>
-                <NavUser user={data.user} />
-            </SidebarFooter>
+            <SidebarFooter>{user && <NavUser user={user} />}</SidebarFooter>
             <SidebarRail />
         </Sidebar>
     );

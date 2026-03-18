@@ -1,35 +1,23 @@
 import UpcomingAssignments from "@/components/dashboard/upcoming-assignments";
 import UpcomingClasses from "@/components/dashboard/upcoming-classes";
 import AppSidebar from "@/components/layout/app-sidebar";
-import { Separator } from "@/components/ui/separator";
-import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
-import { BellIcon, EarthIcon, MessageSquareIcon } from "lucide-react";
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { mockUser } from "@/mock";
-import ButtonIcon from "@/components/customs/button-icon";
+import MainHeader from "@/components/layout/main-header";
 
 export default function Page() {
     return (
         <SidebarProvider>
             <AppSidebar />
             <SidebarInset>
-                <header className="px-4 bg-primary flex h-16 shrink-0 items-center justify-between gap-2 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
-                    <div className="flex items-center gap-2">
-                        <SidebarTrigger className="-ml-1 text-text-secondary" />
-                        <Separator orientation="vertical" className="mr-2 data-[orientation=vertical]:h-4" />
-                        <p className="text-text-secondary font-semibold">Dashboard</p>
-                    </div>
-                    <div className="flex gap-3">
-                        <ButtonIcon icon={BellIcon} size="sm" />
-                        <ButtonIcon icon={MessageSquareIcon} size="sm" />
-                        <ButtonIcon icon={EarthIcon} size="sm" />
-                    </div>
-                </header>
-                <main className="flex-1 overflow-auto bg-[rgb(241,241,241)]">
+                <MainHeader />
+                <main className="flex-1 overflow-auto bg-[rgb(241,241,241)] mt-16">
                     <div className="p-8 w-full">
                         {/* Greeting */}
                         <div className="mb-8">
                             <h2 className="text-3xl font-bold text-text-primary">
-                                Welcome, {mockUser.firstName + " " + mockUser.lastName}
+                                <span className="animate-wave inline-block">👋</span> Welcome,{" "}
+                                {mockUser.firstName + " " + mockUser.lastName}
                             </h2>
                         </div>
 

@@ -4,8 +4,14 @@ export interface User {
     password: string;
     firstName: string;
     lastName: string;
-    phone: string;
-    avatar: string;
+    avatarUrl: string;
     createdAt: Date;
     updatedAt: Date;
+}
+
+export interface UserDTO {
+    email: string;
+    password: string;
+    firstName: string;
+    lastName: string;
 }
