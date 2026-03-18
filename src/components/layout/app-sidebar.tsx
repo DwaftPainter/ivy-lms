@@ -4,24 +4,18 @@ import * as React from "react";
 import {
     AudioWaveform,
     BookIcon,
-    BookOpen,
-    Bot,
     Calendar,
     Command,
-    Frame,
     GalleryVerticalEnd,
+    Grid3X3Icon,
     LayoutGridIcon,
-    Map,
-    PieChart,
-    Settings2,
-    SquareTerminal
+    Settings
 } from "lucide-react";
 
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarRail } from "@/components/ui/sidebar";
 import TeamSwitcher from "./team-switcher";
 import { NavMain } from "./nav-main";
 import { NavUser } from "./nav-user";
-import { NavProjects } from "./nav-project";
 import { useAuthStore } from "@/store/auth.store";
 
 // This is sample data.
@@ -56,33 +50,16 @@ const data = {
             icon: BookIcon
         },
         {
-            title: "Schedule",
+            title: "Extension",
             url: "#",
-            icon: Calendar
+            icon: Grid3X3Icon
         },
         {
             title: "Settings",
             url: "#",
-            icon: Settings2
+            icon: Settings
         }
     ]
-    // projects: [
-    //     {
-    //         name: "Design Engineering",
-    //         url: "#",
-    //         icon: Frame
-    //     },
-    //     {
-    //         name: "Sales & Marketing",
-    //         url: "#",
-    //         icon: PieChart
-    //     },
-    //     {
-    //         name: "Travel",
-    //         url: "#",
-    //         icon: Map
-    //     }
-    // ]
 };
 
 const AppSidebar = ({ ...props }: React.ComponentProps<typeof Sidebar>) => {

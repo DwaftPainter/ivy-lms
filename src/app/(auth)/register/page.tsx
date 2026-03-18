@@ -7,31 +7,30 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { validation } from "@/config/message";
-import { passwordRegex, phoneRegex } from "@/config/regex";
+import { MESSAGES } from "@/config/message";
+import { passwordRegex } from "@/config/regex";
 import Link from "next/link";
 import googleIcon from "@/assets/icons/google.svg";
 import { useAuthStore } from "@/store/auth.store";
-import React from "react";
-import { useRouter } from "next/router";
 import { useAuth0 } from "@auth0/auth0-react";
+import { LoaderCircleIcon } from "lucide-react";
 
 const formSchema = z.object({
     email: z
         .string()
-        .min(1, { message: validation.required.email })
-        .email({ message: validation.format.email }),
+        .min(1, { message: MESSAGES.validation.required.email })
+        .email({ message: MESSAGES.validation.format.email }),
     password: z
         .string()
-        .min(1, { message: validation.required.password })
-        .regex(passwordRegex, { message: validation.format.password }),
+        .min(1, { message: MESSAGES.validation.required.password })
+        .regex(passwordRegex, { message: MESSAGES.validation.format.password }),
     // phone: z
     //     .string()
-    //     .min(10, { message: validation.required.phone })
-    //     .regex(phoneRegex, { message: validation.format.phone }),
+    //     .min(10, { message: MESSAGES.validation.required.phone })
+    //     .regex(phoneRegex, { message: MESSAGES.validation.format.phone }),
 
-    firstName: z.string().min(1, { message: validation.required.firstName }),
-    lastName: z.string().min(1, { message: validation.required.lastName })
+    firstName: z.string().min(1, { message: MESSAGES.validation.required.firstName }),
+    lastName: z.string().min(1, { message: MESSAGES.validation.required.lastName })
 });
 
 const Register = () => {
@@ -50,7 +49,7 @@ const Register = () => {
     return (
         <Form {...form}>
             <form
-                onSubmit={form.handleSubmit(register)}
+                onSubmit={form.handleSubmit((data) => register(data, form))}
                 className="flex flex-col lg:basis-1/2 lg:p-22 md:p-14 p-7 w-full justify-center md:gap-8 gap-5"
             >
                 <div className="flex-col flex gap-4">
@@ -164,7 +163,14 @@ const Register = () => {
                     )}
                 />
                 <Button type="submit" className="py-3 h-fit text-white bg-primary! hover:bg-primary/90!">
-                    Register
+                    {form.formState.isSubmitting ? (
+                        <span className="flex items-center gap-2">
+                            <LoaderCircleIcon className="animate-spin" />
+                            Registering...
+                        </span>
+                    ) : (
+                        "Register"
+                    )}
                 </Button>
             </form>
         </Form>

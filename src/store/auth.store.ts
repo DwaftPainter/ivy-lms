@@ -1,4 +1,6 @@
+import { UseFormReturn } from "react-hook-form";
 import { create } from "zustand";
+import { apiFetch } from "@/lib/api-fetch";
 
 type User = {
     id: string;
@@ -38,8 +40,8 @@ type AuthState = {
     isLoading: boolean;
 
     setUser: (user: User | null) => void;
-    login: (data: LoginPayload) => Promise<void>;
-    register: (data: RegisterPayload) => Promise<void>;
+    login: (data: LoginPayload, form: UseFormReturn<LoginPayload>) => Promise<void>;
+    register: (data: RegisterPayload, form: UseFormReturn<RegisterPayload>) => Promise<void>;
     loginWithGoogle: (data: GoogleLoginPayload) => Promise<void>;
     logout: () => Promise<void>;
 };
@@ -55,6 +57,64 @@ export const useAuthStore = create<AuthState>((set) => ({
             isAuthenticated: !!user
         }),
 
+    login: async (payload, form) => {
+        set({ isLoading: true });
+
+        try {
+            const data = await apiFetch("/api/auth/login", {
+                method: "POST",
+                body: JSON.stringify(payload)
+            });
+
+            set({
+                user: data.data,
+                isAuthenticated: true
+            });
+        } catch (err: any) {
+            console.error("Login error:", err);
+
+            const error = err?.error;
+
+            if (error?.field) {
+                form.setError(error.field, {
+                    type: "server",
+                    message: error.message
+                });
+            }
+        } finally {
+            set({ isLoading: false });
+        }
+    },
+
+    register: async (payload, form) => {
+        set({ isLoading: true });
+
+        try {
+            const data = await apiFetch("/api/auth/register", {
+                method: "POST",
+                body: JSON.stringify(payload)
+            });
+
+            set({
+                user: data.data,
+                isAuthenticated: true
+            });
+        } catch (err: any) {
+            console.error("Register error:", err);
+
+            const error = err?.error;
+
+            if (error?.field) {
+                form.setError(error.field, {
+                    type: "server",
+                    message: error.message
+                });
+            }
+        } finally {
+            set({ isLoading: false });
+        }
+    },
+
     loginWithGoogle: async (payload) => {
         set({ isLoading: true });
 
@@ -65,79 +125,25 @@ export const useAuthStore = create<AuthState>((set) => ({
                 firstName: payload.given_name,
                 lastName: payload.family_name
             };
-            const res = await fetch("/api/auth/google", {
-                method: "POST",
-                body: JSON.stringify(builtPayload),
-                headers: {
-                    "Content-Type": "application/json"
-                }
-            });
 
-            const data = await res.json();
+            const data = await apiFetch("/api/auth/google", {
+                method: "POST",
+                body: JSON.stringify(builtPayload)
+            });
 
             set({
                 user: data.data,
                 isAuthenticated: true
             });
         } catch (error) {
-            console.error("Login error", error);
-        } finally {
-            set({ isLoading: false });
-        }
-    },
-
-    login: async (payload) => {
-        set({ isLoading: true });
-
-        try {
-            const res = await fetch("/api/auth/login", {
-                method: "POST",
-                body: JSON.stringify(payload),
-                headers: {
-                    "Content-Type": "application/json"
-                }
-            });
-
-            const data = await res.json();
-
-            set({
-                user: data.data,
-                isAuthenticated: true
-            });
-        } catch (error) {
-            console.error("Login error", error);
-        } finally {
-            set({ isLoading: false });
-        }
-    },
-
-    register: async (payload) => {
-        set({ isLoading: true });
-
-        try {
-            const res = await fetch("/api/auth/register", {
-                method: "POST",
-                body: JSON.stringify(payload),
-                headers: {
-                    "Content-Type": "application/json"
-                }
-            });
-
-            const data = await res.json();
-
-            set({
-                user: data.data,
-                isAuthenticated: true
-            });
-        } catch (error) {
-            console.error("Register error", error);
+            console.error("Google login error:", error);
         } finally {
             set({ isLoading: false });
         }
     },
 
     logout: async () => {
-        await fetch("/api/auth/logout");
+        await apiFetch("/api/auth/logout");
 
         set({
             user: null,

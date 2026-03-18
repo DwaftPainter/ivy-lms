@@ -67,6 +67,11 @@ enum AuthProvider {
   GOOGLE
 }
 
+enum UserStatus {
+  ACTIVE
+  LOCKED
+}
+
 model User {
   id           String       @id @default(uuid())
   email        String       @unique
@@ -78,8 +83,14 @@ model User {
   role         Role
   isActive     Boolean      @default(true)
   authProvider AuthProvider
-  createdAt    DateTime     @default(now())
-  updatedAt    DateTime     @updatedAt
+
+  // Lock attempt
+  status              UserStatus @default(ACTIVE)
+  failedLoginAttempts Int        @default(0)
+  lockedAt            DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Relations
   teacherProfile TeacherProfile?
