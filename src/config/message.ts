@@ -19,6 +19,7 @@ export const MESSAGES = {
     },
 
     auth: {
+        getInfoSuccess: "Get user info successfully",
         registerSuccess: "Register successfully",
         emailAlreadyExists: "Email already exists",
         emailNotFound: "Email not found",
