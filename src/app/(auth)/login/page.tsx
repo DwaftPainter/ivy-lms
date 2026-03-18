@@ -7,22 +7,23 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { validation } from "@/config/message";
+import { MESSAGES } from "@/config/message";
 import { passwordRegex } from "@/config/regex";
 import { useAuth0 } from "@auth0/auth0-react";
 import Link from "next/link";
 import googleIcon from "@/assets/icons/google.svg";
 import { useAuthStore } from "@/store/auth.store";
+import { LoaderCircleIcon } from "lucide-react";
 
 const formSchema = z.object({
     email: z
         .string()
-        .min(1, { message: validation.required.email })
-        .email({ message: validation.format.email }),
+        .min(1, { message: MESSAGES.validation.required.email })
+        .email({ message: MESSAGES.validation.format.email }),
     password: z
         .string()
-        .min(1, { message: validation.required.password })
-        .regex(passwordRegex, { message: validation.format.password })
+        .min(1, { message: MESSAGES.validation.required.password })
+        .regex(passwordRegex, { message: MESSAGES.validation.format.password })
 });
 
 const Login = () => {
@@ -39,7 +40,7 @@ const Login = () => {
     return (
         <Form {...form}>
             <form
-                onSubmit={form.handleSubmit(login)}
+                onSubmit={form.handleSubmit((data) => login(data, form))}
                 className="flex flex-col lg:basis-1/2 lg:p-22 md:p-14 p-7 w-full justify-center md:gap-8 gap-5"
             >
                 <div className="flex-col flex gap-4">
@@ -107,9 +108,9 @@ const Login = () => {
                         <FormItem>
                             <FormLabel className="flex justify-between items-center mb-2">
                                 Password
-                                <Link href="/forgot-password" className="text-primary!">
+                                {/* <Link href="/forgot-password" className="text-primary!">
                                     Forgot?
-                                </Link>
+                                </Link> */}
                             </FormLabel>
                             <FormControl>
                                 <Input
@@ -125,7 +126,14 @@ const Login = () => {
                     )}
                 />
                 <Button type="submit" className="py-3 h-fit text-white bg-primary! hover:bg-primary/90!">
-                    Log In
+                    {form.formState.isSubmitting ? (
+                        <span className="flex items-center gap-2">
+                            <LoaderCircleIcon className="animate-spin" />
+                            Login...
+                        </span>
+                    ) : (
+                        "Log in"
+                    )}
                 </Button>
             </form>
         </Form>
