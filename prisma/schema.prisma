@@ -52,9 +52,9 @@ enum SubmissionStatus {
 }
 
 enum EnrollmentStatus {
-  ACTIVE
-  COMPLETED
-  DROPPED
+  STUDYING
+  DONE
+  UPCOMING
 }
 
 enum CourseLevel {
@@ -94,9 +94,10 @@ model User {
   updatedAt DateTime @updatedAt
 
   // Relations
-  teacherProfile TeacherProfile?
-  studentProfile StudentProfile?
-  notifications  Notification[]
+  teacherProfile     TeacherProfile?
+  studentProfile     StudentProfile?
+  notifications      Notification[]
+  submissionComments SubmissionComment[]
 
   @@map("users")
 }
@@ -262,6 +263,8 @@ model RubricCriterion {
 
   rubric Rubric @relation(fields: [rubricId], references: [id], onDelete: Cascade)
 
+  scores CriterionScore[]
+
   @@map("rubric_criteria")
 }
 
@@ -293,15 +296,18 @@ model AssignmentSubmission {
 }
 
 model CriterionScore {
-  id           String @id @default(uuid())
+  id    String @id @default(uuid())
+  score Float
+
   submissionId String
   criterionId  String
-  score        Float
 
   submission AssignmentSubmission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
 
-  @@unique([submissionId, criterionId])
-  @@map("criterion_scores")
+  criterion RubricCriterion @relation(fields: [criterionId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model SubmissionComment {
@@ -313,6 +319,7 @@ model SubmissionComment {
   updatedAt    DateTime @updatedAt
 
   submission AssignmentSubmission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  author     User                 @relation(fields: [authorId], references: [id], onDelete: Cascade)
 
   @@map("submission_comments")
 }
@@ -321,7 +328,7 @@ model Enrollment {
   id          String           @id @default(uuid())
   studentId   String
   courseId    String
-  status      EnrollmentStatus @default(ACTIVE)
+  status      EnrollmentStatus @default(UPCOMING)
   enrolledAt  DateTime         @default(now())
   completedAt DateTime?
   updatedAt   DateTime         @updatedAt

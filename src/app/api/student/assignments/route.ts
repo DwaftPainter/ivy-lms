@@ -5,7 +5,7 @@ import { MESSAGES } from "@/config/message";
 import jwt from "jsonwebtoken";
 import { SubmissionStatus } from "@/generated/prisma/enums";
 
-// GET /api/student/assignments - Get upcoming assignments for the logged-in student
+// GET /api/student/assignments - Get assignments for the logged-in student
 export async function GET(req: NextRequest) {
     try {
         const token = req.cookies.get("token");
@@ -25,8 +25,8 @@ export async function GET(req: NextRequest) {
             where: { userId },
             include: {
                 enrollments: {
-                    where: { status: { in: ["ACTIVE", "COMPLETED"] } },
-                    select: { courseId: true }
+                    where: { status: { in: ["STUDYING", "DONE"] } },
+                    select: { courseId: true, status: true }
                 }
             }
         });
@@ -47,19 +47,29 @@ export async function GET(req: NextRequest) {
             );
         }
 
-        // Get assignments from enrolled courses with their submission status
+        const { searchParams } = new URL(req.url);
+        const status = searchParams.get("status");
+        const courseId = searchParams.get("courseId");
+
+        // Build where clause
+        const where: any = {
+            courseId: { in: enrolledCourseIds },
+            isPublished: true
+        };
+
+        if (courseId && enrolledCourseIds.includes(courseId)) {
+            where.courseId = courseId;
+        }
+
+        // Get assignments with their submission status
         const assignments = await prisma.assignment.findMany({
-            where: {
-                courseId: { in: enrolledCourseIds },
-                isPublished: true,
-                dueDate: {
-                    gte: new Date() // Only upcoming assignments
-                }
-            },
+            where,
             include: {
                 course: {
                     select: {
-                        title: true
+                        id: true,
+                        title: true,
+                        thumbnailUrl: true
                     }
                 },
                 submissions: {
@@ -67,33 +77,148 @@ export async function GET(req: NextRequest) {
                         studentId: studentProfile.id
                     },
                     select: {
+                        id: true,
                         status: true,
-                        submittedAt: true
+                        submittedAt: true,
+                        gradedAt: true,
+                        score: true,
+                        bandScore: true,
+                        feedback: true
+                    }
+                },
+                rubric: {
+                    include: {
+                        criteria: {
+                            select: {
+                                id: true,
+                                name: true,
+                                description: true,
+                                maxScore: true
+                            }
+                        }
                     }
                 }
             },
             orderBy: {
                 dueDate: "asc"
-            },
-            take: 10 // Limit to 10 upcoming assignments
+            }
         });
 
-        // Format the response
-        const formattedAssignments = assignments.map((assignment) => ({
-            id: assignment.id,
-            title: assignment.title,
-            course: assignment.course.title,
-            dueDate: assignment.dueDate,
-            type: assignment.type,
-            skill: assignment.skill,
-            status: assignment.submissions[0]?.status || SubmissionStatus.PENDING,
-            submittedAt: assignment.submissions[0]?.submittedAt
-        }));
+        // Format the response with progress tracking
+        const formattedAssignments = assignments.map((assignment) => {
+            const submission = assignment.submissions[0];
+            const isOverdue = assignment.dueDate && new Date(assignment.dueDate) < new Date();
+
+            return {
+                id: assignment.id,
+                title: assignment.title,
+                description: assignment.description,
+                type: assignment.type,
+                skill: assignment.skill,
+                course: assignment.course,
+                dueDate: assignment.dueDate,
+                maxScore: assignment.maxScore,
+                instructions: assignment.instructions,
+                attachmentUrl: assignment.attachmentUrl,
+                isOverdue: isOverdue && !submission,
+                submission: submission ? {
+                    id: submission.id,
+                    status: submission.status,
+                    submittedAt: submission.submittedAt,
+                    gradedAt: submission.gradedAt,
+                    score: submission.score,
+                    bandScore: submission.bandScore,
+                    feedback: submission.feedback
+                } : null,
+                rubric: assignment.rubric ? {
+                    id: assignment.rubric.id,
+                    criteria: assignment.rubric.criteria
+                } : null,
+                submissionStatus: submission?.status || SubmissionStatus.PENDING
+            };
+        });
+
+        // Filter by submission status if provided
+        let filteredAssignments = formattedAssignments;
+        if (status) {
+            const statusMap: Record<string, string> = {
+                "pending": SubmissionStatus.PENDING,
+                "submitted": SubmissionStatus.SUBMITTED,
+                "graded": SubmissionStatus.GRADED,
+                "returned": SubmissionStatus.RETURNED
+            };
+            const targetStatus = statusMap[status.toLowerCase()];
+            if (targetStatus) {
+                filteredAssignments = formattedAssignments.filter(
+                    a => a.submissionStatus === targetStatus
+                );
+            }
+        }
+
+        // Calculate progress stats for enrolled courses
+        const progressStats = await Promise.all(
+            enrolledCourseIds.map(async (courseId) => {
+                const [totalAssignments, completedSubmissions] = await Promise.all([
+                    prisma.assignment.count({
+                        where: { courseId, isPublished: true }
+                    }),
+                    prisma.assignmentSubmission.count({
+                        where: {
+                            studentId: studentProfile.id,
+                            assignment: { courseId },
+                            status: { in: [SubmissionStatus.SUBMITTED, SubmissionStatus.GRADED, SubmissionStatus.RETURNED] }
+                        }
+                    })
+                ]);
+
+                return {
+                    courseId,
+                    totalAssignments,
+                    completedSubmissions,
+                    progressPercentage: totalAssignments > 0
+                        ? Math.round((completedSubmissions / totalAssignments) * 100)
+                        : 0
+                };
+            })
+        );
+
+        // Auto-update enrollment status based on progress
+        for (const enrollment of studentProfile.enrollments) {
+            const courseProgress = progressStats.find(p => p.courseId === enrollment.courseId);
+            if (courseProgress && enrollment.status !== "DONE") {
+                // If progress is > 0, mark as STUDYING
+                if (courseProgress.progressPercentage > 0 && enrollment.status === "UPCOMING") {
+                    await prisma.enrollment.update({
+                        where: { studentId_courseId: { studentId: studentProfile.id, courseId: enrollment.courseId } },
+                        data: { status: "STUDYING" }
+                    });
+                }
+                // If all assignments completed, mark as DONE
+                if (courseProgress.progressPercentage === 100) {
+                    await prisma.enrollment.update({
+                        where: { studentId_courseId: { studentId: studentProfile.id, courseId: enrollment.courseId } },
+                        data: {
+                            status: "DONE",
+                            completedAt: new Date()
+                        }
+                    });
+                }
+            }
+        }
 
         return NextResponse.json(
             {
                 success: true,
-                data: formattedAssignments
+                data: {
+                    assignments: filteredAssignments,
+                    progressStats,
+                    summary: {
+                        total: filteredAssignments.length,
+                        pending: filteredAssignments.filter(a => a.submissionStatus === SubmissionStatus.PENDING).length,
+                        submitted: filteredAssignments.filter(a => a.submissionStatus === SubmissionStatus.SUBMITTED).length,
+                        graded: filteredAssignments.filter(a => [SubmissionStatus.GRADED, SubmissionStatus.RETURNED].includes(a.submissionStatus as any)).length
+                    }
+                }
             },
             { status: StatusCodes.OK }
         );

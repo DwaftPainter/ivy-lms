@@ -1,8 +1,7 @@
 import { create } from "zustand";
 import { apiFetch } from "@/lib/api-fetch";
 import { CourseLevel, IeltsSkill } from "@/generated/prisma/enums";
-
-export type CourseStatus = "studying" | "upcoming" | "done";
+import { EnrollmentStatus } from "@/enums/erollment.enum";
 
 export interface EnrolledCourse {
     id: string;
@@ -23,7 +22,7 @@ export interface EnrolledCourse {
         completedAssignments: number;
         completionPercentage: number;
     };
-    status: CourseStatus;
+    status: EnrollmentStatus;
 }
 
 interface EnrollmentState {
@@ -32,7 +31,7 @@ interface EnrollmentState {
     error: string | null;
 
     fetchEnrolledCourses: () => Promise<void>;
-    getCoursesByStatus: (status: CourseStatus) => EnrolledCourse[];
+    getCoursesByStatus: (status: EnrollmentStatus) => EnrolledCourse[];
 }
 
 export const useEnrollmentStore = create<EnrollmentState>((set, get) => ({
@@ -55,7 +54,7 @@ export const useEnrollmentStore = create<EnrollmentState>((set, get) => ({
         }
     },
 
-    getCoursesByStatus: (status: CourseStatus) => {
+    getCoursesByStatus: (status: EnrollmentStatus) => {
         const { enrolledCourses } = get();
         return enrolledCourses.filter((course) => course.status === status);
     }

@@ -51,5 +51,23 @@ export const MESSAGES = {
 
     teacher: {
         createSuccess: "Teacher created successfully"
+    },
+
+    enrollment: {
+        createSuccess: "Enrolled successfully",
+        alreadyEnrolled: "You are already enrolled in this course",
+        notFound: "Enrollment not found",
+        courseNotFound: "Course not found",
+        missingCourseId: "Course ID is required",
+        invalidStatus: "Invalid enrollment status. Must be STUDYING, DONE, or UPCOMING"
+    },
+
+    assignment: {
+        submitSuccess: "Assignment submitted successfully",
+        notFound: "Assignment not found",
+        alreadySubmitted: "Assignment already submitted",
+        missingContent: "Submission content is required",
+        notEnrolled: "Not enrolled in this course",
+        submissionError: "Failed to submit assignment"
     }
 };
