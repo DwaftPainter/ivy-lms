@@ -38,6 +38,7 @@ export const useClassStore = create<ClassState>((set) => ({
             const response = await apiFetch<{ success: boolean; data: ClassItem[] }>(
                 "/api/student/classes"
             );
+            console.log('🚀 ~ response:', response)
             set({ classes: response.data, isLoading: false });
         } catch (error: any) {
             set({

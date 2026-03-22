@@ -43,6 +43,7 @@ export async function GET(req: NextRequest) {
 
         const enrolledCourseIds = studentProfile.enrollments.map((e) => e.courseId);
         const completedLessonIds = studentProfile.lessonProgress.map((p) => p.lessonId);
+        console.log('🚀 ~ GET ~ completedLessonIds:', completedLessonIds)
 
         if (enrolledCourseIds.length === 0) {
             return NextResponse.json(
