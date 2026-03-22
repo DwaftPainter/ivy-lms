@@ -2,21 +2,25 @@
 
 import { useEffect, useState } from "react";
 import { CourseCard } from "@/components/course/course-card";
-import { useEnrollmentStore, CourseStatus } from "@/store/enrollment.store";
+import { useEnrollmentStore } from "@/store/enrollment.store";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { BookOpen, Loader2, BookCheck, BookOpen as BookOpenIcon, Calendar } from "lucide-react";
+import { EnrollmentStatus } from "@/enums/erollment.enum";
 
 const CoursesPage = () => {
     const { enrolledCourses, isLoading, fetchEnrolledCourses, getCoursesByStatus } = useEnrollmentStore();
-    const [activeTab, setActiveTab] = useState<CourseStatus>("studying");
+    const [activeTab, setActiveTab] = useState<EnrollmentStatus>(EnrollmentStatus.STUDYING);
 
     useEffect(() => {
         fetchEnrolledCourses();
     }, [fetchEnrolledCourses]);
 
-    const studyingCourses = getCoursesByStatus("studying");
-    const upcomingCourses = getCoursesByStatus("upcoming");
-    const doneCourses = getCoursesByStatus("done");
+    const studyingCourses = getCoursesByStatus(EnrollmentStatus.STUDYING);
+    console.log('🚀 ~ CoursesPage ~ studyingCourses:', studyingCourses)
+    const upcomingCourses = getCoursesByStatus(EnrollmentStatus.UPCOMING);
+    console.log('🚀 ~ CoursesPage ~ upcomingCourses:', upcomingCourses)
+    const doneCourses = getCoursesByStatus(EnrollmentStatus.DONE);
+    console.log('🚀 ~ CoursesPage ~ doneCourses:', doneCourses)
 
     const renderCourseGrid = (courses: typeof enrolledCourses, emptyMessage: string) => {
         if (courses.length === 0) {
@@ -93,11 +97,11 @@ const CoursesPage = () => {
             {/* Tabs */}
             <Tabs
                 value={activeTab}
-                onValueChange={(value) => setActiveTab(value as CourseStatus)}
+                onValueChange={(value) => setActiveTab(value as EnrollmentStatus)}
                 className="w-full"
             >
                 <TabsList className="mb-6">
-                    <TabsTrigger value="studying" className="gap-2">
+                    <TabsTrigger value={EnrollmentStatus.STUDYING} className="gap-2">
                         <BookOpenIcon className="w-4 h-4" />
                         Studying
                         {studyingCourses.length > 0 && (
@@ -106,7 +110,7 @@ const CoursesPage = () => {
                             </span>
                         )}
                     </TabsTrigger>
-                    <TabsTrigger value="upcoming" className="gap-2">
+                    <TabsTrigger value={EnrollmentStatus.UPCOMING} className="gap-2">
                         <Calendar className="w-4 h-4" />
                         Upcoming
                         {upcomingCourses.length > 0 && (
@@ -115,7 +119,7 @@ const CoursesPage = () => {
                             </span>
                         )}
                     </TabsTrigger>
-                    <TabsTrigger value="done" className="gap-2">
+                    <TabsTrigger value={EnrollmentStatus.DONE} className="gap-2">
                         <BookCheck className="w-4 h-4" />
                         Done
                         {doneCourses.length > 0 && (
@@ -126,15 +130,15 @@ const CoursesPage = () => {
                     </TabsTrigger>
                 </TabsList>
 
-                <TabsContent value="studying">
+                <TabsContent value={EnrollmentStatus.STUDYING}>
                     {renderCourseGrid(studyingCourses, "No courses currently being studied")}
                 </TabsContent>
 
-                <TabsContent value="upcoming">
+                <TabsContent value={EnrollmentStatus.UPCOMING}>
                     {renderCourseGrid(upcomingCourses, "No upcoming courses")}
                 </TabsContent>
 
-                <TabsContent value="done">
+                <TabsContent value={EnrollmentStatus.DONE}>
                     {renderCourseGrid(doneCourses, "No completed courses yet")}
                 </TabsContent>
             </Tabs>

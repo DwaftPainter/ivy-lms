@@ -56,10 +56,10 @@ export function CourseCard({ course }: CourseCardProps) {
                             <div className="flex justify-between items-center text-sm">
                                 <span className="text-muted-foreground">Overall Progress</span>
                                 <span className="font-medium text-foreground">
-                                    {course.progress.completionPercentage}%
+                                    {course?.progress?.completionPercentage}%
                                 </span>
                             </div>
-                            <Progress value={course.progress.completionPercentage} />
+                            <Progress value={course?.progress?.completionPercentage} />
                         </div>
 
                         {/* Stats Grid */}
@@ -68,14 +68,14 @@ export function CourseCard({ course }: CourseCardProps) {
                                 <Calendar className="w-4 h-4 text-muted-foreground" />
                                 <span className="text-muted-foreground">Sessions:</span>
                                 <span className="font-medium text-foreground">
-                                    {course.progress.completedSessions}/{course.progress.totalSessions}
+                                    {course?.progress?.completedSessions}/{course?.progress?.totalSessions}
                                 </span>
                             </div>
                             <div className="flex items-center gap-2 text-sm">
                                 <CheckCircle2 className="w-4 h-4 text-muted-foreground" />
                                 <span className="text-muted-foreground">Assignments:</span>
                                 <span className="font-medium text-foreground">
-                                    {course.progress.completedAssignments}/{course.progress.totalAssignments}
+                                    {course?.progress?.completedAssignments}/{course?.progress?.totalAssignments}
                                 </span>
                             </div>
                         </div>

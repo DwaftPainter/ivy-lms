@@ -24,7 +24,7 @@ export async function GET(req: NextRequest) {
             where: { userId },
             include: {
                 enrollments: {
-                    where: { status: { in: ["ACTIVE", "COMPLETED"] } },
+                    where: { status: { in: ["STUDYING", "DONE"] } },
                     select: { courseId: true }
                 },
                 lessonProgress: {
