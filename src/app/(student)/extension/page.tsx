@@ -154,10 +154,10 @@ const ExtensionPage = () => {
                         <CheckCircle className="w-4 h-4" />
                         Progress
                     </TabsTrigger>
-                    <TabsTrigger value="material" className="gap-2">
+                    {/* <TabsTrigger value="material" className="gap-2">
                         <FileText className="w-4 h-4" />
                         Material
-                    </TabsTrigger>
+                    </TabsTrigger> */}
                 </TabsList>
 
                 {/* Schedule Tab with FullCalendar */}
@@ -401,7 +401,7 @@ const ExtensionPage = () => {
                     </Card>
                 </TabsContent>
 
-                {/* Material Tab */}
+                {/* Material Tab
                 <TabsContent value="material">
                     <Card className="p-6 shadow-none border rounded-[12px]">
                         <h2 className="text-lg font-semibold text-foreground mb-6">Course Materials</h2>
@@ -410,7 +410,7 @@ const ExtensionPage = () => {
                             <p>Materials will be available here</p>
                         </div>
                     </Card>
-                </TabsContent>
+                </TabsContent> */}
             </Tabs>
         </div>
     );
