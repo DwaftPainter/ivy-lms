@@ -4,18 +4,18 @@ import { UpcomingAssignments } from "@/components/dashboard/upcoming-assignments
 import { UpcomingClasses } from "@/components/dashboard/upcoming-classes";
 import { useAuthStore } from "@/store/auth.store";
 import { useClassStore } from "@/store/class.store";
-import { Card } from "@/components/ui/card";
 import { useEnrollmentStore } from "@/store/enrollment.store";
 import { useEffect } from "react";
-import { BookOpen, CheckCircle, Clock, GraduationCap } from "lucide-react";
 
 const Dashboard = () => {
     const { user } = useAuthStore();
-    const { classes, isLoading: classesLoading } = useClassStore();
+    const { classes, isLoading: classesLoading, fetchClasses } = useClassStore();
+    console.log('🚀 ~ Dashboard ~ classes:', classes)
     const { enrolledCourses, fetchEnrolledCourses, isLoading: enrollmentsLoading } = useEnrollmentStore();
 
     useEffect(() => {
         fetchEnrolledCourses();
+        fetchClasses()
     }, [fetchEnrolledCourses]);
 
     const studyingCount = enrolledCourses.filter(c => c.status === "STUDYING").length;
