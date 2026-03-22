@@ -54,13 +54,13 @@ export function UpcomingClasses({ classes = [] }: UpcomingClassesProps) {
                                         {lesson.course}
                                     </p>
 
-                                    <a
+                                    {/* <a
                                         href="#"
                                         className="inline-flex items-center gap-2 text-primary font-medium text-sm hover:opacity-80 transition-opacity"
                                     >
                                         <Paperclip className="w-4 h-4" />
                                         View Material
-                                    </a>
+                                    </a> */}
                                 </div>
 
                                 {/* Right Info */}
