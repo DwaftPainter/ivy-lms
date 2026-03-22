@@ -73,7 +73,7 @@ export const useAuthStore = create<AuthState>()(
                         user: data.data,
                         isAuthenticated: true
                     });
-                } catch (error) {
+                } catch {
                     set({
                         user: null,
                         isAuthenticated: false
@@ -97,10 +97,8 @@ export const useAuthStore = create<AuthState>()(
                         isAuthenticated: true
                     });
 
-                    if (data.success) {
-                        if (data.redirectTo) {
-                            window.location.href = data.redirectTo;
-                        }
+                    if (data.success && data.redirectTo) {
+                        window.location.href = data.redirectTo;
                     }
                 } catch (err: any) {
                     const error = err?.error;
@@ -130,10 +128,8 @@ export const useAuthStore = create<AuthState>()(
                         isAuthenticated: true
                     });
 
-                    if (data.success) {
-                        if (data.redirectTo) {
-                            window.location.href = data.redirectTo;
-                        }
+                    if (data.success && data.redirectTo) {
+                        window.location.href = data.redirectTo;
                     }
                 } catch (err: any) {
                     const error = err?.error;
@@ -170,10 +166,8 @@ export const useAuthStore = create<AuthState>()(
                         isAuthenticated: true
                     });
 
-                    if (data.success) {
-                        if (data.redirectTo) {
-                            window.location.href = data.redirectTo;
-                        }
+                    if (data.success && data.redirectTo) {
+                        window.location.href = data.redirectTo;
                     }
                 } catch (error) {
                     console.error("Google login error:", error);
@@ -184,19 +178,25 @@ export const useAuthStore = create<AuthState>()(
 
             logout: async () => {
                 try {
-                    await apiFetch("/api/auth/logout");
+                    await apiFetch("/api/auth/logout", {
+                        method: "POST"
+                    });
                 } catch (error) {
                     console.error("Logout error:", error);
-                } finally {
-                    set({
-                        user: null,
-                        isAuthenticated: false
-                    });
                 }
+
+                await useAuthStore.persist.clearStorage();
+
+                set({
+                    user: null,
+                    isAuthenticated: false
+                });
+
+                window.location.href = "/login";
             }
         }),
         {
-            name: "ivy-auth-storage", // localStorage key
+            name: "ivy-auth-storage",
 
             partialize: (state) => ({
                 user: state.user,
