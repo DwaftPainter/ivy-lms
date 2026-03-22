@@ -1,7 +1,7 @@
-// middleware.ts
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import jwt from "jsonwebtoken";
+import { redirectMap } from "./config/auth/role-map";
 
 export function proxy(req: NextRequest) {
     const token = req.cookies.get("token");
@@ -17,22 +17,29 @@ export function proxy(req: NextRequest) {
 
     try {
         const payload = jwt.verify(token.value, process.env.JWT_SECRET_KEY!) as any;
+
         const { role } = payload;
 
+        const redirectByRole = redirectMap[role] || "/login";
+
+        if (pathname === "/") {
+            return NextResponse.redirect(new URL(redirectByRole, req.url));
+        }
+
         if ((pathname.startsWith("/admin") || pathname.startsWith("/api-doc")) && role !== "ADMIN") {
-            return NextResponse.redirect(new URL("/", req.url));
+            return NextResponse.redirect(new URL(redirectByRole, req.url));
         }
 
         if (pathname.startsWith("/teacher") && role !== "TEACHER") {
-            return NextResponse.redirect(new URL("/", req.url));
+            return NextResponse.redirect(new URL(redirectByRole, req.url));
         }
 
         const studentRoutes = ["/dashboard", "/courses", "/schedule", "/extension", "/settings"];
+
         const isAccessingStudentRoute = studentRoutes.some((route) => pathname.startsWith(route));
 
         if (isAccessingStudentRoute && role !== "STUDENT") {
-            console.log("redirect")
-            return NextResponse.redirect(new URL("/", req.url));
+            return NextResponse.redirect(new URL(redirectByRole, req.url));
         }
 
         return NextResponse.next();
@@ -42,8 +49,15 @@ export function proxy(req: NextRequest) {
 }
 
 export const config = {
-    /* Ensure the matcher covers all protected paths. 
-       Do NOT include /login or /register here if you want to avoid redirect loops.
-    */
-    matcher: ["/admin/:path*", "/teacher/:path*", "/dashboard/:path*", "/courses/:path*", "/api-doc/:path*"]
+    matcher: [
+        "/",
+        "/admin/:path*",
+        "/teacher/:path*",
+        "/dashboard/:path*",
+        "/courses/:path*",
+        "/schedule/:path*",
+        "/extension/:path*",
+        "/settings/:path*",
+        "/api-doc/:path*"
+    ]
 };
