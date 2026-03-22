@@ -4,7 +4,7 @@ import { SystemStats } from "@/components/admin/system-stats";
 
 export default function AdminPage() {
     return (
-        <div className="p-8 w-full">
+        <div className="sm:p-8 p-4 w-full">
             {/* Header */}
             <div className="mb-8">
                 <h2 className="text-3xl font-bold text-text-primary">Admin Dashboard</h2>

@@ -2,7 +2,7 @@
 
 import { Card } from "@/components/ui/card";
 import { ClassItem } from "@/store/class.store";
-import { Paperclip, Clock, User } from "lucide-react";
+import { Paperclip, Clock, User, SearchAlertIcon } from "lucide-react";
 
 interface UpcomingClassesProps {
     classes: Array<ClassItem>;
@@ -12,14 +12,14 @@ export function UpcomingClasses({ classes = [] }: UpcomingClassesProps) {
     const isEmpty = classes.length === 0;
 
     return (
-        <Card className="p-6 shadow-sm border">
+        <Card className="p-6 shadow-none border rounded-[12px]">
             <h2 className="text-lg font-semibold text-foreground mb-6">
                 Upcoming Classes
             </h2>
 
             {isEmpty ? (
-                // ✅ Fallback UI
                 <div className="flex flex-col items-center justify-center py-10 text-center">
+                    <SearchAlertIcon className="w-12 h-12 text-muted-foreground mb-6" />
                     <div className="text-muted-foreground text-sm mb-2">
                         You are not enrolled in any classes yet
                     </div>

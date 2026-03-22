@@ -10,10 +10,10 @@ const Dashboard = () => {
     const { classes, isLoading, error } = useClassStore()
 
     return (
-        <div className="p-8 w-full">
+        <div className="p-4 w-full">
             {/* Greeting */}
-            <div className="mb-8">
-                <h2 className="text-3xl font-bold text-text-primary">
+            <div className="mb-4">
+                <h2 className="text-xl font-bold text-text-primary">
                     Welcome, {user?.firstName + " " + user?.lastName}
                 </h2>
             </div>
