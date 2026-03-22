@@ -1,82 +1,86 @@
 "use client";
 
 import { Card } from "@/components/ui/card";
+import { ClassItem } from "@/store/class.store";
 import { Paperclip, Clock, User } from "lucide-react";
 
-interface ClassItem {
-    date: string;
-    day: string;
-    title: string;
-    course: string;
-    time: string;
-    instructor: string;
+interface UpcomingClassesProps {
+    classes: Array<ClassItem>;
 }
 
-const classes: ClassItem[] = [
-    {
-        date: "2/2",
-        day: "Tue",
-        title: "Lesson 21: Writing",
-        course: "Course: IELTS Basic",
-        time: "19:00 - 21:00",
-        instructor: "Lionel Messi"
-    },
-    {
-        date: "4/2",
-        day: "Thu",
-        title: "Lesson 22: Listening",
-        course: "Course: IELTS Basic",
-        time: "19:00 - 21:00",
-        instructor: "Cris Ronaldo"
-    }
-];
+export function UpcomingClasses({ classes = [] }: UpcomingClassesProps) {
+    const isEmpty = classes.length === 0;
 
-const UpcomingClasses = () => {
     return (
-        <Card className="p-6 rounded-md">
-            <h2 className="text-xl font-bold mb-6">Upcoming Classes</h2>
+        <Card className="p-6 shadow-sm border">
+            <h2 className="text-lg font-semibold text-foreground mb-6">
+                Upcoming Classes
+            </h2>
 
-            <div className="space-y-6">
-                {classes.map((lesson, idx) => (
-                    <div key={idx} className="pb-6 border-b border-border last:border-0 last:pb-0">
-                        <div className="flex gap-4">
-                            {/* Date Box */}
-                            <div className="bg-muted rounded-lg p-4 text-center flex flex-col items-center justify-center w-20 flex-shrink-0">
-                                <div className="font-bold text-lg">{lesson.date}</div>
-                                <div className="text-sm text-muted-foreground">{lesson.day}</div>
-                            </div>
-
-                            {/* Content */}
-                            <div className="flex-1">
-                                <h3 className="font-bold text-lg mb-1">{lesson.title}</h3>
-                                <p className="text-sm text-muted-foreground mb-3">{lesson.course}</p>
-
-                                <a
-                                    href="#"
-                                    className="inline-flex items-center gap-2 text-accent font-medium text-sm hover:underline"
-                                >
-                                    <Paperclip className="w-4 h-4" />
-                                    View Material
-                                </a>
-                            </div>
-
-                            {/* Right Info */}
-                            <div className="text-right space-y-2">
-                                <div className="flex items-center justify-end gap-2 text-sm">
-                                    <Clock className="w-4 h-4" />
-                                    <span>{lesson.time}</span>
+            {isEmpty ? (
+                // ✅ Fallback UI
+                <div className="flex flex-col items-center justify-center py-10 text-center">
+                    <div className="text-muted-foreground text-sm mb-2">
+                        You are not enrolled in any classes yet
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                        Browse courses and enroll to see them here
+                    </p>
+                </div>
+            ) : (
+                <div className="space-y-4">
+                    {classes.map((lesson, idx) => (
+                        <div
+                            key={idx}
+                            className="pb-4 border-b border-border last:border-0 last:pb-0"
+                        >
+                            <div className="flex gap-5 items-start">
+                                {/* Date Box */}
+                                <div className="bg-linear-to-br from-primary/10 to-primary/5 rounded-lg p-4 text-center flex flex-col items-center justify-center w-16 shrink-0 border border-primary/10">
+                                    <div className="font-bold text-base text-foreground">
+                                        {lesson.date}
+                                    </div>
+                                    <div className="text-xs text-muted-foreground">
+                                        {lesson.day}
+                                    </div>
                                 </div>
-                                <div className="flex items-center justify-end gap-2 text-sm">
-                                    <User className="w-4 h-4" />
-                                    <span className="font-medium">{lesson.instructor}</span>
+
+                                {/* Content */}
+                                <div className="flex-1 min-w-0">
+                                    <h3 className="font-semibold text-foreground mb-1">
+                                        {lesson.title}
+                                    </h3>
+                                    <p className="text-sm text-muted-foreground mb-3">
+                                        {lesson.course}
+                                    </p>
+
+                                    <a
+                                        href="#"
+                                        className="inline-flex items-center gap-2 text-primary font-medium text-sm hover:opacity-80 transition-opacity"
+                                    >
+                                        <Paperclip className="w-4 h-4" />
+                                        View Material
+                                    </a>
+                                </div>
+
+                                {/* Right Info */}
+                                <div className="text-right space-y-2 shrink-0">
+                                    <div className="flex items-center justify-end gap-2 text-sm text-muted-foreground">
+                                        <Clock className="w-4 h-4" />
+                                        <span>{lesson.time}</span>
+                                    </div>
+                                    <div className="flex items-center justify-end gap-2 text-sm">
+                                        <User className="w-4 h-4 text-muted-foreground" />
+                                        <span className="font-medium text-foreground">
+                                            {lesson.instructor}
+                                        </span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                ))}
-            </div>
+                    ))}
+                </div>
+            )}
         </Card>
     );
-};
-
-export default UpcomingClasses;
+}

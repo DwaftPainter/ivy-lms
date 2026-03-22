@@ -1,77 +1,45 @@
 "use client";
 
 import * as React from "react";
-import {
-    AudioWaveform,
-    BookIcon,
-    Calendar,
-    Command,
-    GalleryVerticalEnd,
-    Grid3X3Icon,
-    LayoutGridIcon,
-    Settings
-} from "lucide-react";
-
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarRail } from "@/components/ui/sidebar";
 import TeamSwitcher from "./team-switcher";
 import { NavMain } from "./nav-main";
 import { NavUser } from "./nav-user";
 import { useAuthStore } from "@/store/auth.store";
+import { LucideIcon } from "lucide-react";
+export interface NavItem {
+    title: string;
+    url: string;
+    icon?: LucideIcon;
+    isActive?: boolean;
+    items?: {
+        title: string;
+        url: string;
+    }[];
+}
 
-// This is sample data.
-const data = {
-    teams: [
-        {
-            name: "Acme Inc",
-            logo: GalleryVerticalEnd,
-            plan: "Enterprise"
-        },
-        {
-            name: "Acme Corp.",
-            logo: AudioWaveform,
-            plan: "Startup"
-        },
-        {
-            name: "Evil Corp.",
-            logo: Command,
-            plan: "Free"
-        }
-    ],
-    navMain: [
-        {
-            title: "Dashboard",
-            url: "#",
-            icon: LayoutGridIcon,
-            isActive: true
-        },
-        {
-            title: "Courses",
-            url: "#",
-            icon: BookIcon
-        },
-        {
-            title: "Extension",
-            url: "#",
-            icon: Grid3X3Icon
-        },
-        {
-            title: "Settings",
-            url: "#",
-            icon: Settings
-        }
-    ]
-};
+interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
+    navMain: NavItem[];
+}
 
-const AppSidebar = ({ ...props }: React.ComponentProps<typeof Sidebar>) => {
+const AppSidebar: React.FC<AppSidebarProps> = ({ navMain, ...props }) => {
     const { user } = useAuthStore();
-    console.log('🚀 ~ AppSidebar ~ user:', user)
+
+    // Filter nav items based on user role
+    const filteredNav = navMain.filter((item) => {
+        if (item.title === "Admin") {
+            return user?.role === "admin";
+        }
+        return true;
+    });
+
     return (
         <Sidebar collapsible="icon" {...props}>
             <SidebarHeader>
                 <TeamSwitcher />
             </SidebarHeader>
             <SidebarContent>
-                <NavMain items={data.navMain} />
+                <NavMain items={filteredNav} />
             </SidebarContent>
             <SidebarFooter>{user && <NavUser user={user} />}</SidebarFooter>
             <SidebarRail />

@@ -37,5 +37,19 @@ export const MESSAGES = {
 
     common: {
         serverError: "Internal server error"
+    },
+
+    course: {
+        createSuccess: "Course created successfully",
+        updateSuccess: "Course updated successfully",
+        deleteSuccess: "Course deleted successfully",
+        notFound: "Course not found",
+        invalidSkill: "Invalid skill value",
+        invalidLevel: "Invalid level value",
+        missingRequired: "Missing required fields"
+    },
+
+    teacher: {
+        createSuccess: "Teacher created successfully"
     }
 };

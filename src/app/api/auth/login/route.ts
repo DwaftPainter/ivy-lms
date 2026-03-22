@@ -8,6 +8,7 @@ import { AUTH_PROVIDER } from "@/enums";
 import { MESSAGES } from "@/config/message";
 import { UserStatus } from "@/generated/prisma/enums";
 import { MAX_ATTEMPT } from "@/constants";
+import { redirectMap } from "@/config/auth/role-map";
 
 export async function POST(req: Request) {
     try {
@@ -51,7 +52,6 @@ export async function POST(req: Request) {
             const newAttempts = user.failedLoginAttempts + 1;
             const remaining = MAX_ATTEMPT - newAttempts;
 
-            // 🔒 nếu vượt quá → lock account
             if (newAttempts >= MAX_ATTEMPT) {
                 await prisma.user.update({
                     where: { id: user.id },
@@ -97,12 +97,15 @@ export async function POST(req: Request) {
             );
         }
 
-        const safeUser = omit(user, ["password", "createdAt", "updatedAt"]);
+        const safeUser = omit(user, ["password", "createdAt", "updatedAt", "role"]);
 
         const res = NextResponse.json(
             {
                 success: true,
-                data: safeUser
+                message: MESSAGES.auth.loginSuccess,
+                redirectTo: redirectMap[user.role] || "/",
+                data: safeUser,
+                timestamp: new Date()
             },
             { status: StatusCodes.OK }
         );

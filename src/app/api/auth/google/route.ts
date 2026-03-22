@@ -1,3 +1,5 @@
+import { redirectMap } from "@/config/auth/role-map";
+import { MESSAGES } from "@/config/message";
 import { AUTH_PROVIDER, ROLE } from "@/enums";
 import { prisma } from "@/lib/prisma";
 import { StatusCodes } from "http-status-codes";
@@ -23,15 +25,18 @@ export async function POST(req: NextRequest) {
             });
         }
 
-        const safeUser = omit(user, ["password", "createdAt", "updatedAt"]);
+        const safeUser = omit(user, ["password", "role", "createdAt", "updatedAt"]);
 
-        const token = jwt.sign({ userId: safeUser.id, role: safeUser.role }, process.env.JWT_SECRET_KEY!, {
+        const token = jwt.sign({ userId: safeUser.id, role: user.role }, process.env.JWT_SECRET_KEY!, {
             expiresIn: "7d"
         });
 
         const res = NextResponse.json({
             success: true,
-            data: safeUser
+            message: MESSAGES.auth.loginSuccess,
+            redirectTo: redirectMap[user.role] || "/",
+            data: safeUser,
+            timestamp: new Date()
         });
 
         res.cookies.set("token", token, {
