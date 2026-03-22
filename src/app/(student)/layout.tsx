@@ -11,7 +11,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             <AppSidebar navMain={sidebarNavConfig} />
             <SidebarInset>
                 <MainHeader />
-                <main className="flex-1 overflow-auto bg-[rgb(241,241,241)] mt-16">{children}</main>
+                <main className="flex-1 overflow-auto bg-[rgb(241,241,241)] sm:mt-12 mt-16">{children}</main>
             </SidebarInset>
         </SidebarProvider>
     );

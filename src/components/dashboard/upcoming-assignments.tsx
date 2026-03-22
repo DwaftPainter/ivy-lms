@@ -18,14 +18,14 @@ export function UpcomingAssignments({ assignments = [] }: UpcomingAssignmentsPro
     const isEmpty = assignments.length === 0;
 
     return (
-        <Card className="p-6 shadow-sm border">
+        <Card className="p-6 shadow-none border rounded-[12px]">
             <h2 className="text-lg font-semibold text-foreground mb-6">
                 Upcoming Assignments
             </h2>
 
             {isEmpty ? (
                 <div className="flex flex-col items-center justify-center text-center py-10">
-                    <ClipboardList className="w-10 h-10 text-muted-foreground mb-3" />
+                    <ClipboardList className="w-12 h-12 text-muted-foreground mb-6" />
                     <p className="text-sm font-medium text-foreground">
                         No assignments yet
                     </p>

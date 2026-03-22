@@ -1,0 +1,18 @@
+"use client";
+
+import AppSidebar from "@/components/layout/app-sidebar";
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import MainHeader from "@/components/layout/main-header";
+import { teacherSidebarNavConfig } from "@/config/teacher/side-bar-config";
+
+export default function Layout({ children }: { children: React.ReactNode }) {
+    return (
+        <SidebarProvider>
+            <AppSidebar navMain={teacherSidebarNavConfig} />
+            <SidebarInset>
+                <MainHeader />
+                <main className="flex-1 overflow-auto bg-[rgb(241,241,241)] sm:mt-12 mt-16">{children}</main>
+            </SidebarInset>
+        </SidebarProvider>
+    );
+}

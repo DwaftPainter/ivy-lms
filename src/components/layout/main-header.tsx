@@ -1,18 +1,23 @@
 "use client";
 
 import { Separator } from "@/components/ui/separator";
-import { SIDEBAR_WIDTH, SIDEBAR_WIDTH_ICON, SidebarTrigger, useSidebar } from "@/components/ui/sidebar";
+import {
+    SIDEBAR_WIDTH,
+    SIDEBAR_WIDTH_ICON,
+    SidebarTrigger,
+    useSidebar
+} from "@/components/ui/sidebar";
 import { BellIcon, MessageSquareIcon } from "lucide-react";
 
 const MainHeader = () => {
-    const { open } = useSidebar();
+    const { open, isMobile } = useSidebar();
 
     return (
         <header
             style={{
-                left: open ? SIDEBAR_WIDTH : SIDEBAR_WIDTH_ICON
+                left: isMobile ? 0 : open ? SIDEBAR_WIDTH : SIDEBAR_WIDTH_ICON
             }}
-            className="z-9999 fixed top-0 transition-all duration-75 right-0 px-4 bg-primary flex h-16 shrink-0 items-center justify-between gap-2  ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12"
+            className="z-9999 fixed top-0 transition-all duration-75 right-0 px-4 bg-primary flex h-12 shrink-0 items-center justify-between gap-2  ease-linear"
         >
             <div className="flex items-center gap-2">
                 <SidebarTrigger className="-ml-1 text-text-secondary" />
@@ -20,14 +25,18 @@ const MainHeader = () => {
                 <p className="text-text-secondary font-semibold">Dashboard</p>
             </div>
             <div className="flex gap-2">
-                <div className="border-gradient">
-                    <button className="p-1.5 flex items-center min-h-6 min-w-6 cursor-pointer">
-                        <BellIcon className="text-text-secondary size-4" />
+                <div className="border-gradient size-9 flex items-center justify-center cursor-pointer">
+                    <button className="p-1.5 flex items-center h-9 w-9 cursor-pointer">
+                        <span className="flex items-center justify-center size-full">
+                            <BellIcon className="text-text-secondary size-4" />
+                        </span>
                     </button>
                 </div>
-                <div className="border-gradient">
-                    <button className="p-1.5 flex items-center min-h-6 min-w-6 cursor-pointer">
-                        <MessageSquareIcon className="text-text-secondary size-3" />
+                <div className="border-gradient size-9 flex items-center justify-center cursor-pointer">
+                    <button className="p-1.5 flex items-center h-9 w-9 cursor-pointer">
+                        <span className="flex items-center justify-center size-full">
+                            <MessageSquareIcon className="text-text-secondary size-4" />
+                        </span>
                     </button>
                 </div>
             </div>

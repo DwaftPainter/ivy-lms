@@ -46,6 +46,20 @@ export async function POST(req: Request) {
             );
         }
 
+        if (user.status === UserStatus.LOCKED) {
+            return NextResponse.json(
+                {
+                    success: false,
+                    error: {
+                        code: "ACCOUNT_LOCKED",
+                        field: "email",
+                        message: MESSAGES.auth.tooManyAttempt
+                    }
+                },
+                { status: StatusCodes.FORBIDDEN }
+            );
+        }
+
         const isValidPassword = await bcrypt.compare(password, user.password);
 
         if (!isValidPassword) {
@@ -66,7 +80,7 @@ export async function POST(req: Request) {
                         success: false,
                         error: {
                             code: "TOO_MANY_ATTEMPT",
-                            field: "password",
+                            field: "email",
                             message: MESSAGES.auth.tooManyAttempt
                         }
                     },
