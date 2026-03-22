@@ -86,6 +86,20 @@
     --sidebar-accent-foreground: oklch(0.21 0.006 285.885);
     --sidebar-border: oklch(0.92 0.004 286.32);
     --sidebar-ring: oklch(0.704 0.191 22.216);
+
+    /* Border Gradient */
+    --border-gradient-border: oklch(0.75 0.12 27.51);
+    --border-gradient-border-hover: oklch(0.65 0.16 27.51);
+    --border-gradient-border-active: oklch(0.55 0.18 27.51);
+    --border-gradient-border-selected: oklch(0.5 0.19 27.51);
+
+    /* Background states */
+    --border-gradient-bg-active: oklch(0.96 0.03 27.51);
+    --border-gradient-bg-selected: oklch(0.93 0.05 27.51);
+
+    /* Extra */
+    --border-gradient-border-top-width-selected: 3px;
+    --border-gradient-padding-top-selected: 2px;
 }
 
 .dark {
@@ -161,5 +175,28 @@
         100% {
             transform: rotate(0deg);
         }
+    }
+}
+
+@layer components {
+    .border-gradient {
+        @apply rounded-lg max-h-96 border;
+        border-color: var(--border-gradient-border);
+    }
+
+    .border-gradient:hover {
+        border-color: var(--border-gradient-border-hover);
+    }
+
+    .border-gradient-active {
+        background: var(--border-gradient-bg-active);
+        border-color: var(--border-gradient-border-active);
+    }
+
+    .border-gradient-selected {
+        border-top-width: var(--border-gradient-border-top-width-selected);
+        border-top-color: var(--border-gradient-border-selected);
+        padding-top: var(--border-gradient-padding-top-selected);
+        background: var(--border-gradient-bg-selected);
     }
 }

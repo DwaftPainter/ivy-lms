@@ -20,8 +20,16 @@ const MainHeader = () => {
                 <p className="text-text-secondary font-semibold">Dashboard</p>
             </div>
             <div className="flex gap-2">
-                <BellIcon className="text-text-secondary size-4" />
-                <MessageSquareIcon className="text-text-secondary size-4" />
+                <div className="border-gradient">
+                    <button className="p-1.5 flex items-center min-h-6 min-w-6 cursor-pointer">
+                        <BellIcon className="text-text-secondary size-4" />
+                    </button>
+                </div>
+                <div className="border-gradient">
+                    <button className="p-1.5 flex items-center min-h-6 min-w-6 cursor-pointer">
+                        <MessageSquareIcon className="text-text-secondary size-3" />
+                    </button>
+                </div>
             </div>
         </header>
     );

@@ -4,6 +4,46 @@ import { prisma } from "@/lib/prisma";
 import { StatusCodes } from "http-status-codes";
 import { MESSAGES } from "@/config/message";
 
+/**
+ * @swagger
+ * /api/auth/me:
+ * get:
+ * summary: Get current user information
+ * description: Validates the JWT token from cookies and returns the user's profile data.
+ * tags:
+ * - Authentication
+ * responses:
+ * 200:
+ * description: User information retrieved successfully
+ * content:
+ * application/json:
+ * schema:
+ * type: object
+ * properties:
+ * success:
+ * type: boolean
+ * example: true
+ * message:
+ * type: string
+ * example: "User info fetched successfully"
+ * data:
+ * $ref: '#/components/schemas/User'
+ * timestamp:
+ * type: string
+ * format: date-time
+ * 302:
+ * description: Redirect to login (Token missing or invalid)
+ * 500:
+ * description: Internal server error
+ * content:
+ * application/json:
+ * schema:
+ * type: object
+ * properties:
+ * message:
+ * type: string
+ * example: "Internal Server Error"
+ */
 export async function GET(req: NextRequest) {
     try {
         const token = req.cookies.get("token");

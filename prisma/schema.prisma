@@ -18,6 +18,7 @@ datasource db {
 enum Role {
   TEACHER
   STUDENT
+  ADMIN
 }
 
 enum IeltsSkill {
@@ -141,7 +142,6 @@ model Course {
   skill        IeltsSkill
   level        CourseLevel
   targetBand   Float?
-  price        Decimal?    @db.Decimal(10, 2)
   isPublished  Boolean     @default(false)
   createdAt    DateTime    @default(now())
   updatedAt    DateTime    @updatedAt

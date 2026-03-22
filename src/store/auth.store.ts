@@ -2,6 +2,7 @@ import { UseFormReturn } from "react-hook-form";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { apiFetch } from "@/lib/api-fetch";
+import { ApiResponse } from "@/types/common";
 
 type User = {
     id: string;
@@ -9,6 +10,7 @@ type User = {
     firstName: string;
     lastName: string;
     avatarUrl: string;
+    role?: "admin" | "instructor" | "student";
 };
 
 type RegisterPayload = {
@@ -85,7 +87,7 @@ export const useAuthStore = create<AuthState>()(
                 set({ isLoading: true });
 
                 try {
-                    const data = await apiFetch("/api/auth/login", {
+                    const data = await apiFetch<ApiResponse<any>>("/api/auth/login", {
                         method: "POST",
                         body: JSON.stringify(payload)
                     });
@@ -94,6 +96,12 @@ export const useAuthStore = create<AuthState>()(
                         user: data.data,
                         isAuthenticated: true
                     });
+
+                    if (data.success) {
+                        if (data.redirectTo) {
+                            window.location.href = data.redirectTo;
+                        }
+                    }
                 } catch (err: any) {
                     const error = err?.error;
 
@@ -121,6 +129,12 @@ export const useAuthStore = create<AuthState>()(
                         user: data.data,
                         isAuthenticated: true
                     });
+
+                    if (data.success) {
+                        if (data.redirectTo) {
+                            window.location.href = data.redirectTo;
+                        }
+                    }
                 } catch (err: any) {
                     const error = err?.error;
 
@@ -155,6 +169,12 @@ export const useAuthStore = create<AuthState>()(
                         user: data.data,
                         isAuthenticated: true
                     });
+
+                    if (data.success) {
+                        if (data.redirectTo) {
+                            window.location.href = data.redirectTo;
+                        }
+                    }
                 } catch (error) {
                     console.error("Google login error:", error);
                 } finally {

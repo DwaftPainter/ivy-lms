@@ -13,6 +13,7 @@ import {
     SidebarMenuSubButton,
     SidebarMenuSubItem
 } from "@/components/ui/sidebar";
+import { cn } from "@/lib/utils";
 
 export function NavMain({
     items
@@ -41,7 +42,13 @@ export function NavMain({
                         >
                             <SidebarMenuItem>
                                 <CollapsibleTrigger asChild>
-                                    <SidebarMenuButton tooltip={item.title}>
+                                    <SidebarMenuButton
+                                        tooltip={item.title}
+                                        className={cn(
+                                            "transition-colors",
+                                            item.isActive && "bg-muted text-primary font-semibold"
+                                        )}
+                                    >
                                         {item.icon && (
                                             <item.icon
                                                 className="font-semibold size-5"
