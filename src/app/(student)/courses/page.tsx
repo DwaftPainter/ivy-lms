@@ -6,6 +6,7 @@ import { useEnrollmentStore } from "@/store/enrollment.store";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { BookOpen, Loader2, BookCheck, BookOpen as BookOpenIcon, Calendar } from "lucide-react";
 import { EnrollmentStatus } from "@/enums/erollment.enum";
+import Loader from "@/components/custom-ui/loader";
 
 const CoursesPage = () => {
     const { enrolledCourses, isLoading, fetchEnrolledCourses, getCoursesByStatus } = useEnrollmentStore();
@@ -16,11 +17,11 @@ const CoursesPage = () => {
     }, [fetchEnrolledCourses]);
 
     const studyingCourses = getCoursesByStatus(EnrollmentStatus.STUDYING);
-    console.log('🚀 ~ CoursesPage ~ studyingCourses:', studyingCourses)
+    console.log("🚀 ~ CoursesPage ~ studyingCourses:", studyingCourses);
     const upcomingCourses = getCoursesByStatus(EnrollmentStatus.UPCOMING);
-    console.log('🚀 ~ CoursesPage ~ upcomingCourses:', upcomingCourses)
+    console.log("🚀 ~ CoursesPage ~ upcomingCourses:", upcomingCourses);
     const doneCourses = getCoursesByStatus(EnrollmentStatus.DONE);
-    console.log('🚀 ~ CoursesPage ~ doneCourses:', doneCourses)
+    console.log("🚀 ~ CoursesPage ~ doneCourses:", doneCourses);
 
     const renderCourseGrid = (courses: typeof enrolledCourses, emptyMessage: string) => {
         if (courses.length === 0) {
@@ -49,10 +50,9 @@ const CoursesPage = () => {
 
     if (isLoading) {
         return (
-            <div className="p-4 w-full flex items-center justify-center min-h-[400px]">
+            <div className="p-4 size-full flex items-center justify-center">
                 <div className="flex flex-col items-center gap-4">
-                    <Loader2 className="w-8 h-8 animate-spin text-primary" />
-                    <p className="text-muted-foreground">Loading your courses...</p>
+                    <Loader />
                 </div>
             </div>
         );
