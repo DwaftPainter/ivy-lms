@@ -50,7 +50,18 @@ export const MESSAGES = {
     },
 
     teacher: {
-        createSuccess: "Teacher created successfully"
+        createSuccess: "Teacher created successfully",
+        dashboardSuccess: "Teacher dashboard data retrieved successfully",
+        notFound: "Teacher not found",
+        accessDenied: "Access denied. Teachers only.",
+        gradingSuccess: "Assignment graded successfully",
+        commentAdded: "Comment added successfully",
+        classSessionCreated: "Class session created successfully",
+        classSessionUpdated: "Class session updated successfully",
+        classSessionDeleted: "Class session deleted successfully",
+        attendanceUpdated: "Attendance updated successfully",
+        submissionNotFound: "Submission not found or access denied",
+        assignmentNotFound: "Assignment not found or access denied"
     },
 
     enrollment: {

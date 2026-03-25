@@ -13,15 +13,16 @@ import { Calendar, BookOpen, ClipboardList, FileText, Loader2, CheckCircle, Aler
 import { SubmissionStatus } from "@/generated/prisma/enums";
 
 // Dynamic import FullCalendar to avoid SSR issues
-const FullCalendar = dynamic(
-    () => import("@fullcalendar/react").then((mod) => mod.default),
-    { ssr: false, loading: () => <div className="h-[500px] flex items-center justify-center">Loading Calendar...</div> }
-);
+const FullCalendar = dynamic(() => import("@fullcalendar/react").then((mod) => mod.default), {
+    ssr: false,
+    loading: () => <div className="h-[500px] flex items-center justify-center">Loading Calendar...</div>
+});
 
 // Import FullCalendar plugins
 import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin from "@fullcalendar/interaction";
+import Loader from "@/components/custom-ui/loader";
 
 const ExtensionPage = () => {
     const [activeTab, setActiveTab] = useState("schedule");
@@ -45,10 +46,10 @@ const ExtensionPage = () => {
         end: `${lesson.date}T${lesson.endTime}`,
         extendedProps: {
             type: lesson.type,
-            instructor: lesson.instructor,
+            instructor: lesson.instructor
         },
         backgroundColor: getEventColor(lesson.type),
-        borderColor: getEventColor(lesson.type),
+        borderColor: getEventColor(lesson.type)
     }));
 
     function getEventColor(type: string) {
@@ -69,7 +70,9 @@ const ExtensionPage = () => {
     }
 
     const handleEventClick = (info: any) => {
-        alert(`Lesson: ${info.event.title}\nType: ${info.event.extendedProps.type}\nInstructor: ${info.event.extendedProps.instructor}`);
+        alert(
+            `Lesson: ${info.event.title}\nType: ${info.event.extendedProps.type}\nInstructor: ${info.event.extendedProps.instructor}`
+        );
     };
 
     const getStatusIcon = (status: SubmissionStatus) => {
@@ -110,10 +113,9 @@ const ExtensionPage = () => {
 
     if (isLoading) {
         return (
-            <div className="p-4 w-full flex items-center justify-center min-h-[400px]">
+            <div className="p-4 size-full flex items-center justify-center">
                 <div className="flex flex-col items-center gap-4">
-                    <Loader2 className="w-8 h-8 animate-spin text-primary" />
-                    <p className="text-muted-foreground">Loading extension...</p>
+                    <Loader />
                 </div>
             </div>
         );
@@ -122,18 +124,18 @@ const ExtensionPage = () => {
     // Group assignments by course
     const assignmentsByCourse = enrolledCourses.map((course) => ({
         ...course,
-        assignments: assignments.filter(a => a.course.id === course.id)
+        assignments: assignments.filter((a) => a.course.id === course.id)
     }));
 
     return (
         <div className="p-4 w-full">
-            {/* Header */}
+            {/* Header
             <div className="mb-6">
                 <h1 className="text-2xl font-bold text-foreground">Extension</h1>
                 <p className="text-muted-foreground mt-1">
                     Access your schedule, classes, assignments, and materials
                 </p>
-            </div>
+            </div> */}
 
             {/* Tabs */}
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
@@ -165,9 +167,7 @@ const ExtensionPage = () => {
                     <Card className="p-6 shadow-none border rounded-[12px]">
                         <div className="mb-4 flex items-center justify-between">
                             <div>
-                                <h2 className="text-lg font-semibold text-foreground">
-                                    Lesson Schedule
-                                </h2>
+                                <h2 className="text-lg font-semibold text-foreground">Lesson Schedule</h2>
                                 <p className="text-sm text-muted-foreground">
                                     View your upcoming lessons and events
                                 </p>
@@ -199,7 +199,7 @@ const ExtensionPage = () => {
                                     headerToolbar={{
                                         left: "prev,next today",
                                         center: "title",
-                                        right: "dayGridMonth,timeGridWeek,timeGridDay",
+                                        right: "dayGridMonth,timeGridWeek,timeGridDay"
                                     }}
                                     events={calendarEvents}
                                     eventClick={handleEventClick}
@@ -213,7 +213,7 @@ const ExtensionPage = () => {
                                     eventTimeFormat={{
                                         hour: "2-digit",
                                         minute: "2-digit",
-                                        hour12: false,
+                                        hour12: false
                                     }}
                                 />
                             )}
@@ -239,7 +239,9 @@ const ExtensionPage = () => {
                                         <h3 className="font-semibold text-foreground">{cls.title}</h3>
                                         <p className="text-sm text-muted-foreground">{cls.course}</p>
                                         <div className="mt-2 flex items-center gap-4 text-sm text-muted-foreground">
-                                            <span>{cls.date} ({cls.day})</span>
+                                            <span>
+                                                {cls.date} ({cls.day})
+                                            </span>
                                             <span>{cls.time}</span>
                                             <span>{cls.instructor}</span>
                                         </div>
@@ -256,7 +258,11 @@ const ExtensionPage = () => {
                         <div className="flex items-center justify-between mb-6">
                             <h2 className="text-lg font-semibold text-foreground">All Assignments</h2>
                             <div className="text-sm text-muted-foreground">
-                                Total: {assignments.length} | Pending: {assignments.filter(a => a.submissionStatus === SubmissionStatus.PENDING).length}
+                                Total: {assignments.length} | Pending:{" "}
+                                {
+                                    assignments.filter((a) => a.submissionStatus === SubmissionStatus.PENDING)
+                                        .length
+                                }
                             </div>
                         </div>
 
@@ -268,12 +274,17 @@ const ExtensionPage = () => {
                         ) : (
                             <div className="space-y-6">
                                 {assignmentsByCourse.map((course) => (
-                                    <div key={course.id} className="border border-border/50 rounded-lg overflow-hidden">
+                                    <div
+                                        key={course.id}
+                                        className="border border-border/50 rounded-lg overflow-hidden"
+                                    >
                                         <div className="bg-muted/50 px-4 py-3 border-b border-border/50">
                                             <h3 className="font-semibold text-foreground">{course.title}</h3>
                                             <div className="flex items-center gap-4 text-sm text-muted-foreground mt-1">
                                                 <span>Status: {course.status}</span>
-                                                <span>Progress: {course.progress?.completionPercentage || 0}%</span>
+                                                <span>
+                                                    Progress: {course.progress?.completionPercentage || 0}%
+                                                </span>
                                             </div>
                                         </div>
 
@@ -284,7 +295,9 @@ const ExtensionPage = () => {
                                                 </div>
                                             ) : (
                                                 course.assignments.map((assignment) => {
-                                                    const statusStyle = getStatusText(assignment.submissionStatus);
+                                                    const statusStyle = getStatusText(
+                                                        assignment.submissionStatus
+                                                    );
                                                     return (
                                                         <div
                                                             key={assignment.id}
@@ -292,10 +305,16 @@ const ExtensionPage = () => {
                                                         >
                                                             <div className="flex-1">
                                                                 <div className="flex items-center gap-2">
-                                                                    <h4 className="font-medium text-foreground">{assignment.title}</h4>
-                                                                    {assignment.isOverdue && assignment.submissionStatus === SubmissionStatus.PENDING && (
-                                                                        <span className="text-xs bg-red-100 text-red-700 px-2 py-0.5 rounded">Overdue</span>
-                                                                    )}
+                                                                    <h4 className="font-medium text-foreground">
+                                                                        {assignment.title}
+                                                                    </h4>
+                                                                    {assignment.isOverdue &&
+                                                                        assignment.submissionStatus ===
+                                                                            SubmissionStatus.PENDING && (
+                                                                            <span className="text-xs bg-red-100 text-red-700 px-2 py-0.5 rounded">
+                                                                                Overdue
+                                                                            </span>
+                                                                        )}
                                                                 </div>
                                                                 <div className="mt-2 flex items-center gap-2">
                                                                     <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded">
@@ -311,19 +330,27 @@ const ExtensionPage = () => {
                                                             </div>
 
                                                             <div className="text-right space-y-2">
-                                                                <span className={`inline-flex items-center gap-1 text-xs px-2 py-1 rounded ${statusStyle.class}`}>
-                                                                    {getStatusIcon(assignment.submissionStatus)}
+                                                                <span
+                                                                    className={`inline-flex items-center gap-1 text-xs px-2 py-1 rounded ${statusStyle.class}`}
+                                                                >
+                                                                    {getStatusIcon(
+                                                                        assignment.submissionStatus
+                                                                    )}
                                                                     {statusStyle.text}
                                                                 </span>
                                                                 {assignment.submission?.score && (
                                                                     <p className="text-sm font-medium">
-                                                                        Score: {assignment.submission.score}/{assignment.maxScore}
+                                                                        Score: {assignment.submission.score}/
+                                                                        {assignment.maxScore}
                                                                     </p>
                                                                 )}
-                                                                {assignment.submissionStatus === SubmissionStatus.PENDING && (
+                                                                {assignment.submissionStatus ===
+                                                                    SubmissionStatus.PENDING && (
                                                                     <Button
                                                                         size="sm"
-                                                                        onClick={() => window.location.href = `/student/assignments/${assignment.id}`}
+                                                                        onClick={() =>
+                                                                            (window.location.href = `/student/assignments/${assignment.id}`)
+                                                                        }
                                                                     >
                                                                         Start
                                                                     </Button>
@@ -346,22 +373,29 @@ const ExtensionPage = () => {
                     <Card className="p-6 shadow-none border rounded-[12px]">
                         <h2 className="text-lg font-semibold text-foreground mb-6">Course Progress</h2>
                         {enrolledCourses.length === 0 ? (
-                            <div className="text-center py-10 text-muted-foreground">
-                                No enrolled courses
-                            </div>
+                            <div className="text-center py-10 text-muted-foreground">No enrolled courses</div>
                         ) : (
                             <div className="space-y-6">
                                 {enrolledCourses.map((course) => {
                                     const progress = course.progress?.completionPercentage || 0;
                                     return (
-                                        <div key={course.id} className="border border-border/50 rounded-lg p-4">
+                                        <div
+                                            key={course.id}
+                                            className="border border-border/50 rounded-lg p-4"
+                                        >
                                             <div className="flex items-center justify-between mb-2">
-                                                <h3 className="font-semibold text-foreground">{course.title}</h3>
-                                                <span className={`text-sm px-2 py-1 rounded ${
-                                                    course.status === "STUDYING" ? "bg-emerald-100 text-emerald-700" :
-                                                    course.status === "DONE" ? "bg-blue-100 text-blue-700" :
-                                                    "bg-amber-100 text-amber-700"
-                                                }`}>
+                                                <h3 className="font-semibold text-foreground">
+                                                    {course.title}
+                                                </h3>
+                                                <span
+                                                    className={`text-sm px-2 py-1 rounded ${
+                                                        course.status === "STUDYING"
+                                                            ? "bg-emerald-100 text-emerald-700"
+                                                            : course.status === "DONE"
+                                                              ? "bg-blue-100 text-blue-700"
+                                                              : "bg-amber-100 text-amber-700"
+                                                    }`}
+                                                >
                                                     {course.status}
                                                 </span>
                                             </div>
@@ -381,15 +415,19 @@ const ExtensionPage = () => {
 
                                             <div className="mt-4 grid grid-cols-2 gap-4">
                                                 <div>
-                                                    <p className="text-sm text-muted-foreground">Assignments</p>
+                                                    <p className="text-sm text-muted-foreground">
+                                                        Assignments
+                                                    </p>
                                                     <p className="font-medium">
-                                                        {course.progress?.completedAssignments || 0} / {course.progress?.totalAssignments || 0}
+                                                        {course.progress?.completedAssignments || 0} /{" "}
+                                                        {course.progress?.totalAssignments || 0}
                                                     </p>
                                                 </div>
                                                 <div>
                                                     <p className="text-sm text-muted-foreground">Lessons</p>
                                                     <p className="font-medium">
-                                                        {course.progress?.completedSessions || 0} / {course.progress?.totalSessions || 0}
+                                                        {course.progress?.completedSessions || 0} /{" "}
+                                                        {course.progress?.totalSessions || 0}
                                                     </p>
                                                 </div>
                                             </div>
