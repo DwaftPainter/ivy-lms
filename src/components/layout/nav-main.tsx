@@ -1,5 +1,6 @@
 "use client";
 
+import { usePathname } from "next/navigation";
 import { ChevronRight, type LucideIcon } from "lucide-react";
 
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
@@ -15,6 +16,16 @@ import {
 } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
 
+function isLinkActive(pathname: string, url: string): boolean {
+    if (url === "#" || !url) return false;
+
+    if (pathname === url) return true;
+
+    if (url !== "/" && pathname.startsWith(url)) return true;
+
+    return false;
+}
+
 export function NavMain({
     items
 }: {
@@ -29,15 +40,19 @@ export function NavMain({
         }[];
     }[];
 }) {
+    const pathname = usePathname();
     return (
         <SidebarGroup>
             <SidebarMenu>
-                {items.map((item) =>
-                    item.items && item.items.length > 0 ? (
+                {items.map((item) => {
+                    const itemIsActive = item.isActive ?? isLinkActive(pathname, item.url);
+                    const hasActiveChild = item.items?.some((subItem) => isLinkActive(pathname, subItem.url)) ?? false;
+
+                    return item.items && item.items.length > 0 ? (
                         <Collapsible
                             key={item.title}
                             asChild
-                            defaultOpen={item.isActive}
+                            defaultOpen={itemIsActive || hasActiveChild}
                             className="group/collapsible"
                         >
                             <SidebarMenuItem>
@@ -46,7 +61,7 @@ export function NavMain({
                                         tooltip={item.title}
                                         className={cn(
                                             "transition-colors",
-                                            item.isActive && "bg-muted text-primary font-semibold"
+                                            (itemIsActive || hasActiveChild) && "bg-muted text-primary font-semibold"
                                         )}
                                     >
                                         {item.icon && (
@@ -64,24 +79,35 @@ export function NavMain({
                                 </CollapsibleTrigger>
                                 <CollapsibleContent>
                                     <SidebarMenuSub>
-                                        {item.items.map((subItem) => (
-                                            <SidebarMenuSubItem key={subItem.title}>
-                                                <SidebarMenuSubButton asChild>
-                                                    <a href={subItem.url}>
-                                                        <span className="font-[550] text-[13px] text-text-primary">
-                                                            {subItem.title}
-                                                        </span>
-                                                    </a>
-                                                </SidebarMenuSubButton>
-                                            </SidebarMenuSubItem>
-                                        ))}
+                                        {item.items.map((subItem) => {
+                                            const subItemIsActive = isLinkActive(pathname, subItem.url);
+
+                                            return (
+                                                <SidebarMenuSubItem key={subItem.title}>
+                                                    <SidebarMenuSubButton
+                                                        asChild
+                                                        className={cn(subItemIsActive && "bg-muted text-primary font-semibold")}
+                                                    >
+                                                        <a href={subItem.url}>
+                                                            <span className="font-[550] text-[13px] text-text-primary">
+                                                                {subItem.title}
+                                                            </span>
+                                                        </a>
+                                                    </SidebarMenuSubButton>
+                                                </SidebarMenuSubItem>
+                                            );
+                                        })}
                                     </SidebarMenuSub>
                                 </CollapsibleContent>
                             </SidebarMenuItem>
                         </Collapsible>
                     ) : (
                         <SidebarMenuItem key={item.title}>
-                            <SidebarMenuButton asChild tooltip={item.title}>
+                            <SidebarMenuButton
+                                asChild
+                                tooltip={item.title}
+                                className={cn("transition-colors", itemIsActive && "bg-muted text-primary font-semibold")}
+                            >
                                 <a href={item.url}>
                                     {item.icon && (
                                         <item.icon
@@ -96,8 +122,8 @@ export function NavMain({
                                 </a>
                             </SidebarMenuButton>
                         </SidebarMenuItem>
-                    )
-                )}
+                    );
+                })}
             </SidebarMenu>
         </SidebarGroup>
     );
