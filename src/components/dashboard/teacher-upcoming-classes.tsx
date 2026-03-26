@@ -1,15 +1,43 @@
 "use client";
 
 import { Card } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { TeacherClassItem } from "@/store/teacher-class.store";
 import { Clock, Users, CalendarDays } from "lucide-react";
 
 interface TeacherUpcomingClassesProps {
     classes: Array<TeacherClassItem>;
+    isLoading?: boolean;
 }
 
-export function TeacherUpcomingClasses({ classes = [] }: TeacherUpcomingClassesProps) {
+export function TeacherUpcomingClasses({ classes = [], isLoading = false }: TeacherUpcomingClassesProps) {
     const isEmpty = classes.length === 0;
+
+    if (isLoading) {
+        return (
+            <Card className="p-6 shadow-none border rounded-[12px]">
+                <Skeleton className="h-6 w-40 mb-6" />
+                <div className="space-y-4">
+                    {[1, 2, 3].map((i) => (
+                        <div key={i} className="pb-4 border-b border-border last:border-0 last:pb-0">
+                            <div className="flex gap-5 items-start">
+                                <Skeleton className="w-16 h-16 rounded-lg shrink-0" />
+                                <div className="flex-1 min-w-0 space-y-2">
+                                    <Skeleton className="h-5 w-32" />
+                                    <Skeleton className="h-4 w-48" />
+                                    <Skeleton className="h-6 w-16 rounded-md" />
+                                </div>
+                                <div className="text-right space-y-2 shrink-0">
+                                    <Skeleton className="h-4 w-24" />
+                                    <Skeleton className="h-4 w-20" />
+                                </div>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </Card>
+        );
+    }
 
     return (
         <Card className="p-6 shadow-none border rounded-[12px]">

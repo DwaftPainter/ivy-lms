@@ -191,7 +191,7 @@ const ExtensionPage = () => {
                             </div>
                         </div>
 
-                        <div className="h-[600px]">
+                        <div className="h-150">
                             {typeof window !== "undefined" && (
                                 <FullCalendar
                                     plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
