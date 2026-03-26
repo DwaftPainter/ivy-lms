@@ -10,7 +10,6 @@ import { useEffect } from "react";
 const Dashboard = () => {
     const { user } = useAuthStore();
     const { classes, isLoading: classesLoading, fetchClasses } = useClassStore();
-    console.log('🚀 ~ Dashboard ~ classes:', classes)
     const { enrolledCourses, fetchEnrolledCourses, isLoading: enrollmentsLoading } = useEnrollmentStore();
 
     useEffect(() => {
@@ -18,9 +17,9 @@ const Dashboard = () => {
         fetchClasses()
     }, [fetchEnrolledCourses]);
 
-    const studyingCount = enrolledCourses.filter(c => c.status === "STUDYING").length;
-    const upcomingCount = enrolledCourses.filter(c => c.status === "UPCOMING").length;
-    const doneCount = enrolledCourses.filter(c => c.status === "DONE").length;
+    // const studyingCount = enrolledCourses.filter(c => c.status === "STUDYING").length;
+    // const upcomingCount = enrolledCourses.filter(c => c.status === "UPCOMING").length;
+    // const doneCount = enrolledCourses.filter(c => c.status === "DONE").length;
 
     return (
         <div className="p-4 w-full space-y-6">
@@ -38,7 +37,7 @@ const Dashboard = () => {
 
             {/* Content Grid */}
             <div className="space-y-6 w-full">
-                <UpcomingClasses classes={classes} />
+                <UpcomingClasses classes={classes} isLoading={classesLoading}/>
                 <UpcomingAssignments />
             </div>
         </div>

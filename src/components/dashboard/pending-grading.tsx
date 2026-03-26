@@ -2,17 +2,42 @@
 
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { PendingGradingItem } from "@/store/grading.store";
 import { ClipboardCheck, Calendar, Users } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 interface PendingGradingProps {
     items?: PendingGradingItem[];
+    isLoading?: boolean;
 }
 
-export function PendingGrading({ items = [] }: PendingGradingProps) {
+export function PendingGrading({ items = [], isLoading = false }: PendingGradingProps) {
     const router = useRouter();
     const isEmpty = items.length === 0;
+
+    if (isLoading) {
+        return (
+            <Card className="p-6 shadow-none border rounded-[12px]">
+                <Skeleton className="h-6 w-40 mb-6" />
+                <div className="space-y-4">
+                    {[1, 2].map((i) => (
+                        <div key={i} className="bg-secondary rounded-lg p-6 flex items-center justify-between border border-border/50">
+                            <div className="flex-1 space-y-3">
+                                <Skeleton className="h-4 w-24" />
+                                <Skeleton className="h-5 w-48" />
+                                <div className="flex flex-wrap items-center gap-3">
+                                    <Skeleton className="h-7 w-32 rounded-md" />
+                                    <Skeleton className="h-7 w-24 rounded-md" />
+                                </div>
+                            </div>
+                            <Skeleton className="h-9 w-32 rounded-md ml-6 shrink-0" />
+                        </div>
+                    ))}
+                </div>
+            </Card>
+        );
+    }
 
     const handleGradeClick = (assignmentId: string) => {
         router.push(`/teacher/assignments/${assignmentId}/grade`);
