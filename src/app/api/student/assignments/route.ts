@@ -42,14 +42,26 @@ export async function GET(req: NextRequest) {
 
         if (enrolledCourseIds.length === 0) {
             return NextResponse.json(
-                { success: true, data: [] },
+                {
+                    success: true,
+                    data: {
+                        assignments: [],
+                        progressStats: [],
+                        summary: {
+                            total: 0,
+                            pending: 0,
+                            submitted: 0,
+                            graded: 0
+                        }
+                    }
+                },
                 { status: StatusCodes.OK }
             );
         }
 
         const { searchParams } = new URL(req.url);
         const status = searchParams.get("status");
-        const courseId = searchParams.get("courseId");
+        const filterCourseId = searchParams.get("courseId"); // renamed to avoid shadowing the .map() param below
 
         // Build where clause
         const where: any = {
@@ -57,8 +69,8 @@ export async function GET(req: NextRequest) {
             isPublished: true
         };
 
-        if (courseId && enrolledCourseIds.includes(courseId)) {
-            where.courseId = courseId;
+        if (filterCourseId && enrolledCourseIds.includes(filterCourseId)) {
+            where.courseId = filterCourseId;
         }
 
         // Get assignments with their submission status
@@ -121,19 +133,23 @@ export async function GET(req: NextRequest) {
                 instructions: assignment.instructions,
                 attachmentUrl: assignment.attachmentUrl,
                 isOverdue: isOverdue && !submission,
-                submission: submission ? {
-                    id: submission.id,
-                    status: submission.status,
-                    submittedAt: submission.submittedAt,
-                    gradedAt: submission.gradedAt,
-                    score: submission.score,
-                    bandScore: submission.bandScore,
-                    feedback: submission.feedback
-                } : null,
-                rubric: assignment.rubric ? {
-                    id: assignment.rubric.id,
-                    criteria: assignment.rubric.criteria
-                } : null,
+                submission: submission
+                    ? {
+                          id: submission.id,
+                          status: submission.status,
+                          submittedAt: submission.submittedAt,
+                          gradedAt: submission.gradedAt,
+                          score: submission.score,
+                          bandScore: submission.bandScore,
+                          feedback: submission.feedback
+                      }
+                    : null,
+                rubric: assignment.rubric
+                    ? {
+                          id: assignment.rubric.id,
+                          criteria: assignment.rubric.criteria
+                      }
+                    : null,
                 submissionStatus: submission?.status || SubmissionStatus.PENDING
             };
         });
@@ -142,22 +158,21 @@ export async function GET(req: NextRequest) {
         let filteredAssignments = formattedAssignments;
         if (status) {
             const statusMap: Record<string, string> = {
-                "pending": SubmissionStatus.PENDING,
-                "submitted": SubmissionStatus.SUBMITTED,
-                "graded": SubmissionStatus.GRADED,
-                "returned": SubmissionStatus.RETURNED
+                pending: SubmissionStatus.PENDING,
+                submitted: SubmissionStatus.SUBMITTED,
+                graded: SubmissionStatus.GRADED,
+                returned: SubmissionStatus.RETURNED
             };
             const targetStatus = statusMap[status.toLowerCase()];
             if (targetStatus) {
-                filteredAssignments = formattedAssignments.filter(
-                    a => a.submissionStatus === targetStatus
-                );
+                filteredAssignments = formattedAssignments.filter((a) => a.submissionStatus === targetStatus);
             }
         }
 
         // Calculate progress stats for enrolled courses
         const progressStats = await Promise.all(
             enrolledCourseIds.map(async (courseId) => {
+                // courseId here is the .map() param, no longer shadows anything
                 const [totalAssignments, completedSubmissions] = await Promise.all([
                     prisma.assignment.count({
                         where: { courseId, isPublished: true }
@@ -166,7 +181,13 @@ export async function GET(req: NextRequest) {
                         where: {
                             studentId: studentProfile.id,
                             assignment: { courseId },
-                            status: { in: [SubmissionStatus.SUBMITTED, SubmissionStatus.GRADED, SubmissionStatus.RETURNED] }
+                            status: {
+                                in: [
+                                    SubmissionStatus.SUBMITTED,
+                                    SubmissionStatus.GRADED,
+                                    SubmissionStatus.RETURNED
+                                ]
+                            }
                         }
                     })
                 ]);
@@ -175,28 +196,37 @@ export async function GET(req: NextRequest) {
                     courseId,
                     totalAssignments,
                     completedSubmissions,
-                    progressPercentage: totalAssignments > 0
-                        ? Math.round((completedSubmissions / totalAssignments) * 100)
-                        : 0
+                    progressPercentage:
+                        totalAssignments > 0 ? Math.round((completedSubmissions / totalAssignments) * 100) : 0
                 };
             })
         );
 
         // Auto-update enrollment status based on progress
         for (const enrollment of studentProfile.enrollments) {
-            const courseProgress = progressStats.find(p => p.courseId === enrollment.courseId);
+            const courseProgress = progressStats.find((p) => p.courseId === enrollment.courseId);
             if (courseProgress && enrollment.status !== "DONE") {
                 // If progress is > 0, mark as STUDYING
                 if (courseProgress.progressPercentage > 0 && enrollment.status === "UPCOMING") {
                     await prisma.enrollment.update({
-                        where: { studentId_courseId: { studentId: studentProfile.id, courseId: enrollment.courseId } },
+                        where: {
+                            studentId_courseId: {
+                                studentId: studentProfile.id,
+                                courseId: enrollment.courseId
+                            }
+                        },
                         data: { status: "STUDYING" }
                     });
                 }
                 // If all assignments completed, mark as DONE
                 if (courseProgress.progressPercentage === 100) {
                     await prisma.enrollment.update({
-                        where: { studentId_courseId: { studentId: studentProfile.id, courseId: enrollment.courseId } },
+                        where: {
+                            studentId_courseId: {
+                                studentId: studentProfile.id,
+                                courseId: enrollment.courseId
+                            }
+                        },
                         data: {
                             status: "DONE",
                             completedAt: new Date()
@@ -214,9 +244,17 @@ export async function GET(req: NextRequest) {
                     progressStats,
                     summary: {
                         total: filteredAssignments.length,
-                        pending: filteredAssignments.filter(a => a.submissionStatus === SubmissionStatus.PENDING).length,
-                        submitted: filteredAssignments.filter(a => a.submissionStatus === SubmissionStatus.SUBMITTED).length,
-                        graded: filteredAssignments.filter(a => [SubmissionStatus.GRADED, SubmissionStatus.RETURNED].includes(a.submissionStatus as any)).length
+                        pending: filteredAssignments.filter(
+                            (a) => a.submissionStatus === SubmissionStatus.PENDING
+                        ).length,
+                        submitted: filteredAssignments.filter(
+                            (a) => a.submissionStatus === SubmissionStatus.SUBMITTED
+                        ).length,
+                        graded: filteredAssignments.filter((a) =>
+                            [SubmissionStatus.GRADED, SubmissionStatus.RETURNED].includes(
+                                a.submissionStatus as any
+                            )
+                        ).length
                     }
                 }
             },
