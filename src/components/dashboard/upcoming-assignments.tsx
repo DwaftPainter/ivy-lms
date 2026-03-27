@@ -16,7 +16,7 @@ export function UpcomingAssignments() {
 
     // Filter pending assignments that are not overdue
     const upcomingAssignments = assignments
-        .filter(a => a.submissionStatus === SubmissionStatus.PENDING && !a.isOverdue)
+        .filter((a) => a.submissionStatus === SubmissionStatus.PENDING && !a.isOverdue)
         .slice(0, 5); // Show top 5
 
     const isEmpty = upcomingAssignments.length === 0;
@@ -49,9 +49,7 @@ export function UpcomingAssignments() {
     return (
         <Card className="p-6 shadow-none border rounded-[12px]">
             <div className="flex items-center justify-between mb-6">
-                <h2 className="text-lg font-semibold text-foreground">
-                    Upcoming Assignments
-                </h2>
+                <h2 className="text-lg font-semibold text-foreground">Upcoming Assignments</h2>
                 {!isEmpty && (
                     <span className="text-sm text-muted-foreground">
                         {upcomingAssignments.length} pending
@@ -70,12 +68,8 @@ export function UpcomingAssignments() {
             ) : isEmpty ? (
                 <div className="flex flex-col items-center justify-center text-center py-10">
                     <ClipboardList className="w-12 h-12 text-muted-foreground mb-6" />
-                    <p className="text-sm font-medium text-foreground">
-                        No assignments yet
-                    </p>
-                    <p className="text-xs text-muted-foreground mt-1">
-                        You're all caught up!
-                    </p>
+                    <p className="text-sm font-medium text-foreground">No assignments yet</p>
+                    <p className="text-xs text-muted-foreground mt-1">You're all caught up!</p>
                 </div>
             ) : (
                 <div className="space-y-4">
@@ -102,7 +96,7 @@ export function UpcomingAssignments() {
                                         <Calendar className="w-4 h-4" />
                                         {formatDueDate(assignment.dueDate)}
                                     </div>
-                                        {/* <span className="text-xs bg-secondary-foreground/10 text-secondary-foreground px-2 py-1 rounded">
+                                    {/* <span className="text-xs bg-secondary-foreground/10 text-secondary-foreground px-2 py-1 rounded">
                                             {assignment.skill}
                                         </span> */}
                                 </div>
@@ -111,7 +105,9 @@ export function UpcomingAssignments() {
                             <Button
                                 className="bg-primary hover:bg-primary/90 text-white font-medium ml-6 shrink-0"
                                 size="sm"
-                                onClick={() => window.location.href = `/student/assignments/${assignment.id}`}
+                                onClick={() =>
+                                    (window.location.href = `/student/assignments/${assignment.id}`)
+                                }
                             >
                                 Finish Now
                             </Button>
