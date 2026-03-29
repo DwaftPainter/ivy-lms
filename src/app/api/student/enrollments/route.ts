@@ -140,9 +140,7 @@ export async function GET(req: NextRequest) {
         const status = searchParams.get("status") as EnrollmentStatus | null;
 
         // Build where clause
-        const where: any = {
-            studentId: studentProfile.id
-        };
+        const where: any = { studentId: studentProfile.id };
 
         if (status && Object.values(EnrollmentStatus).includes(status)) {
             where.status = status;
@@ -173,7 +171,8 @@ export async function GET(req: NextRequest) {
                         _count: {
                             select: {
                                 lessons: true,
-                                assignments: true
+                                // assignments removed — they now live on ClassSession, not Course
+                                classSessions: true
                             }
                         }
                     }
@@ -196,24 +195,30 @@ export async function GET(req: NextRequest) {
                     }
                 });
 
-                // Get completed assignments
-                const completedAssignments = await prisma.assignmentSubmission.count({
-                    where: {
-                        studentId: studentProfile.id,
-                        assignment: { courseId },
-                        status: { in: ["SUBMITTED", "GRADED", "RETURNED"] }
-                    }
-                });
+                // Get total and completed assignments via classSession → courseId
+                const [totalAssignments, completedAssignments] = await Promise.all([
+                    prisma.assignment.count({
+                        where: {
+                            classSession: { courseId },
+                            isPublished: true
+                        }
+                    }),
+                    prisma.assignmentSubmission.count({
+                        where: {
+                            studentId: studentProfile.id,
+                            assignment: { classSession: { courseId } },
+                            status: { in: ["SUBMITTED", "GRADED", "RETURNED"] }
+                        }
+                    })
+                ]);
 
                 const totalLessons = enrollment.course._count.lessons;
-                const totalAssignments = enrollment.course._count.assignments;
 
                 // Calculate completion percentage
                 const totalItems = totalLessons + totalAssignments;
                 const completedItems = completedLessons + completedAssignments;
-                const completionPercentage = totalItems > 0
-                    ? Math.round((completedItems / totalItems) * 100)
-                    : 0;
+                const completionPercentage =
+                    totalItems > 0 ? Math.round((completedItems / totalItems) * 100) : 0;
 
                 // Auto-update enrollment status based on progress
                 let currentStatus = enrollment.status;
@@ -229,10 +234,7 @@ export async function GET(req: NextRequest) {
                     currentStatus = "DONE";
                     await prisma.enrollment.update({
                         where: { id: enrollment.id },
-                        data: {
-                            status: "DONE",
-                            completedAt: new Date()
-                        }
+                        data: { status: "DONE", completedAt: new Date() }
                     });
                 }
 
@@ -240,6 +242,7 @@ export async function GET(req: NextRequest) {
                     id: enrollment.id,
                     status: currentStatus,
                     enrolledAt: enrollment.enrolledAt,
+                    courseId: enrollment.courseId,
                     completedAt: enrollment.completedAt,
                     title: enrollment.course.title,
                     description: enrollment.course.description,
@@ -250,8 +253,8 @@ export async function GET(req: NextRequest) {
                     progress: {
                         totalSessions: totalLessons,
                         completedSessions: completedLessons,
-                        totalAssignments: totalAssignments,
-                        completedAssignments: completedAssignments,
+                        totalAssignments,
+                        completedAssignments,
                         completionPercentage
                     }
                 };
@@ -259,10 +262,7 @@ export async function GET(req: NextRequest) {
         );
 
         return NextResponse.json(
-            {
-                success: true,
-                data: enrollmentsWithProgress
-            },
+            { success: true, data: enrollmentsWithProgress },
             { status: StatusCodes.OK }
         );
     } catch (error) {

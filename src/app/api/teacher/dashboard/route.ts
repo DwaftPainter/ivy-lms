@@ -67,6 +67,8 @@ import { getGreeting } from "@/lib/greeting";
  *                             type: string
  *                           courseId:
  *                             type: string
+ *                           sessionTitle:
+ *                             type: string
  *                           pendingCount:
  *                             type: integer
  *                           deadline:
@@ -100,9 +102,7 @@ export async function GET(req: NextRequest) {
         // Get user with teacher profile
         const user = await prisma.user.findUnique({
             where: { id: userId },
-            include: {
-                teacherProfile: true
-            }
+            include: { teacherProfile: true }
         });
 
         if (!user) {
@@ -112,7 +112,6 @@ export async function GET(req: NextRequest) {
             );
         }
 
-        // Verify user is a teacher
         if (user.role !== Role.TEACHER) {
             return NextResponse.json(
                 { success: false, message: "Access denied. Teachers only." },
@@ -140,101 +139,70 @@ export async function GET(req: NextRequest) {
         const upcomingClassSessions = await prisma.classSession.findMany({
             where: {
                 teacherId: teacherProfileId,
-                scheduledDate: {
-                    gte: today
-                },
+                scheduledDate: { gte: today },
                 isPublished: true
             },
             include: {
                 course: {
-                    select: {
-                        id: true,
-                        title: true,
-                        skill: true
-                    }
+                    select: { id: true, title: true, skill: true }
                 },
                 _count: {
-                    select: {
-                        attendances: true
-                    }
+                    select: { attendances: true }
                 }
             },
-            orderBy: {
-                scheduledDate: "asc"
-            },
+            orderBy: { scheduledDate: "asc" },
             take: 10
         });
 
-        // Format upcoming classes according to acceptance criteria
-        const formattedUpcomingClasses = upcomingClassSessions.map((session) => {
-            return {
-                id: session.id,
-                date: session.scheduledDate.toISOString(),
-                startTime: session.startTime,
-                endTime: session.endTime,
-                courseName: session.course.title,
-                classType: session.skill,
-                enrolledStudents: session._count.attendances
-            };
-        });
+        const formattedUpcomingClasses = upcomingClassSessions.map((session) => ({
+            id: session.id,
+            date: session.scheduledDate.toISOString(),
+            startTime: session.startTime,
+            endTime: session.endTime,
+            courseName: session.course.title,
+            classType: session.skill,
+            enrolledStudents: session._count.attendances
+        }));
 
-        // Get pending grading assignments with detailed submission info
+        // Get pending grading assignments
+        // Ownership now traverses assignment → classSession → course → teacherId
         const pendingGrading = await prisma.assignment.findMany({
             where: {
-                course: {
-                    teacherId: teacherProfileId
+                classSession: {
+                    course: { teacherId: teacherProfileId }
                 },
                 isPublished: true,
                 submissions: {
-                    some: {
-                        status: {
-                            in: [SubmissionStatus.SUBMITTED]
-                        }
-                    }
+                    some: { status: SubmissionStatus.SUBMITTED }
                 }
             },
             include: {
-                course: {
+                classSession: {
                     select: {
-                        id: true,
-                        title: true
-                    }
-                },
-                submissions: {
-                    where: {
-                        status: SubmissionStatus.SUBMITTED
-                    },
-                    select: {
-                        id: true,
-                        submittedAt: true
+                        title: true,
+                        course: {
+                            select: { id: true, title: true }
+                        }
                     }
                 },
                 _count: {
                     select: {
                         submissions: {
-                            where: {
-                                status: SubmissionStatus.SUBMITTED
-                            }
+                            where: { status: SubmissionStatus.SUBMITTED }
                         }
                     }
                 }
             },
-            orderBy: [
-                {
-                    dueDate: "asc"
-                },
-                {
-                    createdAt: "desc"
-                }
-            ]
+            orderBy: [{ dueDate: "asc" }, { createdAt: "desc" }]
         });
 
-        // Format pending grading according to acceptance criteria
         const formattedPendingGrading = pendingGrading.map((assignment) => ({
             assignmentId: assignment.id,
             title: assignment.title,
-            courseName: assignment.course.title,
-            courseId: assignment.course.id,
+            // Session title helps teachers identify which class the assignment came from
+            sessionTitle: assignment.classSession.title,
+            courseName: assignment.classSession.course.title,
+            courseId: assignment.classSession.course.id,
             pendingCount: assignment._count.submissions,
             deadline: assignment.dueDate?.toISOString() || null,
             skill: assignment.skill
@@ -242,30 +210,24 @@ export async function GET(req: NextRequest) {
 
         // Get summary stats
         const [totalCourses, totalStudents, totalSubmissionsToGrade] = await Promise.all([
-            // Total courses taught by teacher
+            // Total published courses taught by this teacher
             prisma.course.count({
-                where: {
-                    teacherId: teacherProfileId,
-                    isPublished: true
-                }
+                where: { teacherId: teacherProfileId, isPublished: true }
             }),
             // Total enrolled students across all teacher's courses
             prisma.enrollment.count({
                 where: {
-                    course: {
-                        teacherId: teacherProfileId
-                    },
-                    status: {
-                        in: ["STUDYING", "DONE"]
-                    }
+                    course: { teacherId: teacherProfileId },
+                    status: { in: ["STUDYING", "DONE"] }
                 }
             }),
             // Total submissions awaiting grading
+            // Traverses submission → assignment → classSession → course → teacherId
             prisma.assignmentSubmission.count({
                 where: {
                     assignment: {
-                        course: {
-                            teacherId: teacherProfileId
+                        classSession: {
+                            course: { teacherId: teacherProfileId }
                         }
                     },
                     status: SubmissionStatus.SUBMITTED

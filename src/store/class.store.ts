@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { apiFetch } from "@/lib/api-fetch";
+import { AttendanceStatus } from "@/generated/prisma/enums";
 
 export interface LessonResource {
     id: string;
@@ -17,6 +18,9 @@ export interface ClassItem {
     instructor: string;
     description: string | null;
     materials: LessonResource[];
+    attendanceId: string;
+    attendanceStatus: AttendanceStatus;
+    assignmentStatus: string;
 }
 
 interface ClassState {
@@ -35,10 +39,7 @@ export const useClassStore = create<ClassState>((set) => ({
     fetchClasses: async () => {
         set({ isLoading: true, error: null });
         try {
-            const response = await apiFetch<{ success: boolean; data: ClassItem[] }>(
-                "/api/student/classes"
-            );
-            console.log('🚀 ~ response:', response)
+            const response = await apiFetch<{ success: boolean; data: ClassItem[] }>("/api/student/classes");
             set({ classes: response.data, isLoading: false });
         } catch (error: any) {
             set({

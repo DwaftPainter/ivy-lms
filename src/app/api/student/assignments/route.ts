@@ -47,12 +47,7 @@ export async function GET(req: NextRequest) {
                     data: {
                         assignments: [],
                         progressStats: [],
-                        summary: {
-                            total: 0,
-                            pending: 0,
-                            submitted: 0,
-                            graded: 0
-                        }
+                        summary: { total: 0, pending: 0, submitted: 0, graded: 0 }
                     }
                 },
                 { status: StatusCodes.OK }
@@ -61,33 +56,42 @@ export async function GET(req: NextRequest) {
 
         const { searchParams } = new URL(req.url);
         const status = searchParams.get("status");
-        const filterCourseId = searchParams.get("courseId"); // renamed to avoid shadowing the .map() param below
+        const filterCourseId = searchParams.get("courseId");
 
-        // Build where clause
+        // Build where clause — scope assignments through classSession → courseId
         const where: any = {
-            courseId: { in: enrolledCourseIds },
+            classSession: {
+                courseId: { in: enrolledCourseIds }
+            },
             isPublished: true
         };
 
         if (filterCourseId && enrolledCourseIds.includes(filterCourseId)) {
-            where.courseId = filterCourseId;
+            where.classSession = { courseId: filterCourseId };
         }
 
         // Get assignments with their submission status
         const assignments = await prisma.assignment.findMany({
             where,
             include: {
-                course: {
+                classSession: {
                     select: {
                         id: true,
                         title: true,
-                        thumbnailUrl: true
+                        scheduledDate: true,
+                        startTime: true,
+                        endTime: true,
+                        course: {
+                            select: {
+                                id: true,
+                                title: true,
+                                thumbnailUrl: true
+                            }
+                        }
                     }
                 },
                 submissions: {
-                    where: {
-                        studentId: studentProfile.id
-                    },
+                    where: { studentId: studentProfile.id },
                     select: {
                         id: true,
                         status: true,
@@ -111,9 +115,7 @@ export async function GET(req: NextRequest) {
                     }
                 }
             },
-            orderBy: {
-                dueDate: "asc"
-            }
+            orderBy: { dueDate: "asc" }
         });
 
         // Format the response with progress tracking
@@ -127,7 +129,8 @@ export async function GET(req: NextRequest) {
                 description: assignment.description,
                 type: assignment.type,
                 skill: assignment.skill,
-                course: assignment.course,
+                classSession: assignment.classSession,
+                course: assignment.classSession.course,
                 dueDate: assignment.dueDate,
                 maxScore: assignment.maxScore,
                 instructions: assignment.instructions,
@@ -145,10 +148,7 @@ export async function GET(req: NextRequest) {
                       }
                     : null,
                 rubric: assignment.rubric
-                    ? {
-                          id: assignment.rubric.id,
-                          criteria: assignment.rubric.criteria
-                      }
+                    ? { id: assignment.rubric.id, criteria: assignment.rubric.criteria }
                     : null,
                 submissionStatus: submission?.status || SubmissionStatus.PENDING
             };
@@ -169,18 +169,21 @@ export async function GET(req: NextRequest) {
             }
         }
 
-        // Calculate progress stats for enrolled courses
+        // Calculate progress stats per enrolled course
+        // Assignments are now counted through classSession → courseId
         const progressStats = await Promise.all(
             enrolledCourseIds.map(async (courseId) => {
-                // courseId here is the .map() param, no longer shadows anything
                 const [totalAssignments, completedSubmissions] = await Promise.all([
                     prisma.assignment.count({
-                        where: { courseId, isPublished: true }
+                        where: {
+                            classSession: { courseId },
+                            isPublished: true
+                        }
                     }),
                     prisma.assignmentSubmission.count({
                         where: {
                             studentId: studentProfile.id,
-                            assignment: { courseId },
+                            assignment: { classSession: { courseId } },
                             status: {
                                 in: [
                                     SubmissionStatus.SUBMITTED,
@@ -206,7 +209,6 @@ export async function GET(req: NextRequest) {
         for (const enrollment of studentProfile.enrollments) {
             const courseProgress = progressStats.find((p) => p.courseId === enrollment.courseId);
             if (courseProgress && enrollment.status !== "DONE") {
-                // If progress is > 0, mark as STUDYING
                 if (courseProgress.progressPercentage > 0 && enrollment.status === "UPCOMING") {
                     await prisma.enrollment.update({
                         where: {
@@ -218,7 +220,6 @@ export async function GET(req: NextRequest) {
                         data: { status: "STUDYING" }
                     });
                 }
-                // If all assignments completed, mark as DONE
                 if (courseProgress.progressPercentage === 100) {
                     await prisma.enrollment.update({
                         where: {
@@ -227,10 +228,7 @@ export async function GET(req: NextRequest) {
                                 courseId: enrollment.courseId
                             }
                         },
-                        data: {
-                            status: "DONE",
-                            completedAt: new Date()
-                        }
+                        data: { status: "DONE", completedAt: new Date() }
                     });
                 }
             }
@@ -260,10 +258,10 @@ export async function GET(req: NextRequest) {
             },
             { status: StatusCodes.OK }
         );
-    } catch (error) {
+    } catch (error: any) {
         console.error("Get student assignments error:", error);
         return NextResponse.json(
-            { message: MESSAGES.common.serverError },
+            { message: error?.message ?? "" },
             { status: StatusCodes.INTERNAL_SERVER_ERROR }
         );
     }

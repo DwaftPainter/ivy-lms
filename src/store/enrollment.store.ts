@@ -5,6 +5,7 @@ import { EnrollmentStatus } from "@/enums/erollment.enum";
 
 export interface EnrolledCourse {
     id: string;
+    courseId: string;
     title: string;
     description: string | null;
     thumbnailUrl: string | null;

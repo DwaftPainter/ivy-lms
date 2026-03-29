@@ -71,10 +71,7 @@ import { Role } from "@/generated/prisma/enums";
  */
 
 // GET /api/teacher/submissions/[id]/comments - Get all comments for a submission
-export async function GET(
-    req: NextRequest,
-    { params }: { params: Promise<{ id: string }> }
-) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     try {
         const token = req.cookies.get("token");
 
@@ -88,12 +85,9 @@ export async function GET(
         const payload = jwt.verify(token.value, process.env.JWT_SECRET_KEY!) as any;
         const userId = payload.userId;
 
-        // Get user
         const user = await prisma.user.findUnique({
             where: { id: userId },
-            include: {
-                teacherProfile: true
-            }
+            include: { teacherProfile: true }
         });
 
         if (!user || user.role !== Role.TEACHER) {
@@ -113,13 +107,14 @@ export async function GET(
 
         const { id: submissionId } = await params;
 
-        // Verify the submission exists and belongs to this teacher
+        // Verify submission exists and belongs to this teacher
+        // submission → assignment → classSession → course → teacherId
         const submission = await prisma.assignmentSubmission.findFirst({
             where: {
                 id: submissionId,
                 assignment: {
-                    course: {
-                        teacherId: teacherProfileId
+                    classSession: {
+                        course: { teacherId: teacherProfileId }
                     }
                 }
             }
@@ -132,7 +127,6 @@ export async function GET(
             );
         }
 
-        // Get comments
         const comments = await prisma.submissionComment.findMany({
             where: { submissionId },
             include: {
@@ -159,10 +153,7 @@ export async function GET(
         }));
 
         return NextResponse.json(
-            {
-                success: true,
-                data: { comments: formattedComments }
-            },
+            { success: true, data: { comments: formattedComments } },
             { status: StatusCodes.OK }
         );
     } catch (error) {
@@ -175,10 +166,7 @@ export async function GET(
 }
 
 // POST /api/teacher/submissions/[id]/comments - Add a comment to a submission
-export async function POST(
-    req: NextRequest,
-    { params }: { params: Promise<{ id: string }> }
-) {
+export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     try {
         const token = req.cookies.get("token");
 
@@ -192,12 +180,9 @@ export async function POST(
         const payload = jwt.verify(token.value, process.env.JWT_SECRET_KEY!) as any;
         const userId = payload.userId;
 
-        // Get user
         const user = await prisma.user.findUnique({
             where: { id: userId },
-            include: {
-                teacherProfile: true
-            }
+            include: { teacherProfile: true }
         });
 
         if (!user || user.role !== Role.TEACHER) {
@@ -225,22 +210,21 @@ export async function POST(
             );
         }
 
-        // Verify the submission exists and belongs to this teacher
+        // Verify submission exists and belongs to this teacher
+        // submission → assignment → classSession → course → teacherId
         const submission = await prisma.assignmentSubmission.findFirst({
             where: {
                 id: submissionId,
                 assignment: {
-                    course: {
-                        teacherId: teacherProfileId
+                    classSession: {
+                        course: { teacherId: teacherProfileId }
                     }
                 }
             },
             include: {
                 student: {
                     include: {
-                        user: {
-                            select: { id: true }
-                        }
+                        user: { select: { id: true } }
                     }
                 }
             }
@@ -253,7 +237,6 @@ export async function POST(
             );
         }
 
-        // Create the comment
         const comment = await prisma.submissionComment.create({
             data: {
                 submissionId,
@@ -272,7 +255,6 @@ export async function POST(
             }
         });
 
-        // Create notification for the student
         await prisma.notification.create({
             data: {
                 userId: submission.student.user.id,
