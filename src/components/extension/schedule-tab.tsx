@@ -6,6 +6,7 @@ import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import { ScheduleLesson } from "@/store/schedule.store";
+import { useEffect, useState } from "react";
 
 // Dynamic import FullCalendar to avoid SSR issues
 const FullCalendar = dynamic(() => import("@fullcalendar/react").then((mod) => mod.default), {
@@ -17,7 +18,7 @@ interface ScheduleTabProps {
     lessons: ScheduleLesson[];
 }
 
-interface CalendarEventInfo {
+interface _CalendarEventInfo {
     event: {
         title: string;
         extendedProps: {
@@ -43,6 +44,13 @@ function getEventColor(type: string) {
 }
 
 export function ScheduleTab({ lessons }: ScheduleTabProps) {
+    const [isClient, setIsClient] = useState(false);
+
+    useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setIsClient(true);
+    }, []);
+
     const calendarEvents = lessons.map((lesson) => ({
         id: lesson.id,
         title: `${lesson.course} - ${lesson.title}`,
@@ -55,12 +63,6 @@ export function ScheduleTab({ lessons }: ScheduleTabProps) {
         backgroundColor: getEventColor(lesson.type),
         borderColor: getEventColor(lesson.type)
     }));
-
-    const handleEventClick = (info: CalendarEventInfo) => {
-        alert(
-            `Lesson: ${info.event.title}\nType: ${info.event.extendedProps.type}\nInstructor: ${info.event.extendedProps.instructor}`
-        );
-    };
 
     return (
         <Card className="p-6 shadow-none border rounded-[12px]">
@@ -82,14 +84,11 @@ export function ScheduleTab({ lessons }: ScheduleTabProps) {
                     <span className="flex items-center gap-1 text-xs text-muted-foreground">
                         <span className="w-3 h-3 rounded-full bg-purple-500"></span> Listening
                     </span>
-                    <span className="flex items-center gap-1 text-xs text-muted-foreground">
-                        <span className="w-3 h-3 rounded-full bg-pink-500"></span> Grammar
-                    </span>
                 </div>
             </div>
 
             <div className="h-150">
-                {typeof window !== "undefined" && (
+                {isClient && (
                     <FullCalendar
                         plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
                         initialView="dayGridMonth"
@@ -99,7 +98,6 @@ export function ScheduleTab({ lessons }: ScheduleTabProps) {
                             right: "dayGridMonth,timeGridWeek,timeGridDay"
                         }}
                         events={calendarEvents}
-                        // eventClick={handleEventClick}
                         height="100%"
                         editable={false}
                         selectable={true}
