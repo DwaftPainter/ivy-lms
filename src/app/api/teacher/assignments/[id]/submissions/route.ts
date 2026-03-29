@@ -36,10 +36,7 @@ import { SubmissionStatus, Role } from "@/generated/prisma/enums";
  */
 
 // GET /api/teacher/assignments/[id]/submissions - Get all submissions for an assignment
-export async function GET(
-    req: NextRequest,
-    { params }: { params: Promise<{ id: string }> }
-) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     try {
         const token = req.cookies.get("token");
 
@@ -56,9 +53,7 @@ export async function GET(
         // Get user with teacher profile
         const user = await prisma.user.findUnique({
             where: { id: userId },
-            include: {
-                teacherProfile: true
-            }
+            include: { teacherProfile: true }
         });
 
         if (!user || user.role !== Role.TEACHER) {
@@ -79,24 +74,30 @@ export async function GET(
         const { id: assignmentId } = await params;
 
         // Verify the assignment exists and belongs to this teacher
+        // Ownership now traverses assignment → classSession → course → teacherId
         const assignment = await prisma.assignment.findFirst({
             where: {
                 id: assignmentId,
-                course: {
-                    teacherId: teacherProfileId
+                classSession: {
+                    course: { teacherId: teacherProfileId }
                 }
             },
             include: {
-                course: {
+                classSession: {
                     select: {
+                        id: true,
                         title: true,
-                        skill: true
+                        scheduledDate: true,
+                        course: {
+                            select: {
+                                title: true,
+                                skill: true
+                            }
+                        }
                     }
                 },
                 rubric: {
-                    include: {
-                        criteria: true
-                    }
+                    include: { criteria: true }
                 }
             }
         });
@@ -110,9 +111,7 @@ export async function GET(
 
         // Get all submissions for this assignment
         const submissions = await prisma.assignmentSubmission.findMany({
-            where: {
-                assignmentId
-            },
+            where: { assignmentId },
             include: {
                 student: {
                     include: {
@@ -127,14 +126,10 @@ export async function GET(
                     }
                 },
                 criteriaScores: {
-                    include: {
-                        criterion: true
-                    }
+                    include: { criterion: true }
                 },
                 _count: {
-                    select: {
-                        comments: true
-                    }
+                    select: { comments: true }
                 }
             },
             orderBy: [
@@ -188,7 +183,9 @@ export async function GET(
                         description: assignment.description,
                         type: assignment.type,
                         skill: assignment.skill,
-                        courseName: assignment.course.title,
+                        // Surface both session context and course name for the UI
+                        classSession: assignment.classSession,
+                        courseName: assignment.classSession.course.title,
                         dueDate: assignment.dueDate?.toISOString() || null,
                         maxScore: assignment.maxScore,
                         rubric: assignment.rubric

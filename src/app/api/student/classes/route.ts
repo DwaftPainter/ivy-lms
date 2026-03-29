@@ -42,10 +42,7 @@ export async function GET(req: NextRequest) {
         const enrolledCourseIds = studentProfile.enrollments.map((e) => e.courseId);
 
         if (enrolledCourseIds.length === 0) {
-            return NextResponse.json(
-                { success: true, data: [] },
-                { status: StatusCodes.OK }
-            );
+            return NextResponse.json({ success: true, data: [] }, { status: StatusCodes.OK });
         }
 
         const today = new Date();
@@ -77,6 +74,18 @@ export async function GET(req: NextRequest) {
                         }
                     }
                 },
+                assignments: {
+                    include: {
+                        submissions: {
+                            where: {
+                                studentId: studentProfile.id
+                            },
+                            select: {
+                                status: true
+                            }
+                        }
+                    }
+                },
                 attendances: {
                     where: {
                         enrollmentId: { in: enrollmentIds }
@@ -101,8 +110,23 @@ export async function GET(req: NextRequest) {
             const date = sessionDate.getDate();
             const day = dayNames[sessionDate.getDay()];
 
-            // Get attendance status for this student
             const attendance = session.attendances[0];
+
+            const totalAssignments = session.assignments.length;
+
+            let completedAssignments = 0;
+            for (const a of session.assignments) {
+                if (a.submissions.length > 0) {
+                    completedAssignments++;
+                }
+            }
+
+            const assignmentStatus =
+                totalAssignments === 0
+                    ? null
+                    : completedAssignments === totalAssignments
+                      ? `${completedAssignments}/${totalAssignments} completed`
+                      : `${completedAssignments}/${totalAssignments} pending`;
 
             return {
                 id: session.id,
@@ -118,8 +142,11 @@ export async function GET(req: NextRequest) {
                 description: session.description,
                 meetingUrl: session.meetingUrl,
                 sessionType: session.sessionType,
+
                 attendanceStatus: attendance?.status || AttendanceStatus.SCHEDULED,
-                attendanceId: attendance?.id
+                attendanceId: attendance?.id,
+
+                assignmentStatus
             };
         });
 

@@ -64,7 +64,7 @@ function AlertDialogContent({
         {...props}
       />
     </AlertDialogPortal>
-  )
+)
 }
 
 function AlertDialogHeader({

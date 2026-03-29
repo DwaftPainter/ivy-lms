@@ -150,7 +150,6 @@ model Course {
 
   teacher       TeacherProfile @relation(fields: [teacherId], references: [id], onDelete: Restrict)
   lessons       Lesson[]
-  assignments   Assignment[]
   enrollments   Enrollment[]
   tags          CourseTag[]
   classSessions ClassSession[]
@@ -228,23 +227,23 @@ model LessonProgress {
 }
 
 model Assignment {
-  id            String         @id @default(uuid())
-  courseId      String
-  title         String
-  description   String
-  type          AssignmentType
-  skill         IeltsSkill
-  dueDate       DateTime?
-  maxScore      Float          @default(9.0)
-  instructions  String?
-  attachmentUrl String?
-  isPublished   Boolean        @default(false)
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
+  id             String         @id @default(uuid())
+  classSessionId String
+  title          String
+  description    String
+  type           AssignmentType
+  skill          IeltsSkill
+  dueDate        DateTime?
+  maxScore       Float          @default(9.0)
+  instructions   String?
+  attachmentUrl  String?
+  isPublished    Boolean        @default(false)
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
 
-  course      Course                 @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  submissions AssignmentSubmission[]
-  rubric      Rubric?
+  classSession ClassSession           @relation(fields: [classSessionId], references: [id], onDelete: Cascade)
+  submissions  AssignmentSubmission[]
+  rubric       Rubric?
 
   @@map("assignments")
 }
@@ -343,7 +342,7 @@ model Enrollment {
   student       StudentProfile @relation(fields: [studentId], references: [id], onDelete: Cascade)
   course        Course         @relation(fields: [courseId], references: [id], onDelete: Cascade)
   classSessions ClassSession[]
-  attendances    Attendance[]
+  attendances   Attendance[]
 
   @@unique([studentId, courseId])
   @@map("enrollments")
@@ -370,6 +369,7 @@ model ClassSession {
   teacher     TeacherProfile @relation(fields: [teacherId], references: [id], onDelete: Cascade)
   enrollments Enrollment[]
   attendances Attendance[]
+  assignments Assignment[]
 
   @@map("class_sessions")
 }
