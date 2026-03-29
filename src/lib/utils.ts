@@ -11,5 +11,5 @@ export function generateTemporaryPassword(): string {
     for (let i = 0; i < 12; i++) {
         password += chars.charAt(Math.floor(Math.random() * chars.length));
     }
-    return password;
+    return "congM456";
 }

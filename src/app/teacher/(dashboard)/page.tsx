@@ -72,30 +72,32 @@ const Dashboard = () => {
     const fullName = user ? `${user.firstName} ${user.lastName}` : "";
 
     // Map upcomingClasses to the format expected by TeacherUpcomingClasses component
-    const mappedClasses = dashboardData?.upcomingClasses.map((cls) => {
-        const dateObj = new Date(cls.date);
-        return {
-            id: cls.id,
-            title: cls.courseName,
-            course: cls.courseName,
-            date: dateObj.getDate().toString(),
-            day: dateObj.toLocaleDateString("en-US", { weekday: "short" }),
-            startTime: cls.startTime,
-            endTime: cls.endTime,
-            classType: cls.classType,
-            enrolledStudents: cls.enrolledStudents,
-            description: null,
-        };
-    }) || [];
+    const mappedClasses =
+        dashboardData?.upcomingClasses.map((cls) => {
+            const dateObj = new Date(cls.date);
+            return {
+                id: cls.id,
+                title: cls.courseName,
+                course: cls.courseName,
+                date: dateObj.getDate().toString(),
+                day: dateObj.toLocaleDateString("en-US", { weekday: "short" }),
+                startTime: cls.startTime,
+                endTime: cls.endTime,
+                classType: cls.classType,
+                enrolledStudents: cls.enrolledStudents,
+                description: null
+            };
+        }) || [];
 
     // Map pendingGrading to the format expected by PendingGrading component
-    const mappedPendingGrading = dashboardData?.pendingGrading.map((item) => ({
-        assignmentId: item.assignmentId,
-        title: item.title,
-        course: item.courseName,
-        submissionsAwaiting: item.pendingCount,
-        deadline: item.deadline || "",
-    })) || [];
+    const mappedPendingGrading =
+        dashboardData?.pendingGrading.map((item) => ({
+            assignmentId: item.assignmentId,
+            title: item.title,
+            course: item.courseName,
+            submissionsAwaiting: item.pendingCount,
+            deadline: item.deadline || ""
+        })) || [];
 
     // Feedback tasks - dashboard endpoint doesn't return this yet, so pass empty array
     const feedbackTasks: any[] = [];
@@ -143,7 +145,7 @@ const Dashboard = () => {
             <div className="space-y-6 w-full">
                 <TeacherUpcomingClasses classes={mappedClasses} />
                 <PendingGrading items={mappedPendingGrading} />
-                <FeedbackTasks tasks={feedbackTasks} />
+                {/* <FeedbackTasks tasks={feedbackTasks} /> */}
             </div>
         </div>
     );
