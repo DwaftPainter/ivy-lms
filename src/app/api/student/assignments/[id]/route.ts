@@ -6,10 +6,7 @@ import jwt from "jsonwebtoken";
 import { SubmissionStatus } from "@/generated/prisma/enums";
 
 // GET /api/student/assignments/[id] - Get assignment details
-export async function GET(
-    req: NextRequest,
-    { params }: { params: Promise<{ id: string }> }
-) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     try {
         const { id } = await params;
         const token = req.cookies.get("token");
@@ -43,21 +40,31 @@ export async function GET(
 
         const enrolledCourseIds = studentProfile.enrollments.map((e) => e.courseId);
 
-        // Get assignment details
+        // Get assignment details — now via classSession instead of course
         const assignment = await prisma.assignment.findUnique({
             where: { id },
             include: {
-                course: {
+                classSession: {
                     select: {
                         id: true,
+                        courseId: true,
                         title: true,
-                        thumbnailUrl: true,
-                        teacher: {
+                        scheduledDate: true,
+                        startTime: true,
+                        endTime: true,
+                        course: {
                             select: {
-                                user: {
+                                id: true,
+                                title: true,
+                                thumbnailUrl: true,
+                                teacher: {
                                     select: {
-                                        firstName: true,
-                                        lastName: true
+                                        user: {
+                                            select: {
+                                                firstName: true,
+                                                lastName: true
+                                            }
+                                        }
                                     }
                                 }
                             }
@@ -103,8 +110,11 @@ export async function GET(
             );
         }
 
-        // Check if student is enrolled in this course
-        if (!enrolledCourseIds.includes(assignment.courseId)) {
+        // Derive courseId through classSession
+        const courseId = assignment.classSession.courseId;
+
+        // Check if student is enrolled in the course this session belongs to
+        if (!enrolledCourseIds.includes(courseId)) {
             return NextResponse.json(
                 { success: false, message: "Not enrolled in this course" },
                 { status: StatusCodes.FORBIDDEN }
@@ -129,23 +139,27 @@ export async function GET(
                     attachmentUrl: assignment.attachmentUrl,
                     isPublished: assignment.isPublished,
                     createdAt: assignment.createdAt,
-                    course: assignment.course,
+                    // Expose both session context and the nested course
+                    classSession: assignment.classSession,
+                    course: assignment.classSession.course,
                     isOverdue,
                     rubric: assignment.rubric,
-                    submission: submission ? {
-                        id: submission.id,
-                        status: submission.status,
-                        content: submission.content,
-                        fileUrl: submission.fileUrl,
-                        audioUrl: submission.audioUrl,
-                        score: submission.score,
-                        bandScore: submission.bandScore,
-                        feedback: submission.feedback,
-                        submittedAt: submission.submittedAt,
-                        gradedAt: submission.gradedAt,
-                        criteriaScores: submission.criteriaScores,
-                        comments: submission.comments
-                    } : null
+                    submission: submission
+                        ? {
+                              id: submission.id,
+                              status: submission.status,
+                              content: submission.content,
+                              fileUrl: submission.fileUrl,
+                              audioUrl: submission.audioUrl,
+                              score: submission.score,
+                              bandScore: submission.bandScore,
+                              feedback: submission.feedback,
+                              submittedAt: submission.submittedAt,
+                              gradedAt: submission.gradedAt,
+                              criteriaScores: submission.criteriaScores,
+                              comments: submission.comments
+                          }
+                        : null
                 }
             },
             { status: StatusCodes.OK }
@@ -160,10 +174,7 @@ export async function GET(
 }
 
 // POST /api/student/assignments/[id] - Submit an assignment
-export async function POST(
-    req: NextRequest,
-    { params }: { params: Promise<{ id: string }> }
-) {
+export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     try {
         const { id: assignmentId } = await params;
         const token = req.cookies.get("token");
@@ -195,10 +206,14 @@ export async function POST(
             );
         }
 
-        // Get assignment details
+        // Get assignment — traverse classSession to reach courseId
         const assignment = await prisma.assignment.findUnique({
             where: { id: assignmentId },
-            include: { course: true }
+            include: {
+                classSession: {
+                    select: { courseId: true }
+                }
+            }
         });
 
         if (!assignment) {
@@ -208,8 +223,11 @@ export async function POST(
             );
         }
 
-        // Check if student is enrolled
-        const enrollment = studentProfile.enrollments.find(e => e.courseId === assignment.courseId);
+        // Derive courseId through classSession
+        const courseId = assignment.classSession.courseId;
+
+        // Check if student is enrolled in the course this session belongs to
+        const enrollment = studentProfile.enrollments.find((e) => e.courseId === courseId);
         if (!enrollment) {
             return NextResponse.json(
                 { success: false, message: "Not enrolled in this course" },
@@ -272,30 +290,36 @@ export async function POST(
                 where: {
                     studentId_courseId: {
                         studentId: studentProfile.id,
-                        courseId: assignment.courseId
+                        courseId
                     }
                 },
                 data: { status: "STUDYING" }
             });
         }
 
-        // Calculate progress for this course
+        // Calculate progress — count assignments across all sessions of this course
         const [totalAssignments, completedAssignments] = await Promise.all([
             prisma.assignment.count({
-                where: { courseId: assignment.courseId, isPublished: true }
+                where: {
+                    classSession: { courseId },
+                    isPublished: true
+                }
             }),
             prisma.assignmentSubmission.count({
                 where: {
                     studentId: studentProfile.id,
-                    assignment: { courseId: assignment.courseId },
-                    status: { in: [SubmissionStatus.SUBMITTED, SubmissionStatus.GRADED, SubmissionStatus.RETURNED] }
+                    assignment: {
+                        classSession: { courseId }
+                    },
+                    status: {
+                        in: [SubmissionStatus.SUBMITTED, SubmissionStatus.GRADED, SubmissionStatus.RETURNED]
+                    }
                 }
             })
         ]);
 
-        const progressPercentage = totalAssignments > 0
-            ? Math.round((completedAssignments / totalAssignments) * 100)
-            : 0;
+        const progressPercentage =
+            totalAssignments > 0 ? Math.round((completedAssignments / totalAssignments) * 100) : 0;
 
         // If all assignments completed, mark enrollment as DONE
         if (progressPercentage === 100 && enrollment.status !== "DONE") {
@@ -303,7 +327,7 @@ export async function POST(
                 where: {
                     studentId_courseId: {
                         studentId: studentProfile.id,
-                        courseId: assignment.courseId
+                        courseId
                     }
                 },
                 data: {

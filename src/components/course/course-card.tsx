@@ -17,7 +17,7 @@ export function CourseCard({ course }: CourseCardProps) {
         : "Unknown Instructor";
 
     return (
-        <Link href={`/courses/${course.id}`}>
+        <Link href={`/extension`}>
             <Card className="overflow-hidden border rounded-[12px] hover:shadow-lg transition-shadow cursor-pointer group">
                 {/* Thumbnail */}
                 <div className="relative h-40 bg-gradient-to-br from-primary/20 to-primary/5">

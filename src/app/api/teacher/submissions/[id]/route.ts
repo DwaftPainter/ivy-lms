@@ -83,10 +83,7 @@ import { SubmissionStatus, Role } from "@/generated/prisma/enums";
  */
 
 // GET /api/teacher/submissions/[id] - Get a specific submission
-export async function GET(
-    req: NextRequest,
-    { params }: { params: Promise<{ id: string }> }
-) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     try {
         const token = req.cookies.get("token");
 
@@ -100,12 +97,9 @@ export async function GET(
         const payload = jwt.verify(token.value, process.env.JWT_SECRET_KEY!) as any;
         const userId = payload.userId;
 
-        // Get user with teacher profile
         const user = await prisma.user.findUnique({
             where: { id: userId },
-            include: {
-                teacherProfile: true
-            }
+            include: { teacherProfile: true }
         });
 
         if (!user || user.role !== Role.TEACHER) {
@@ -125,29 +119,30 @@ export async function GET(
 
         const { id: submissionId } = await params;
 
-        // Get submission with assignment and student info
+        // Get submission — ownership via submission → assignment → classSession → course → teacherId
         const submission = await prisma.assignmentSubmission.findFirst({
             where: {
                 id: submissionId,
                 assignment: {
-                    course: {
-                        teacherId: teacherProfileId
+                    classSession: {
+                        course: { teacherId: teacherProfileId }
                     }
                 }
             },
             include: {
                 assignment: {
                     include: {
-                        course: {
+                        classSession: {
                             select: {
                                 title: true,
-                                skill: true
+                                scheduledDate: true,
+                                course: {
+                                    select: { title: true, skill: true }
+                                }
                             }
                         },
                         rubric: {
-                            include: {
-                                criteria: true
-                            }
+                            include: { criteria: true }
                         }
                     }
                 },
@@ -164,9 +159,7 @@ export async function GET(
                     }
                 },
                 criteriaScores: {
-                    include: {
-                        criterion: true
-                    }
+                    include: { criterion: true }
                 },
                 comments: {
                     include: {
@@ -179,9 +172,7 @@ export async function GET(
                             }
                         }
                     },
-                    orderBy: {
-                        createdAt: "asc"
-                    }
+                    orderBy: { createdAt: "asc" }
                 }
             }
         });
@@ -222,7 +213,9 @@ export async function GET(
                         description: submission.assignment.description,
                         type: submission.assignment.type,
                         skill: submission.assignment.skill,
-                        courseName: submission.assignment.course.title,
+                        // Course name now sourced through classSession
+                        courseName: submission.assignment.classSession.course.title,
+                        sessionTitle: submission.assignment.classSession.title,
                         dueDate: submission.assignment.dueDate?.toISOString() || null,
                         maxScore: submission.assignment.maxScore
                     },
@@ -256,10 +249,7 @@ export async function GET(
 }
 
 // PATCH /api/teacher/submissions/[id] - Grade a submission
-export async function PATCH(
-    req: NextRequest,
-    { params }: { params: Promise<{ id: string }> }
-) {
+export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     try {
         const token = req.cookies.get("token");
 
@@ -273,12 +263,9 @@ export async function PATCH(
         const payload = jwt.verify(token.value, process.env.JWT_SECRET_KEY!) as any;
         const userId = payload.userId;
 
-        // Get user with teacher profile
         const user = await prisma.user.findUnique({
             where: { id: userId },
-            include: {
-                teacherProfile: true
-            }
+            include: { teacherProfile: true }
         });
 
         if (!user || user.role !== Role.TEACHER) {
@@ -300,24 +287,20 @@ export async function PATCH(
         const body = await req.json();
         const { score, bandScore, feedback, criteriaScores } = body;
 
-        // Verify the submission exists and belongs to this teacher's course
+        // Verify submission — ownership via submission → assignment → classSession → course → teacherId
         const submission = await prisma.assignmentSubmission.findFirst({
             where: {
                 id: submissionId,
                 assignment: {
-                    course: {
-                        teacherId: teacherProfileId
+                    classSession: {
+                        course: { teacherId: teacherProfileId }
                     }
                 }
             },
             include: {
                 assignment: {
                     include: {
-                        rubric: {
-                            include: {
-                                criteria: true
-                            }
-                        }
+                        rubric: { include: { criteria: true } }
                     }
                 }
             }
@@ -330,16 +313,12 @@ export async function PATCH(
             );
         }
 
-        // Use transaction to update submission and criteria scores
+        // Use transaction to update submission and criteria scores atomically
         const updatedSubmission = await prisma.$transaction(async (tx) => {
-            // Update existing criteria scores or create new ones
             if (criteriaScores && criteriaScores.length > 0) {
                 for (const criteriaScore of criteriaScores) {
                     const existingScore = await tx.criterionScore.findFirst({
-                        where: {
-                            submissionId,
-                            criterionId: criteriaScore.criterionId
-                        }
+                        where: { submissionId, criterionId: criteriaScore.criterionId }
                     });
 
                     if (existingScore) {
@@ -359,8 +338,7 @@ export async function PATCH(
                 }
             }
 
-            // Update the submission with grades
-            return await tx.assignmentSubmission.update({
+            return tx.assignmentSubmission.update({
                 where: { id: submissionId },
                 data: {
                     score,
@@ -372,9 +350,7 @@ export async function PATCH(
                 },
                 include: {
                     criteriaScores: {
-                        include: {
-                            criterion: true
-                        }
+                        include: { criterion: true }
                     },
                     student: {
                         include: {
