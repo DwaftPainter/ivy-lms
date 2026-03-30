@@ -126,6 +126,7 @@ export function AssignmentsTab({ assignments, enrolledCourses }: AssignmentsTabP
                                                         {getStatusIcon(assignment.submissionStatus)}
                                                         {statusStyle.text}
                                                     </span>
+                                                    
                                                     {assignment.submission?.score && (
                                                         <p className="text-sm font-medium">
                                                             Score: {assignment.submission.score}/
