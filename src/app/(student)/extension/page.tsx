@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useScheduleStore } from "@/store/schedule.store";
 import { useClassStore } from "@/store/class.store";
 import { useAssignmentStore } from "@/store/assignment.store";
@@ -14,7 +15,11 @@ import { ProgressTab } from "@/components/extension/progress-tab";
 import Loader from "@/components/custom-ui/loader";
 
 const ExtensionPage = () => {
-    const [activeTab, setActiveTab] = useState("schedule");
+    const router = useRouter();
+    const searchParams = useSearchParams();
+
+    const tabFromUrl = searchParams.get("tab") || "schedule";
+    const [activeTab, setActiveTab] = useState(tabFromUrl);
     const { lessons, isLoading: scheduleLoading, fetchSchedule } = useScheduleStore();
     const { classes, fetchClasses } = useClassStore();
     const { assignments, isLoading: assignmentsLoading, fetchAssignments } = useAssignmentStore();
@@ -26,6 +31,10 @@ const ExtensionPage = () => {
         fetchAssignments();
         fetchEnrolledCourses();
     }, [fetchSchedule, fetchClasses, fetchAssignments, fetchEnrolledCourses]);
+
+    useEffect(() => {
+        setActiveTab(tabFromUrl);
+    }, [tabFromUrl]);
 
     const isLoading = scheduleLoading || assignmentsLoading;
 
@@ -42,7 +51,17 @@ const ExtensionPage = () => {
     return (
         <div className="p-4 w-full">
             {/* Tabs */}
-            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <Tabs
+                value={activeTab}
+                onValueChange={(value) => {
+                    setActiveTab(value);
+
+                    const params = new URLSearchParams(searchParams.toString());
+                    params.set("tab", value);
+
+                    router.push(`/extension?${params.toString()}`);
+                }}
+            >
                 <TabsList className="mb-6">
                     <TabsTrigger value="schedule" className="gap-2">
                         <Calendar className="w-4 h-4" />
@@ -56,10 +75,10 @@ const ExtensionPage = () => {
                         <ClipboardList className="w-4 h-4" />
                         Assignments
                     </TabsTrigger>
-                    <TabsTrigger value="progress" className="gap-2">
+                    {/* <TabsTrigger value="progress" className="gap-2">
                         <CheckCircle className="w-4 h-4" />
                         Progress
-                    </TabsTrigger>
+                    </TabsTrigger> */}
                 </TabsList>
 
                 <TabsContent value="schedule">
@@ -74,9 +93,9 @@ const ExtensionPage = () => {
                     <AssignmentsTab assignments={assignments} enrolledCourses={enrolledCourses} />
                 </TabsContent>
 
-                <TabsContent value="progress">
+                {/* <TabsContent value="progress">
                     <ProgressTab enrolledCourses={enrolledCourses} />
-                </TabsContent>
+                </TabsContent> */}
             </Tabs>
         </div>
     );
