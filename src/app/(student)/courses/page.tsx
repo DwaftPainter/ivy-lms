@@ -17,11 +17,8 @@ const CoursesPage = () => {
     }, [fetchEnrolledCourses]);
 
     const studyingCourses = getCoursesByStatus(EnrollmentStatus.STUDYING);
-    console.log("🚀 ~ CoursesPage ~ studyingCourses:", studyingCourses);
     const upcomingCourses = getCoursesByStatus(EnrollmentStatus.UPCOMING);
-    console.log("🚀 ~ CoursesPage ~ upcomingCourses:", upcomingCourses);
     const doneCourses = getCoursesByStatus(EnrollmentStatus.DONE);
-    console.log("🚀 ~ CoursesPage ~ doneCourses:", doneCourses);
 
     const renderCourseGrid = (courses: typeof enrolledCourses, emptyMessage: string) => {
         if (courses.length === 0) {
