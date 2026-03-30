@@ -67,23 +67,16 @@ export function AssignmentsTab({ assignments, enrolledCourses }: AssignmentsTabP
             </div>
 
             {assignmentsByCourse.length === 0 ? (
-                <div className="text-center py-10 text-muted-foreground">
-                    No assignments available
-                </div>
+                <div className="text-center py-10 text-muted-foreground">No assignments available</div>
             ) : (
                 <div className="space-y-6">
                     {assignmentsByCourse.map((course) => (
-                        <div
-                            key={course.id}
-                            className="border border-border/50 rounded-lg overflow-hidden"
-                        >
+                        <div key={course.id} className="border border-border/50 rounded-lg overflow-hidden">
                             <div className="bg-muted/50 px-4 py-3 border-b border-border/50">
                                 <h3 className="font-semibold text-foreground">{course.title}</h3>
                                 <div className="flex items-center gap-4 text-sm text-muted-foreground mt-1">
                                     <span>Status: {course.status}</span>
-                                    <span>
-                                        Progress: {course.progress?.completionPercentage || 0}%
-                                    </span>
+                                    <span>Progress: {course.progress?.completionPercentage || 0}%</span>
                                 </div>
                             </div>
 
@@ -139,19 +132,15 @@ export function AssignmentsTab({ assignments, enrolledCourses }: AssignmentsTabP
                                                             {assignment.maxScore}
                                                         </p>
                                                     )}
-                                                    {assignment.submissionStatus ===
-                                                        SubmissionStatus.PENDING && (
-                                                        <Button
-                                                            size="sm"
-                                                            onClick={() =>
-                                                                (window.location.href = `/student/assignments/${assignment.id}`)
-                                                            }
-                                                        >
-                                                            {assignment.submission?.score
-                                                                ? "View"
-                                                                : "Start"}
-                                                        </Button>
-                                                    )}
+
+                                                    <Button
+                                                        size="sm"
+                                                        onClick={() =>
+                                                            (window.location.href = `/student/assignments/${assignment.id}`)
+                                                        }
+                                                    >
+                                                        {assignment.submission?.score ? "View" : "Start"}
+                                                    </Button>
                                                 </div>
                                             </div>
                                         );
