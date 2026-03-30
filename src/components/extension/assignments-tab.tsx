@@ -126,7 +126,7 @@ export function AssignmentsTab({ assignments, enrolledCourses }: AssignmentsTabP
                                                         {getStatusIcon(assignment.submissionStatus)}
                                                         {statusStyle.text}
                                                     </span>
-                                                    
+
                                                     {assignment.submission?.score && (
                                                         <p className="text-sm font-medium">
                                                             Score: {assignment.submission.score}/
@@ -137,7 +137,7 @@ export function AssignmentsTab({ assignments, enrolledCourses }: AssignmentsTabP
                                                     <Button
                                                         size="sm"
                                                         onClick={() =>
-                                                            (window.location.href = `/student/assignments/${assignment.id}`)
+                                                            (window.location.href = `/assignments/${assignment.id}`)
                                                         }
                                                     >
                                                         {assignment.submission?.score ? "View" : "Start"}
