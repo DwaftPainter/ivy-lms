@@ -7,7 +7,7 @@ import { Card } from "@/components/ui/card";
 import { Construction } from "lucide-react";
 
 // List of unimplemented routes that should show the WIP screen
-const UNIMPLEMENTED_ROUTES = ["/student/settings", "/teacher/settings", "/teacher/messages"];
+const UNIMPLEMENTED_ROUTES = ["/settings", "/teacher/settings", "/teacher/messages", "/assignments"];
 
 export function WorkInProgressWrapper({ children }: { children: React.ReactNode }) {
     const pathname = usePathname();
@@ -41,17 +41,18 @@ export function WorkInProgressWrapper({ children }: { children: React.ReactNode 
                                 <Construction className="w-10 h-10 text-primary" />
                             </div>
                             <div className="space-y-2">
-                                <h2 className="text-2xl font-bold text-foreground">We&apos;re Working On It</h2>
+                                <h2 className="text-2xl font-bold text-foreground">
+                                    We&apos;re Working On It
+                                </h2>
                                 <p className="text-muted-foreground">
-                                    This feature is coming soon. Our team is building something amazing for you!
+                                    This feature is coming soon. Our team is building something amazing for
+                                    you!
                                 </p>
                             </div>
                             <div className="py-4">
                                 <Loader />
                             </div>
-                            <p className="text-sm text-muted-foreground">
-                                Check back later for updates.
-                            </p>
+                            <p className="text-sm text-muted-foreground">Check back later for updates.</p>
                         </div>
                     </Card>
                 </div>
@@ -80,9 +81,7 @@ export function WorkInProgress() {
                     <div className="py-4">
                         <Loader />
                     </div>
-                    <p className="text-sm text-muted-foreground">
-                        Check back later for updates.
-                    </p>
+                    <p className="text-sm text-muted-foreground">Check back later for updates.</p>
                 </div>
             </Card>
         </div>

@@ -6,9 +6,11 @@ import { Calendar, ClipboardList } from "lucide-react";
 import { useAssignmentStore } from "@/store/assignment.store";
 import { SubmissionStatus } from "@/generated/prisma/enums";
 import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 
 export function UpcomingAssignments() {
     const { assignments, isLoading, fetchAssignments } = useAssignmentStore();
+    const router = useRouter();
 
     useEffect(() => {
         fetchAssignments();
@@ -105,9 +107,7 @@ export function UpcomingAssignments() {
                             <Button
                                 className="bg-primary hover:bg-primary/90 text-white font-medium ml-6 shrink-0"
                                 size="sm"
-                                onClick={() =>
-                                    (window.location.href = `/student/assignments/${assignment.id}`)
-                                }
+                                onClick={() => router.push(`/extension/?tab=assignments`)}
                             >
                                 Finish Now
                             </Button>
