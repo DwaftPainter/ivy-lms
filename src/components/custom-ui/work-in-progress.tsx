@@ -7,7 +7,7 @@ import { Card } from "@/components/ui/card";
 import { Construction } from "lucide-react";
 
 // List of unimplemented routes that should show the WIP screen
-const UNIMPLEMENTED_ROUTES = ["/settings", "/teacher/settings", "/teacher/messages", "/assignments"];
+const UNIMPLEMENTED_ROUTES = ["/settings", "/teacher/settings", "/teacher/messages"];
 
 export function WorkInProgressWrapper({ children }: { children: React.ReactNode }) {
     const pathname = usePathname();
