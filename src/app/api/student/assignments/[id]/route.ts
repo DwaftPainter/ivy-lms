@@ -3,7 +3,8 @@ import { prisma } from "@/lib/prisma";
 import { StatusCodes } from "http-status-codes";
 import { MESSAGES } from "@/config/message";
 import jwt from "jsonwebtoken";
-import { SubmissionStatus } from "@/generated/prisma/enums";
+import { SubmissionStatus, IeltsSkill } from "@/generated/prisma/enums";
+import { gradeWithOllama, AIGradingResult } from "@/lib/ai-grading";
 
 // GET /api/student/assignments/[id] - Get assignment details
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -151,6 +152,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
                               content: submission.content,
                               fileUrl: submission.fileUrl,
                               audioUrl: submission.audioUrl,
+                              audioUrls: submission.audioUrls,
                               score: submission.score,
                               bandScore: submission.bandScore,
                               feedback: submission.feedback,
@@ -246,6 +248,23 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
             );
         }
 
+        // For speaking assignments, parse audio URLs from content JSON
+        let audioUrls: any = null;
+        let submissionContent = content;
+        if (assignment.skill === IeltsSkill.SPEAKING && content) {
+            try {
+                const parsedContent = JSON.parse(content);
+                // Convert answers object to array of audio recordings
+                audioUrls = Object.entries(parsedContent).map(([questionId, url]) => ({
+                    questionId,
+                    url,
+                    recordedAt: new Date().toISOString()
+                }));
+            } catch {
+                // If not valid JSON, keep as-is
+            }
+        }
+
         // Check if already submitted
         const existingSubmission = await prisma.assignmentSubmission.findFirst({
             where: {
@@ -262,9 +281,10 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
             submission = await prisma.assignmentSubmission.update({
                 where: { id: existingSubmission.id },
                 data: {
-                    content,
+                    content: submissionContent,
                     fileUrl,
                     audioUrl,
+                    audioUrls,
                     status: SubmissionStatus.SUBMITTED,
                     submittedAt: now
                 }
@@ -275,13 +295,42 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
                 data: {
                     assignmentId,
                     studentId: studentProfile.id,
-                    content,
+                    content: submissionContent,
                     fileUrl,
                     audioUrl,
+                    audioUrls,
                     status: SubmissionStatus.SUBMITTED,
                     submittedAt: now
                 }
             });
+        }
+
+        // Trigger AI grading for writing assignments
+        let aiGradingResult: AIGradingResult | null = null;
+        if (assignment.skill === IeltsSkill.WRITING && content) {
+            try {
+                aiGradingResult = await gradeWithOllama({
+                    essay: content,
+                    assignmentType: assignment.type,
+                    instructions: assignment.instructions,
+                    description: assignment.description
+                });
+
+                // Update submission with AI grading results
+                await prisma.assignmentSubmission.update({
+                    where: { id: submission.id },
+                    data: {
+                        aiScore: aiGradingResult.score,
+                        aiFeedback: aiGradingResult.feedback,
+                        aiGradedAt: new Date(),
+                        aiCorrections: aiGradingResult.corrections as any,
+                        teacherRegradeRequested: false
+                    }
+                });
+            } catch (error) {
+                console.error("Auto AI grading failed:", error);
+                // Continue with submission even if AI grading fails
+            }
         }
 
         // Update enrollment status to STUDYING if it was UPCOMING
@@ -348,7 +397,11 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
                         submittedAt: submission.submittedAt,
                         content: submission.content,
                         fileUrl: submission.fileUrl,
-                        audioUrl: submission.audioUrl
+                        audioUrl: submission.audioUrl,
+                        aiScore: aiGradingResult?.score,
+                        aiFeedback: aiGradingResult?.feedback,
+                        aiCorrections: aiGradingResult?.corrections,
+                        aiGradedAt: aiGradingResult ? new Date().toISOString() : null
                     },
                     progress: {
                         completed: completedAssignments,

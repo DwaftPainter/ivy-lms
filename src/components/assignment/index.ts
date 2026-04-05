@@ -5,3 +5,5 @@ export { SpeakingQuestion } from "./SpeakingQuestion";
 export { QuestionSidebar } from "./QuestionSidebar";
 export { BottomNavigation } from "./BottomNavigation";
 export { Timer } from "./Timer";
+export { WritingTimer } from "./WritingTimer";
+export { AICorrectionsModal } from "./AICorrectionsModal";

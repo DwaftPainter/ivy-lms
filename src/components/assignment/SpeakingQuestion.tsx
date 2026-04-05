@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Question } from "@/store/assignment-session.store";
-import { Mic, Square, Play, Pause, RotateCcw, Volume2 } from "lucide-react";
+import { Mic, Square, Play, Pause, RotateCcw } from "lucide-react";
 import { useAssignmentSessionStore } from "@/store/assignment-session.store";
 
 interface SpeakingQuestionProps {
@@ -14,6 +14,7 @@ interface SpeakingQuestionProps {
     onAnswerChange: (value: string) => void;
     questionNumber: number;
     partTimeLimit?: number; // in seconds
+    isSubmitted?: boolean;
 }
 
 export function SpeakingQuestion({
@@ -21,7 +22,8 @@ export function SpeakingQuestion({
     answer,
     onAnswerChange,
     questionNumber,
-    partTimeLimit
+    partTimeLimit,
+    isSubmitted
 }: SpeakingQuestionProps) {
     const [isRecording, setIsRecording] = useState(false);
     const [isPlaying, setIsPlaying] = useState(false);
@@ -134,15 +136,11 @@ export function SpeakingQuestion({
         <Card className="border-border">
             <CardHeader className="pb-3">
                 <CardTitle className="text-lg font-medium leading-relaxed">
-                    <span className="text-primary font-semibold mr-2">
-                        {questionNumber}.
-                    </span>
+                    <span className="text-primary font-semibold mr-2">{questionNumber}.</span>
                     {question.prompt}
                 </CardTitle>
                 {partTimeLimit && (
-                    <p className="text-sm text-muted-foreground">
-                        Time limit: {formatTime(partTimeLimit)}
-                    </p>
+                    <p className="text-sm text-muted-foreground">Time limit: {formatTime(partTimeLimit)}</p>
                 )}
             </CardHeader>
             <CardContent className="space-y-6">
@@ -161,16 +159,10 @@ export function SpeakingQuestion({
                             size="lg"
                             onClick={isRecording ? stopRecording : startRecording}
                             variant={isRecording ? "destructive" : "default"}
-                            className={cn(
-                                "h-16 w-16 rounded-full",
-                                isRecording && "animate-pulse"
-                            )}
+                            disabled={isSubmitted}
+                            className={cn("h-16 w-16 rounded-full", isRecording && "animate-pulse")}
                         >
-                            {isRecording ? (
-                                <Square className="h-6 w-6" />
-                            ) : (
-                                <Mic className="h-6 w-6" />
-                            )}
+                            {isRecording ? <Square className="h-6 w-6" /> : <Mic className="h-6 w-6" />}
                         </Button>
                     ) : (
                         <div className="flex items-center gap-3">
@@ -186,22 +178,26 @@ export function SpeakingQuestion({
                                     <Play className="h-5 w-5 ml-0.5" />
                                 )}
                             </Button>
-                            <Button
-                                size="lg"
-                                onClick={rerecord}
-                                variant="outline"
-                                className="h-14 w-14 rounded-full"
-                            >
-                                <RotateCcw className="h-5 w-5" />
-                            </Button>
+                            {!isSubmitted && (
+                                <Button
+                                    size="lg"
+                                    onClick={rerecord}
+                                    variant="outline"
+                                    className="h-14 w-14 rounded-full"
+                                >
+                                    <RotateCcw className="h-5 w-5" />
+                                </Button>
+                            )}
                         </div>
                     )}
 
                     {/* Status Text */}
                     <p className="text-sm text-muted-foreground">
-                        {isRecording
-                            ? "Recording... Click to stop"
-                            : audioUrl
+                        {isSubmitted
+                            ? "Submitted"
+                            : isRecording
+                              ? "Recording... Click to stop"
+                              : audioUrl
                                 ? "Recording saved. Play to review or re-record."
                                 : "Click the microphone to start recording"}
                     </p>
@@ -220,16 +216,18 @@ export function SpeakingQuestion({
                     </div>
                 )}
 
-                {/* Recording Guidelines */}
-                <div className="bg-muted/30 rounded-lg p-4 text-sm text-muted-foreground">
-                    <p className="font-medium text-foreground mb-2">Tips:</p>
-                    <ul className="list-disc list-inside space-y-1">
-                        <li>Speak clearly and at a natural pace</li>
-                        <li>Try to use a variety of vocabulary and grammar structures</li>
-                        <li>If you make a mistake, just continue speaking</li>
-                        <li>You can re-record as many times as you like before submitting</li>
-                    </ul>
-                </div>
+                {/* Guidelines */}
+                {!isSubmitted && (
+                    <div className="bg-muted/30 rounded-lg p-4 text-sm text-muted-foreground">
+                        <p className="font-medium text-foreground mb-2">Tips:</p>
+                        <ul className="list-disc list-inside space-y-1">
+                            <li>Speak clearly and at a natural pace</li>
+                            <li>Try to use a variety of vocabulary and grammar structures</li>
+                            <li>If you make a mistake, just continue speaking</li>
+                            <li>You can re-record as many times as you like before submitting</li>
+                        </ul>
+                    </div>
+                )}
             </CardContent>
         </Card>
     );
