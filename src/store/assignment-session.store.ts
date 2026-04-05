@@ -44,6 +44,7 @@ export interface AssignmentDetails {
         content?: string | null;
         fileUrl?: string | null;
         audioUrl?: string | null;
+        audioUrls?: { questionId: string; url: string; recordedAt: string }[] | null;
         score?: number | null;
         bandScore?: number | null;
         feedback?: string | null;
@@ -89,6 +90,21 @@ export interface Part {
     timeLimit?: number; // in seconds, for speaking
 }
 
+export interface AICorrection {
+    original: string;
+    corrected: string;
+    explanation: string;
+    type: "grammar" | "vocabulary" | "spelling" | "structure";
+    position?: { start: number; end: number };
+}
+
+export interface AIGradingResult {
+    score: number;
+    feedback: string;
+    corrections: AICorrection[];
+    gradedAt: string;
+}
+
 interface AssignmentSessionState {
     // Assignment Data
     currentAssignment: AssignmentDetails | null;
@@ -101,9 +117,18 @@ interface AssignmentSessionState {
     // Answers State
     answers: Record<string, string>; // questionId -> answer
 
+    // AI Grading State
+    aiGrading: AIGradingResult | null;
+    isAIGrading: boolean;
+    teacherRegradeRequested: boolean;
+
     // Timer State (for speaking)
     timeRemaining: number;
     isTimerRunning: boolean;
+
+    // Time Tracking (for writing - elapsed time)
+    elapsedTime: number;
+    isTrackingTime: boolean;
 
     // UI State
     isLoading: boolean;
@@ -126,9 +151,20 @@ interface AssignmentSessionState {
     stopTimer: () => void;
     tickTimer: () => void;
 
+    // Time Tracking Actions
+    startTimeTracking: () => void;
+    pauseTimeTracking: () => void;
+    resetElapsedTime: () => void;
+    tickElapsedTime: () => void;
+
     // Data Fetching
     fetchAssignment: (id: string) => Promise<void>;
-    submitAssignment: (id: string) => Promise<void>;
+    submitAssignment: (id: string) => Promise<any>;
+
+    // AI Grading Actions
+    gradeWithAI: (id: string) => Promise<void>;
+    fetchAIGrading: (id: string) => Promise<void>;
+    requestTeacherRegrade: (id: string) => Promise<void>;
 
     // Persistence
     clearSession: () => void;
@@ -147,9 +183,16 @@ export const useAssignmentSessionStore = create<AssignmentSessionState>()(
             answers: {},
             timeRemaining: 0,
             isTimerRunning: false,
+            elapsedTime: 0,
+            isTrackingTime: false,
             isLoading: false,
             isSubmitting: false,
             error: null,
+
+            // AI Grading Initial State
+            aiGrading: null,
+            isAIGrading: false,
+            teacherRegradeRequested: false,
 
             // Setters
             setCurrentAssignment: (assignment) => set({ currentAssignment: assignment }),
@@ -241,6 +284,26 @@ export const useAssignmentSessionStore = create<AssignmentSessionState>()(
                 }
             },
 
+            // Time Tracking Actions
+            startTimeTracking: () => {
+                set({ isTrackingTime: true });
+            },
+
+            pauseTimeTracking: () => {
+                set({ isTrackingTime: false });
+            },
+
+            resetElapsedTime: () => {
+                set({ elapsedTime: 0, isTrackingTime: false });
+            },
+
+            tickElapsedTime: () => {
+                const { elapsedTime, isTrackingTime } = get();
+                if (isTrackingTime) {
+                    set({ elapsedTime: elapsedTime + 1 });
+                }
+            },
+
             // Data Fetching
             fetchAssignment: async (id: string) => {
                 set({ isLoading: true, error: null });
@@ -253,9 +316,20 @@ export const useAssignmentSessionStore = create<AssignmentSessionState>()(
                     // Generate parts based on assignment type
                     const parts = generatePartsFromAssignment(response.data);
 
+                    // If there's an existing submission with content, populate answers
+                    let loadedAnswers: Record<string, string> = {};
+                    if (response.data.submission?.content) {
+                        loadedAnswers = parseSubmissionContent(
+                            response.data.submission.content,
+                            response.data.skill,
+                            parts
+                        );
+                    }
+
                     set({
                         currentAssignment: response.data,
                         parts,
+                        answers: loadedAnswers,
                         isLoading: false
                     });
                 } catch (error: any) {
@@ -277,16 +351,55 @@ export const useAssignmentSessionStore = create<AssignmentSessionState>()(
                     const response = await apiFetch<{
                         success: boolean;
                         message: string;
-                        data: any;
+                        data: {
+                            submission: {
+                                id: string;
+                                status: string;
+                                submittedAt: string;
+                                content: string;
+                                aiScore?: number;
+                                aiFeedback?: string;
+                                aiCorrections?: AICorrection[];
+                                aiGradedAt?: string | null;
+                            };
+                            progress: any;
+                        };
                     }>(`/api/student/assignments/${id}`, {
                         method: "POST",
                         body: JSON.stringify({ content })
                     });
 
-                    set({ isSubmitting: false });
+                    // Update current assignment with submission data instead of clearing
+                    const assignment = get().currentAssignment;
+                    if (assignment) {
+                        set({
+                            currentAssignment: {
+                                ...assignment,
+                                submission: {
+                                    ...assignment.submission,
+                                    id: response.data.submission.id,
+                                    status: response.data.submission.status as SubmissionStatus,
+                                    submittedAt: new Date(response.data.submission.submittedAt),
+                                    content: response.data.submission.content
+                                }
+                            },
+                            isSubmitting: false
+                        });
+                    } else {
+                        set({ isSubmitting: false });
+                    }
 
-                    // Clear session after successful submission
-                    get().clearSession();
+                    // Auto-populate AI grading results if available (for writing assignments)
+                    if (response.data.submission.aiGradedAt) {
+                        set({
+                            aiGrading: {
+                                score: response.data.submission.aiScore || 0,
+                                feedback: response.data.submission.aiFeedback || "",
+                                corrections: response.data.submission.aiCorrections || [],
+                                gradedAt: response.data.submission.aiGradedAt
+                            }
+                        });
+                    }
 
                     return response.data;
                 } catch (error: any) {
@@ -308,8 +421,90 @@ export const useAssignmentSessionStore = create<AssignmentSessionState>()(
                     answers: {},
                     timeRemaining: 0,
                     isTimerRunning: false,
-                    error: null
+                    elapsedTime: 0,
+                    isTrackingTime: false,
+                    error: null,
+                    aiGrading: null,
+                    isAIGrading: false,
+                    teacherRegradeRequested: false
                 });
+            },
+
+            // AI Grading Actions
+            gradeWithAI: async (id: string) => {
+                set({ isAIGrading: true, error: null });
+                try {
+                    const response = await apiFetch<{
+                        success: boolean;
+                        data: {
+                            aiScore: number;
+                            aiFeedback: string;
+                            aiCorrections: AICorrection[];
+                            gradedAt: string;
+                        };
+                    }>(`/api/student/assignments/${id}/ai-grade`, {
+                        method: "POST"
+                    });
+
+                    set({
+                        aiGrading: {
+                            score: response.data.aiScore,
+                            feedback: response.data.aiFeedback,
+                            corrections: response.data.aiCorrections,
+                            gradedAt: response.data.gradedAt
+                        },
+                        isAIGrading: false
+                    });
+                } catch (error: any) {
+                    set({
+                        error: error?.message || "Failed to grade with AI",
+                        isAIGrading: false
+                    });
+                }
+            },
+
+            fetchAIGrading: async (id: string) => {
+                try {
+                    const response = await apiFetch<{
+                        success: boolean;
+                        data: {
+                            hasAIGrading: boolean;
+                            aiScore: number;
+                            aiFeedback: string;
+                            aiCorrections: AICorrection[];
+                            teacherRegradeRequested: boolean;
+                            gradedAt: string;
+                        };
+                    }>(`/api/student/assignments/${id}/ai-grade`);
+
+                    if (response.data.hasAIGrading) {
+                        set({
+                            aiGrading: {
+                                score: response.data.aiScore,
+                                feedback: response.data.aiFeedback,
+                                corrections: response.data.aiCorrections,
+                                gradedAt: response.data.gradedAt
+                            },
+                            teacherRegradeRequested: response.data.teacherRegradeRequested
+                        });
+                    }
+                } catch (error: any) {
+                    console.error("Failed to fetch AI grading:", error);
+                }
+            },
+
+            requestTeacherRegrade: async (id: string) => {
+                try {
+                    await apiFetch<{ success: boolean }>(
+                        `/api/student/assignments/${id}/request-regrade`,
+                        { method: "POST" }
+                    );
+                    set({ teacherRegradeRequested: true });
+                } catch (error: any) {
+                    set({
+                        error: error?.message || "Failed to request teacher regrade"
+                    });
+                }
             }
         }),
         {
@@ -319,7 +514,8 @@ export const useAssignmentSessionStore = create<AssignmentSessionState>()(
                 answers: state.answers,
                 currentPartIndex: state.currentPartIndex,
                 currentQuestionIndex: state.currentQuestionIndex,
-                timeRemaining: state.timeRemaining
+                timeRemaining: state.timeRemaining,
+                elapsedTime: state.elapsedTime
             })
         }
     )
@@ -423,6 +619,43 @@ function formatAnswersForSubmission(answers: Record<string, string>, skill?: Iel
 
     // For other skills, format as JSON
     return JSON.stringify(answers);
+}
+
+// Helper function to parse submission content back into answers
+function parseSubmissionContent(
+    content: string,
+    skill?: IeltsSkill,
+    parts?: Part[]
+): Record<string, string> {
+    const answers: Record<string, string> = {};
+
+    if (!content || !parts || parts.length === 0) {
+        return answers;
+    }
+
+    if (skill === IeltsSkill.WRITING) {
+        // For writing, the content is the essay - put it in the first question
+        const firstQuestion = parts[0]?.questions[0];
+        if (firstQuestion) {
+            answers[firstQuestion.id] = content;
+        }
+    } else {
+        // For other skills, try to parse JSON
+        try {
+            const parsed = JSON.parse(content);
+            if (typeof parsed === "object" && parsed !== null) {
+                Object.assign(answers, parsed);
+            }
+        } catch {
+            // If not valid JSON, store as first question answer
+            const firstQuestion = parts[0]?.questions[0];
+            if (firstQuestion) {
+                answers[firstQuestion.id] = content;
+            }
+        }
+    }
+
+    return answers;
 }
 
 // Timer hook for components

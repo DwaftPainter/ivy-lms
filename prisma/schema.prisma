@@ -280,9 +280,10 @@ model AssignmentSubmission {
   studentId    String
   gradedById   String?
   status       SubmissionStatus @default(PENDING)
-  content      String? // text answer (Writing tasks)
+  content      String? // text answer (Writing tasks) or JSON for other skills
   fileUrl      String? // uploaded file
-  audioUrl     String? // for Speaking submissions
+  audioUrl     String? // for single Speaking submission (legacy)
+  audioUrls    Json? // for multiple Speaking recordings: [{questionId, url, duration}]
   score        Float?
   bandScore    Float? // IELTS band equivalent
   feedback     String?
@@ -290,6 +291,14 @@ model AssignmentSubmission {
   gradedAt     DateTime?
   createdAt    DateTime         @default(now())
   updatedAt    DateTime         @updatedAt
+
+  // AI Grading Fields
+  aiScore          Float? // AI calculated band score
+  aiFeedback       String? // AI generated feedback
+  aiGradedAt       DateTime?
+  aiCorrections    Json? // Array of corrections: [{original, corrected, explanation, position}]
+  teacherRegradeRequested Boolean @default(false)
+  regradeRequestedAt DateTime?
 
   assignment     Assignment          @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
   student        StudentProfile      @relation(fields: [studentId], references: [id], onDelete: Cascade)

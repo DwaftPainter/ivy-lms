@@ -10,6 +10,7 @@ import { ReadingQuestion } from "@/components/assignment/ReadingQuestion";
 import { ListeningQuestion } from "@/components/assignment/ListeningQuestion";
 import { SpeakingQuestion } from "@/components/assignment/SpeakingQuestion";
 import { Timer } from "@/components/assignment/Timer";
+import { WritingTimer } from "@/components/assignment/WritingTimer";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { IeltsSkill } from "@/generated/prisma/enums";
@@ -77,6 +78,8 @@ export default function AssignmentPage() {
                         answer={answers[currentQuestion.id] || ""}
                         onAnswerChange={(value) => setAnswer(currentQuestion.id, value)}
                         teacherFeedback={currentAssignment?.submission?.feedback || undefined}
+                        assignmentId={id as string}
+                        isSubmitted={!!currentAssignment?.submission?.submittedAt}
                     />
                 );
 
@@ -102,14 +105,29 @@ export default function AssignmentPage() {
                 );
 
             case IeltsSkill.SPEAKING:
+                // For speaking, show all questions in the current part
                 return (
-                    <SpeakingQuestion
-                        question={currentQuestion}
-                        answer={answers[currentQuestion.id] || ""}
-                        onAnswerChange={(value) => setAnswer(currentQuestion.id, value)}
-                        questionNumber={questionNumber}
-                        partTimeLimit={currentPart?.timeLimit}
-                    />
+                    <div className="space-y-6">
+                        {currentPart.questions.map((q, idx) => {
+                            const qNumber =
+                                parts
+                                    .slice(0, currentPartIndex)
+                                    .reduce((acc, part) => acc + part.questions.length, 0) +
+                                idx +
+                                1;
+                            return (
+                                <SpeakingQuestion
+                                    key={q.id}
+                                    question={q}
+                                    answer={answers[q.id] || ""}
+                                    onAnswerChange={(value) => setAnswer(q.id, value)}
+                                    questionNumber={qNumber}
+                                    partTimeLimit={currentPart?.timeLimit}
+                                    isSubmitted={!!currentAssignment?.submission?.submittedAt}
+                                />
+                            );
+                        })}
+                    </div>
                 );
 
             default:
@@ -169,6 +187,9 @@ export default function AssignmentPage() {
                         </div>
                         {currentAssignment?.skill === IeltsSkill.SPEAKING && (
                             <Timer />
+                        )}
+                        {currentAssignment?.skill === IeltsSkill.WRITING && (
+                            <WritingTimer isSubmitted={!!currentAssignment?.submission?.submittedAt} />
                         )}
                     </div>
                 )}
