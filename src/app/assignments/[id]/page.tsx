@@ -29,6 +29,7 @@ export default function AssignmentPage() {
         error,
         fetchAssignment,
         setAnswer,
+        resetElapsedTime,
     } = useAssignmentSessionStore();
 
     useEffect(() => {
@@ -55,6 +56,13 @@ export default function AssignmentPage() {
         window.addEventListener("beforeunload", handleBeforeUnload);
         return () => window.removeEventListener("beforeunload", handleBeforeUnload);
     }, [handleBeforeUnload]);
+
+    // Reset elapsed time when leaving assignment page
+    useEffect(() => {
+        return () => {
+            resetElapsedTime();
+        };
+    }, [id, resetElapsedTime]);
 
     const currentPart = parts[currentPartIndex];
     const currentQuestion = currentPart?.questions[currentQuestionIndex];

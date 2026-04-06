@@ -10,6 +10,8 @@ import { cn } from "@/lib/utils";
 import { Sparkles, Loader2, CheckCircle2, User } from "lucide-react";
 import { AICorrectionsModal } from "./AICorrectionsModal";
 import { WritingTimer } from "./WritingTimer";
+import { WritingAnalyticsChart } from "./WritingAnalyticsChart";
+import Image from "next/image";
 
 interface WritingQuestionProps {
     question: Question;
@@ -73,7 +75,18 @@ export function WritingQuestion({
                     </CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <p className="text-muted-foreground leading-relaxed">{question.prompt}</p>
+                    <p className="text-muted-foreground leading-relaxed mb-3">{question.prompt}</p>
+                    {question.imageUrl && (
+                        <div className="relative w-full aspect-[16/9] rounded-lg overflow-hidden bg-muted">
+                            <Image
+                                src={question.imageUrl}
+                                alt="Writing analytics chart"
+                                fill
+                                className="object-contain"
+                                unoptimized={!question?.imageUrl?.startsWith("/")}
+                            />
+                        </div>
+                    )}
                     {question.minWords && question.maxWords && (
                         <p className="text-sm text-muted-foreground mt-4">
                             Write at least {question.minWords} and at most {question.maxWords} words.
