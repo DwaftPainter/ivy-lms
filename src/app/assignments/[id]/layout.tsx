@@ -94,7 +94,7 @@ export default function AssignmentLayout({ children }: { children: React.ReactNo
 
                         <div className="flex items-center gap-2">
                             {/* Zoom Controls */}
-                            <div className="hidden sm:flex items-center gap-1 mr-2">
+                            {/* <div className="hidden sm:flex items-center gap-1 mr-2">
                                 <Button
                                     variant="ghost"
                                     size="icon"
@@ -110,7 +110,7 @@ export default function AssignmentLayout({ children }: { children: React.ReactNo
                                 >
                                     <ZoomIn className="size-4" />
                                 </Button>
-                            </div>
+                            </div> */}
 
                             {/* Fullscreen */}
                             <Button
