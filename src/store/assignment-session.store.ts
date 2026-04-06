@@ -534,7 +534,8 @@ function generatePartsFromAssignment(assignment: AssignmentDetails): Part[] {
                     type: "essay" as const,
                     prompt: assignment.description || "Write your essay here",
                     minWords: 150,
-                    maxWords: 250
+                    maxWords: 250,
+                    imageUrl: assignment.attachmentUrl
                 }]
             }];
 
@@ -548,7 +549,8 @@ function generatePartsFromAssignment(assignment: AssignmentDetails): Part[] {
                     type: "essay" as const,
                     prompt: assignment.description || "Write your essay here",
                     minWords: 250,
-                    maxWords: 350
+                    maxWords: 350,
+                    imageUrl: assignment.attachmentUrl
                 }]
             }];
 

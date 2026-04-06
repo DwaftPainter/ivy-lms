@@ -3,8 +3,7 @@
 import { useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { useAssignmentSessionStore } from "@/store/assignment-session.store";
-import { Clock, Pause, Play } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Clock } from "lucide-react";
 
 interface WritingTimerProps {
     className?: string;
@@ -53,21 +52,6 @@ export function WritingTimer({ className, isSubmitted }: WritingTimerProps) {
         >
             <Clock className="size-5 text-primary" />
             <span>{formatTime(elapsedTime)}</span>
-
-            {!isSubmitted && (
-                <Button
-                    variant="ghost"
-                    size="icon"
-                    className="size-6 ml-1"
-                    onClick={isTrackingTime ? pauseTimeTracking : startTimeTracking}
-                >
-                    {isTrackingTime ? (
-                        <Pause className="size-3" />
-                    ) : (
-                        <Play className="size-3" />
-                    )}
-                </Button>
-            )}
         </div>
     );
 }
