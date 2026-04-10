@@ -1,4 +1,5 @@
 import { MESSAGES } from "@/config/message";
+import { Ollama } from "ollama";
 
 export interface AIGradingInput {
     essay: string;
@@ -56,28 +57,20 @@ Focus on:
 4. Sentence structure and coherence
 
 Provide 5-10 specific corrections with clear explanations in English.`;
-
-    const ollamaUrl = process.env.OLLAMA_URL || "http://localhost:11434";
-    const model = process.env.OLLAMA_MODEL || "llama3.2";
+    const ollama = new Ollama({
+        host: "https://ollama.com",
+        headers: { Authorization: "Bearer " + process.env.OLLAMA_API_KEY }
+    });
 
     try {
-        const response = await fetch(`${ollamaUrl}/api/generate`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                model,
-                prompt,
-                stream: false,
-                format: "json"
-            })
+        const response = await ollama.generate({
+            model: process.env.OLLAMA_MODEL || "gpt-oss:120b-cloud",
+            prompt,
+            stream: false,
+            format: "json"
         });
 
-        if (!response.ok) {
-            throw new Error(`Ollama API error: ${response.status}`);
-        }
-
-        const result = await response.json();
-        const parsed = JSON.parse(result.response);
+        const parsed = JSON.parse(response.response);
 
         return {
             score: Math.min(9, Math.max(0, parsed.score || 5)),
@@ -86,8 +79,6 @@ Provide 5-10 specific corrections with clear explanations in English.`;
         };
     } catch (error) {
         console.error("Ollama grading failed:", error);
-
-        // Fallback to mock grading if Ollama is not available
         return generateMockGrading(essay);
     }
 }

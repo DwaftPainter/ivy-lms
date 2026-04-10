@@ -277,7 +277,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
                     attachmentUrl: assignment.attachmentUrl,
                     isPublished: assignment.isPublished,
                     classSession: assignment.classSession,
-                    course: assignment.classSession.course,
+                    course: assignment.classSession?.course || null,
                     rubric: assignment.rubric,
                     submissions: assignment.submissions.map((sub) => ({
                         id: sub.id,
@@ -539,7 +539,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
         });
 
         // If publishing, notify enrolled students
-        if (body.isPublished === true && !existingAssignment.isPublished) {
+        if (body.isPublished === true && !existingAssignment.isPublished && existingAssignment.classSession) {
             const enrollments = existingAssignment.classSession.enrollments;
             if (enrollments.length > 0) {
                 const notifications = enrollments.map((enrollment) => ({

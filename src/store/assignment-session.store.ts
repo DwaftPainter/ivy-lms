@@ -432,6 +432,7 @@ export const useAssignmentSessionStore = create<AssignmentSessionState>()(
 
             // AI Grading Actions
             gradeWithAI: async (id: string) => {
+                console.log("hello");
                 set({ isAIGrading: true, error: null });
                 try {
                     const response = await apiFetch<{
@@ -495,10 +496,9 @@ export const useAssignmentSessionStore = create<AssignmentSessionState>()(
 
             requestTeacherRegrade: async (id: string) => {
                 try {
-                    await apiFetch<{ success: boolean }>(
-                        `/api/student/assignments/${id}/request-regrade`,
-                        { method: "POST" }
-                    );
+                    await apiFetch<{ success: boolean }>(`/api/student/assignments/${id}/request-regrade`, {
+                        method: "POST"
+                    });
                     set({ teacherRegradeRequested: true });
                 } catch (error: any) {
                     set({
@@ -515,7 +515,9 @@ export const useAssignmentSessionStore = create<AssignmentSessionState>()(
                 currentPartIndex: state.currentPartIndex,
                 currentQuestionIndex: state.currentQuestionIndex,
                 timeRemaining: state.timeRemaining,
-                elapsedTime: state.elapsedTime
+                elapsedTime: state.elapsedTime,
+                aiGrading: state.aiGrading,
+                teacherRegradeRequested: state.teacherRegradeRequested
             })
         }
     )
@@ -525,34 +527,42 @@ export const useAssignmentSessionStore = create<AssignmentSessionState>()(
 function generatePartsFromAssignment(assignment: AssignmentDetails): Part[] {
     switch (assignment.type) {
         case AssignmentType.WRITING_TASK1:
-            return [{
-                id: "part1",
-                title: "Writing Task 1",
-                description: assignment.instructions || "Complete the essay",
-                questions: [{
-                    id: "essay-1",
-                    type: "essay" as const,
-                    prompt: assignment.description || "Write your essay here",
-                    minWords: 150,
-                    maxWords: 250,
-                    imageUrl: assignment.attachmentUrl
-                }]
-            }];
+            return [
+                {
+                    id: "part1",
+                    title: "Writing Task 1",
+                    description: assignment.instructions || "Complete the essay",
+                    questions: [
+                        {
+                            id: "essay-1",
+                            type: "essay" as const,
+                            prompt: assignment.description || "Write your essay here",
+                            minWords: 150,
+                            maxWords: 250,
+                            imageUrl: assignment.attachmentUrl
+                        }
+                    ]
+                }
+            ];
 
         case AssignmentType.WRITING_TASK2:
-            return [{
-                id: "part1",
-                title: "Writing Task 2",
-                description: assignment.instructions || "Complete the essay",
-                questions: [{
-                    id: "essay-1",
-                    type: "essay" as const,
-                    prompt: assignment.description || "Write your essay here",
-                    minWords: 250,
-                    maxWords: 350,
-                    imageUrl: assignment.attachmentUrl
-                }]
-            }];
+            return [
+                {
+                    id: "part1",
+                    title: "Writing Task 2",
+                    description: assignment.instructions || "Complete the essay",
+                    questions: [
+                        {
+                            id: "essay-1",
+                            type: "essay" as const,
+                            prompt: assignment.description || "Write your essay here",
+                            minWords: 250,
+                            maxWords: 350,
+                            imageUrl: assignment.attachmentUrl
+                        }
+                    ]
+                }
+            ];
 
         case AssignmentType.SPEAKING:
             return [
@@ -562,8 +572,16 @@ function generatePartsFromAssignment(assignment: AssignmentDetails): Part[] {
                     description: "Answer the following questions about yourself",
                     timeLimit: 60,
                     questions: [
-                        { id: "speak-1-1", type: "recording" as const, prompt: "Tell me about your hometown" },
-                        { id: "speak-1-2", type: "recording" as const, prompt: "What do you like to do in your free time?" }
+                        {
+                            id: "speak-1-1",
+                            type: "recording" as const,
+                            prompt: "Tell me about your hometown"
+                        },
+                        {
+                            id: "speak-1-2",
+                            type: "recording" as const,
+                            prompt: "What do you like to do in your free time?"
+                        }
                     ]
                 },
                 {
@@ -572,7 +590,11 @@ function generatePartsFromAssignment(assignment: AssignmentDetails): Part[] {
                     description: "Speak for 1-2 minutes on the given topic",
                     timeLimit: 120,
                     questions: [
-                        { id: "speak-2-1", type: "recording" as const, prompt: "Describe a memorable journey you have taken" }
+                        {
+                            id: "speak-2-1",
+                            type: "recording" as const,
+                            prompt: "Describe a memorable journey you have taken"
+                        }
                     ]
                 }
             ];
@@ -584,8 +606,17 @@ function generatePartsFromAssignment(assignment: AssignmentDetails): Part[] {
                     title: "Section 1",
                     description: "Listen and answer the questions",
                     questions: [
-                        { id: "listen-1-1", type: "fill_blank" as const, prompt: "The meeting will start at ___" },
-                        { id: "listen-1-2", type: "multiple_choice" as const, prompt: "What is the main topic?", options: ["Travel", "Education", "Technology", "Health"] }
+                        {
+                            id: "listen-1-1",
+                            type: "fill_blank" as const,
+                            prompt: "The meeting will start at ___"
+                        },
+                        {
+                            id: "listen-1-2",
+                            type: "multiple_choice" as const,
+                            prompt: "What is the main topic?",
+                            options: ["Travel", "Education", "Technology", "Health"]
+                        }
                     ]
                 }
             ];
@@ -597,18 +628,29 @@ function generatePartsFromAssignment(assignment: AssignmentDetails): Part[] {
                     title: "Passage 1",
                     description: "Read the passage and answer questions",
                     questions: [
-                        { id: "read-1-1", type: "true_false" as const, prompt: "The author believes climate change is reversible" },
-                        { id: "read-1-2", type: "multiple_choice" as const, prompt: "What is the main purpose of the passage?", options: ["To inform", "To persuade", "To entertain", "To criticize"] }
+                        {
+                            id: "read-1-1",
+                            type: "true_false" as const,
+                            prompt: "The author believes climate change is reversible"
+                        },
+                        {
+                            id: "read-1-2",
+                            type: "multiple_choice" as const,
+                            prompt: "What is the main purpose of the passage?",
+                            options: ["To inform", "To persuade", "To entertain", "To criticize"]
+                        }
                     ]
                 }
             ];
 
         default:
-            return [{
-                id: "part1",
-                title: "Questions",
-                questions: [{ id: "q1", type: "essay" as const, prompt: "Answer here" }]
-            }];
+            return [
+                {
+                    id: "part1",
+                    title: "Questions",
+                    questions: [{ id: "q1", type: "essay" as const, prompt: "Answer here" }]
+                }
+            ];
     }
 }
 
@@ -624,11 +666,7 @@ function formatAnswersForSubmission(answers: Record<string, string>, skill?: Iel
 }
 
 // Helper function to parse submission content back into answers
-function parseSubmissionContent(
-    content: string,
-    skill?: IeltsSkill,
-    parts?: Part[]
-): Record<string, string> {
+function parseSubmissionContent(content: string, skill?: IeltsSkill, parts?: Part[]): Record<string, string> {
     const answers: Record<string, string> = {};
 
     if (!content || !parts || parts.length === 0) {

@@ -162,6 +162,16 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
                         level: true
                     }
                 },
+                materials: {
+                    orderBy: {
+                        createdAt: "asc"
+                    }
+                },
+                assignments: {
+                    orderBy: {
+                        dueDate: "asc"
+                    }
+                },
                 attendances: {
                     include: {
                         enrollment: {
@@ -207,6 +217,28 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
             }
         }));
 
+        // Format materials
+        const formattedMaterials = classSession.materials.map((material) => ({
+            id: material.id,
+            name: material.name,
+            fileUrl: material.fileUrl,
+            fileType: material.fileType,
+            createdAt: material.createdAt.toISOString()
+        }));
+
+        // Format assignments
+        const formattedAssignments = classSession.assignments.map((assignment) => ({
+            id: assignment.id,
+            title: assignment.title,
+            description: assignment.description,
+            type: assignment.type,
+            skill: assignment.skill,
+            dueDate: assignment.dueDate?.toISOString() || null,
+            maxScore: assignment.maxScore,
+            isPublished: assignment.isPublished,
+            createdAt: assignment.createdAt.toISOString()
+        }));
+
         return NextResponse.json(
             {
                 success: true,
@@ -224,6 +256,8 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
                         meetingUrl: classSession.meetingUrl,
                         isPublished: classSession.isPublished,
                         course: classSession.course,
+                        materials: formattedMaterials,
+                        assignments: formattedAssignments,
                         attendances: formattedAttendances,
                         createdAt: classSession.createdAt.toISOString(),
                         updatedAt: classSession.updatedAt.toISOString()
@@ -384,6 +418,104 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
         );
     } catch (error) {
         console.error("Update class session error:", error);
+        return NextResponse.json(
+            { message: MESSAGES.common.serverError },
+            { status: StatusCodes.INTERNAL_SERVER_ERROR }
+        );
+    }
+}
+
+// POST /api/teacher/class-sessions/[id]/materials - Add a material to the session
+export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+    try {
+        const token = req.cookies.get("token");
+
+        if (!token) {
+            return NextResponse.json(
+                { success: false, message: "Unauthorized" },
+                { status: StatusCodes.UNAUTHORIZED }
+            );
+        }
+
+        const payload = jwt.verify(token.value, process.env.JWT_SECRET_KEY!) as { userId: string };
+        const userId = payload.userId;
+
+        // Get user with teacher profile
+        const user = await prisma.user.findUnique({
+            where: { id: userId },
+            include: { teacherProfile: true }
+        });
+
+        if (!user || user.role !== Role.TEACHER) {
+            return NextResponse.json(
+                { success: false, message: "Access denied. Teachers only." },
+                { status: StatusCodes.FORBIDDEN }
+            );
+        }
+
+        const teacherProfileId = user.teacherProfile?.id;
+        if (!teacherProfileId) {
+            return NextResponse.json(
+                { success: false, message: "Teacher profile not found" },
+                { status: StatusCodes.NOT_FOUND }
+            );
+        }
+
+        const { id: sessionId } = await params;
+        const body = await req.json();
+        const { name, fileUrl, fileType } = body;
+
+        // Verify the class session exists and belongs to this teacher
+        const existingSession = await prisma.classSession.findFirst({
+            where: {
+                id: sessionId,
+                teacherId: teacherProfileId
+            }
+        });
+
+        if (!existingSession) {
+            return NextResponse.json(
+                { success: false, message: "Class session not found or access denied" },
+                { status: StatusCodes.NOT_FOUND }
+            );
+        }
+
+        // Validate required fields
+        if (!name || !fileUrl || !fileType) {
+            return NextResponse.json(
+                { success: false, message: "Missing required fields: name, fileUrl, fileType" },
+                { status: StatusCodes.BAD_REQUEST }
+            );
+        }
+
+        // Create the material
+        const material = await prisma.sessionMaterial.create({
+            data: {
+                sessionId,
+                name,
+                fileUrl,
+                fileType
+            }
+        });
+
+        return NextResponse.json(
+            {
+                success: true,
+                message: "Material added successfully",
+                data: {
+                    material: {
+                        id: material.id,
+                        name: material.name,
+                        fileUrl: material.fileUrl,
+                        fileType: material.fileType,
+                        createdAt: material.createdAt.toISOString()
+                    }
+                }
+            },
+            { status: StatusCodes.CREATED }
+        );
+    } catch (error) {
+        console.error("Add material error:", error);
         return NextResponse.json(
             { message: MESSAGES.common.serverError },
             { status: StatusCodes.INTERNAL_SERVER_ERROR }

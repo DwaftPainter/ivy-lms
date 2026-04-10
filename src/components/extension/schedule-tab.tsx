@@ -7,6 +7,7 @@ import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import { ScheduleLesson } from "@/store/schedule.store";
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 
 // Dynamic import FullCalendar to avoid SSR issues
 const FullCalendar = dynamic(() => import("@fullcalendar/react").then((mod) => mod.default), {
@@ -18,13 +19,11 @@ interface ScheduleTabProps {
     lessons: ScheduleLesson[];
 }
 
-interface _CalendarEventInfo {
+interface EventClickArg {
     event: {
+        id: string;
         title: string;
-        extendedProps: {
-            type: string;
-            instructor: string;
-        };
+        extendedProps: Record<string, unknown>;
     };
 }
 
@@ -44,6 +43,7 @@ function getEventColor(type: string) {
 }
 
 export function ScheduleTab({ lessons }: ScheduleTabProps) {
+    const router = useRouter();
     const [isClient, setIsClient] = useState(false);
 
     useEffect(() => {
@@ -63,6 +63,10 @@ export function ScheduleTab({ lessons }: ScheduleTabProps) {
         backgroundColor: getEventColor(lesson.type),
         borderColor: getEventColor(lesson.type)
     }));
+
+    const handleEventClick = (info: EventClickArg) => {
+        router.push(`/lessons/${info.event.id}`);
+    };
 
     return (
         <Card className="p-6 shadow-none border rounded-[12px]">
@@ -110,6 +114,8 @@ export function ScheduleTab({ lessons }: ScheduleTabProps) {
                             minute: "2-digit",
                             hour12: false
                         }}
+                        eventClick={handleEventClick}
+                        eventClassNames="cursor-pointer hover:opacity-90"
                     />
                 )}
             </div>

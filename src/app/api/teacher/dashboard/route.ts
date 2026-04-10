@@ -200,9 +200,9 @@ export async function GET(req: NextRequest) {
             assignmentId: assignment.id,
             title: assignment.title,
             // Session title helps teachers identify which class the assignment came from
-            sessionTitle: assignment.classSession.title,
-            courseName: assignment.classSession.course.title,
-            courseId: assignment.classSession.course.id,
+            sessionTitle: assignment.classSession?.title || "Unlinked",
+            courseName: assignment.classSession?.course?.title || "Unknown Course",
+            courseId: assignment.classSession?.course?.id || "",
             pendingCount: assignment._count.submissions,
             deadline: assignment.dueDate?.toISOString() || null,
             skill: assignment.skill
