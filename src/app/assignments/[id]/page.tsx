@@ -29,7 +29,7 @@ export default function AssignmentPage() {
         error,
         fetchAssignment,
         setAnswer,
-        resetElapsedTime,
+        resetElapsedTime
     } = useAssignmentSessionStore();
 
     useEffect(() => {
@@ -40,9 +40,7 @@ export default function AssignmentPage() {
 
     const handleBeforeUnload = useCallback(
         (e: BeforeUnloadEvent) => {
-            const hasAnswers = Object.values(answers).some(
-                (a) => a && a.trim().length > 0
-            );
+            const hasAnswers = Object.values(answers).some((a) => a && a.trim().length > 0);
             if (hasAnswers) {
                 e.preventDefault();
                 e.returnValue = "You have unsaved answers. Are you sure you want to leave?";
@@ -72,9 +70,7 @@ export default function AssignmentPage() {
 
         const skill = currentAssignment?.skill;
         const questionNumber =
-            parts
-                .slice(0, currentPartIndex)
-                .reduce((acc, part) => acc + part.questions.length, 0) +
+            parts.slice(0, currentPartIndex).reduce((acc, part) => acc + part.questions.length, 0) +
             currentQuestionIndex +
             1;
 
@@ -184,35 +180,27 @@ export default function AssignmentPage() {
                 {currentPart && (
                     <div className="mb-6 flex items-center justify-between">
                         <div>
-                            <h2 className="text-2xl font-bold text-foreground">
-                                {currentPart.title}
-                            </h2>
+                            <h2 className="text-2xl font-bold text-foreground">{currentPart.title}</h2>
                             {currentPart.description && (
-                                <p className="text-muted-foreground mt-1">
-                                    {currentPart.description}
-                                </p>
+                                <p className="text-muted-foreground mt-1">{currentPart.description}</p>
                             )}
                         </div>
-                        {currentAssignment?.skill === IeltsSkill.SPEAKING && (
-                            <Timer />
-                        )}
+                        {currentAssignment?.skill === IeltsSkill.SPEAKING && <Timer />}
                         {currentAssignment?.skill === IeltsSkill.WRITING && (
                             <WritingTimer isSubmitted={!!currentAssignment?.submission?.submittedAt} />
                         )}
                     </div>
                 )}
 
-                {/* Main Layout */}
-                <div className="grid grid-cols-1 lg:grid-cols-[380px_1fr] gap-6">
+                {/* Main Layout */}z
+                <div className="grid grid-cols-1 lg:grid-cols-[380px_1fr] gap-6 mb-25">
                     {/* Left Sidebar - Question List */}
                     <div className="hidden lg:block">
                         <QuestionSidebar />
                     </div>
 
                     {/* Right Content - Question */}
-                    <div className="min-h-[calc(100vh-300px)]">
-                        {renderQuestion()}
-                    </div>
+                    <div className="min-h-[calc(100vh-300px)]">{renderQuestion()}</div>
                 </div>
             </div>
 

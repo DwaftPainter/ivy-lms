@@ -130,7 +130,7 @@ export async function GET(req: NextRequest) {
                 type: assignment.type,
                 skill: assignment.skill,
                 classSession: assignment.classSession,
-                course: assignment.classSession.course,
+                course: assignment.classSession?.course || null,
                 dueDate: assignment.dueDate,
                 maxScore: assignment.maxScore,
                 instructions: assignment.instructions,

@@ -185,7 +185,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
                         skill: assignment.skill,
                         // Surface both session context and course name for the UI
                         classSession: assignment.classSession,
-                        courseName: assignment.classSession.course.title,
+                        courseName: assignment.classSession?.course?.title || "Unknown Course",
                         dueDate: assignment.dueDate?.toISOString() || null,
                         maxScore: assignment.maxScore,
                         rubric: assignment.rubric
