@@ -214,8 +214,8 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
                         type: submission.assignment.type,
                         skill: submission.assignment.skill,
                         // Course name now sourced through classSession
-                        courseName: submission.assignment.classSession.course.title,
-                        sessionTitle: submission.assignment.classSession.title,
+                        courseName: submission.assignment.classSession?.course?.title || "Unknown Course",
+                        sessionTitle: submission.assignment.classSession?.title || "Unlinked",
                         dueDate: submission.assignment.dueDate?.toISOString() || null,
                         maxScore: submission.assignment.maxScore
                     },

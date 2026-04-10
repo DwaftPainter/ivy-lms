@@ -54,6 +54,14 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
             );
         }
 
+        // Verify assignment has a session
+        if (!assignment.classSession) {
+            return NextResponse.json(
+                { success: false, message: "Assignment is not linked to any session" },
+                { status: StatusCodes.BAD_REQUEST }
+            );
+        }
+
         // Verify student is enrolled
         const enrollment = await prisma.enrollment.findFirst({
             where: {
@@ -162,6 +170,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
                 status: true
             }
         });
+        console.log('🚀 ~ GET ~ submission:', submission)
 
         if (!submission) {
             return NextResponse.json(

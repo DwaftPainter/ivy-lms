@@ -112,6 +112,12 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
         }
 
         // Derive courseId through classSession
+        if (!assignment.classSession) {
+            return NextResponse.json(
+                { success: false, message: "Assignment is not linked to any session" },
+                { status: StatusCodes.BAD_REQUEST }
+            );
+        }
         const courseId = assignment.classSession.courseId;
 
         // Check if student is enrolled in the course this session belongs to
@@ -226,6 +232,12 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
         }
 
         // Derive courseId through classSession
+        if (!assignment.classSession) {
+            return NextResponse.json(
+                { success: false, message: "Assignment is not linked to any session" },
+                { status: StatusCodes.BAD_REQUEST }
+            );
+        }
         const courseId = assignment.classSession.courseId;
 
         // Check if student is enrolled in the course this session belongs to

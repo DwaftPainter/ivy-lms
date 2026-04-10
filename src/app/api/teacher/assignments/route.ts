@@ -214,7 +214,7 @@ export async function GET(req: NextRequest) {
             attachmentUrl: assignment.attachmentUrl,
             isPublished: assignment.isPublished,
             classSession: assignment.classSession,
-            course: assignment.classSession.course,
+            course: assignment.classSession?.course || null,
             submissionCount: assignment._count.submissions,
             rubric: assignment.rubric,
             createdAt: assignment.createdAt.toISOString(),
