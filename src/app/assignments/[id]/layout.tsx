@@ -1,17 +1,7 @@
 "use client";
 
 import { useParams, useRouter } from "next/navigation";
-import {
-    ArrowLeft,
-    HelpCircle,
-    Menu,
-    Maximize2,
-    Minimize2,
-    ZoomIn,
-    ZoomOut,
-    CheckCircle2,
-    X
-} from "lucide-react";
+import { ArrowLeft, HelpCircle, Menu, Maximize2, Minimize2, CheckCircle2, X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -166,15 +156,6 @@ export default function AssignmentLayout({ children }: { children: React.ReactNo
                                     {isSubmitting ? "Submitting..." : "Submit"}
                                 </Button>
                             )}
-
-                            {/* Menu */}
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                className="text-text-secondary hover:text-text-secondary hover:bg-white/10"
-                            >
-                                <Menu className="size-5" />
-                            </Button>
                         </div>
                     </header>
 

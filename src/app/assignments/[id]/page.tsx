@@ -192,7 +192,7 @@ export default function AssignmentPage() {
                     </div>
                 )}
 
-                {/* Main Layout */}z
+                {/* Main Layout */}
                 <div className="grid grid-cols-1 lg:grid-cols-[380px_1fr] gap-6 mb-25">
                     {/* Left Sidebar - Question List */}
                     <div className="hidden lg:block">
