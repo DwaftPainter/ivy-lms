@@ -452,7 +452,7 @@ export const useAssignmentBuilderStore = create<AssignmentBuilderState>()(
                 const skill = assignment.skill;
 
                 if (skill === IeltsSkill.WRITING) {
-                    assignmentType = assignment.type === "TASK1" ? AssignmentType.WRITING_TASK1 : AssignmentType.WRITING_TASK2;
+                    assignmentType = assignment.type === "WRITING_TASK1" ? AssignmentType.WRITING_TASK1 : AssignmentType.WRITING_TASK2;
                 } else if (skill === IeltsSkill.SPEAKING) {
                     assignmentType = AssignmentType.SPEAKING;
                 } else if (skill === IeltsSkill.LISTENING) {
