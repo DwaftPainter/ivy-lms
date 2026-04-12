@@ -1,6 +1,7 @@
 "use client";
 
 import { Card } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { ClassItem } from "@/store/class.store";
 import { Clock, User, SearchAlertIcon, ChevronRight } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -23,12 +24,10 @@ export function UpcomingClasses({ classes = [], isLoading }: UpcomingClassesProp
             <h2 className="text-lg font-semibold text-foreground mb-6">Upcoming Classes</h2>
 
             {isLoading ? (
-                <div className="flex items-center justify-center py-10">
-                    <div className="animate-pulse space-y-4 w-full">
-                        {[1, 2, 3].map((i) => (
-                            <div key={i} className="h-20 bg-muted rounded-lg"></div>
-                        ))}
-                    </div>
+                <div className="space-y-4 py-10">
+                    {[1, 2, 3].map((i) => (
+                        <Skeleton key={i} className="h-20 w-full" />
+                    ))}
                 </div>
             ) : isEmpty ? (
                 <div className="flex flex-col items-center justify-center py-10 text-center">

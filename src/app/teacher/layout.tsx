@@ -13,7 +13,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             <SidebarProvider>
                 <AppSidebar navMain={teacherSidebarNavConfig} />
                 <SidebarInset>
-                    <MainHeader />
+                    <MainHeader navMain={teacherSidebarNavConfig} />
                     <WorkInProgressWrapper>
                         <main className="flex-1 overflow-auto bg-[rgb(241,241,241)] sm:mt-12 mt-16">
                             {children}

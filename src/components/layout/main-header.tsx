@@ -1,28 +1,49 @@
 "use client";
 
 import { Separator } from "@/components/ui/separator";
-import {
-    SIDEBAR_WIDTH,
-    SIDEBAR_WIDTH_ICON,
-    SidebarTrigger,
-    useSidebar
-} from "@/components/ui/sidebar";
+import { SidebarTrigger } from "@/components/ui/sidebar";
 import { BellIcon, MessageSquareIcon } from "lucide-react";
+import { usePathname } from "next/navigation";
+import { useMemo } from "react";
 
-const MainHeader = () => {
-    const { open, isMobile } = useSidebar();
+interface NavItem {
+    title: string;
+    url: string;
+}
+
+interface MainHeaderProps {
+    navMain?: NavItem[];
+}
+
+const MainHeader = ({ navMain = [] }: MainHeaderProps) => {
+    const pathname = usePathname();
+
+    const pageTitle = useMemo(() => {
+        // Find exact match first
+        const exactMatch = navMain.find((item) => item.url === pathname);
+        if (exactMatch) return exactMatch.title;
+
+        // Find parent route match (e.g., /courses/123 matches /courses)
+        const parentMatch = navMain.find((item) =>
+            pathname.startsWith(item.url) && item.url !== "#"
+        );
+        if (parentMatch) return parentMatch.title;
+
+        return "";
+    }, [pathname, navMain]);
 
     return (
         <header
-            style={{
-                left: isMobile ? 0 : open ? SIDEBAR_WIDTH : SIDEBAR_WIDTH_ICON
-            }}
-            className="z-9999 fixed top-0 transition-all duration-75 right-0 px-4 bg-primary flex h-12 shrink-0 items-center justify-between gap-2  ease-linear"
+            className="sticky top-0 z-50 w-full px-4 bg-primary flex h-12 shrink-0 items-center justify-between gap-2"
         >
-            <div className="flex items-center gap-2">
-                <SidebarTrigger className="-ml-1 text-text-secondary" />
-                <Separator orientation="vertical" className="mr-2 data-[orientation=vertical]:h-4" />
-                <p className="text-text-secondary font-semibold">Dashboard</p>
+            <div className="flex items-center gap-2 overflow-hidden">
+                <SidebarTrigger className="text-text-secondary shrink-0" />
+                <Separator orientation="vertical" className="mr-2 data-[orientation=vertical]:h-4 shrink-0" />
+                {pageTitle && (
+                    <p className="text-text-secondary font-semibold truncate">
+                        {pageTitle}
+                    </p>
+                )}
             </div>
             <div className="flex gap-2">
                 <div className="border-gradient size-9 flex items-center justify-center cursor-pointer">
