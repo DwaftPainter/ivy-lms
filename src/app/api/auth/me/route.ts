@@ -60,6 +60,13 @@ export async function GET(req: NextRequest) {
             where: { id: userId }
         });
 
+        if (!user) {
+            return NextResponse.json(
+                { success: false, message: MESSAGES.user.userNotFound },
+                { status: StatusCodes.NOT_FOUND }
+            );
+        }
+
         return NextResponse.json(
             { success: true, message: MESSAGES.auth.getInfoSuccess, data: user, timestamp: new Date() },
             { status: StatusCodes.OK }
