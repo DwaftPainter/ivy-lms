@@ -5,6 +5,7 @@
 
 import { create } from "zustand";
 import { immer } from "zustand/middleware/immer";
+import { apiFetch } from "@/lib/api-fetch";
 import type {
     Assignment,
     Section,
@@ -18,7 +19,7 @@ import {
     createPassage,
     generateId
 } from "@/lib/assignment-builder/question-config";
-import { IeltsSkill } from "@/generated/prisma/enums";
+import { IeltsSkill, AssignmentType } from "@/generated/prisma/enums";
 
 interface AssignmentBuilderState {
     // Core state
@@ -28,14 +29,15 @@ interface AssignmentBuilderState {
     isDirty: boolean;
     isLoading: boolean;
     error: string | null;
+    classSessionId: string | null;
 
     // View state
     viewMode: "edit" | "preview";
     activeTab: "builder" | "settings" | "preview";
 
     // Actions
-    initializeAssignment: (skill: IeltsSkill, teacherId: string) => void;
-    loadAssignment: (assignment: Assignment) => void;
+    initializeAssignment: (skill: IeltsSkill, teacherId: string, classSessionId?: string) => void;
+    loadAssignment: (assignment: Assignment, classSessionId?: string) => void;
     updateAssignment: (updates: Partial<Assignment>) => void;
 
     // Section actions
@@ -65,8 +67,12 @@ interface AssignmentBuilderState {
     setViewMode: (mode: "edit" | "preview") => void;
     setActiveTab: (tab: "builder" | "settings" | "preview") => void;
 
+    // Class Session
+    setClassSessionId: (classSessionId: string | null) => void;
+
     // Persistence
-    saveAssignment: () => Promise<void>;
+    saveAssignment: () => Promise<string | void>;
+    saveToBackend: (classSessionId: string) => Promise<void>;
     resetAssignment: () => void;
 
     // Computed
@@ -84,11 +90,12 @@ export const useAssignmentBuilderStore = create<AssignmentBuilderState>()(
         isDirty: false,
         isLoading: false,
         error: null,
+        classSessionId: null,
         viewMode: "edit",
         activeTab: "builder",
 
         // Initialize new assignment
-        initializeAssignment: (skill, teacherId) => {
+        initializeAssignment: (skill, teacherId, classSessionId) => {
             const now = new Date().toISOString();
 
             set((state) => {
@@ -111,6 +118,7 @@ export const useAssignmentBuilderStore = create<AssignmentBuilderState>()(
                         isPublished: false
                     }
                 };
+                state.classSessionId = classSessionId || null;
                 state.isDirty = true;
                 state.selectedId = null;
                 state.expandedSections = [];
@@ -118,9 +126,10 @@ export const useAssignmentBuilderStore = create<AssignmentBuilderState>()(
         },
 
         // Load existing assignment
-        loadAssignment: (assignment) => {
+        loadAssignment: (assignment, classSessionId) => {
             set((state) => {
                 state.assignment = assignment;
+                state.classSessionId = classSessionId || null;
                 state.isDirty = false;
                 state.selectedId = null;
                 state.expandedSections = assignment.sections.map((s) => s.id);
@@ -401,7 +410,7 @@ export const useAssignmentBuilderStore = create<AssignmentBuilderState>()(
             set({ activeTab: tab });
         },
 
-        // Save assignment
+        // Save assignment locally
         saveAssignment: async () => {
             const { assignment } = get();
             if (!assignment) return;
@@ -409,8 +418,8 @@ export const useAssignmentBuilderStore = create<AssignmentBuilderState>()(
             set({ isLoading: true, error: null });
 
             try {
-                // TODO: Implement API call to save assignment
-                await new Promise((resolve) => setTimeout(resolve, 1000));
+                // Simulate API call
+                await new Promise((resolve) => setTimeout(resolve, 500));
 
                 set((state) => {
                     state.isDirty = false;
@@ -419,12 +428,75 @@ export const useAssignmentBuilderStore = create<AssignmentBuilderState>()(
                         state.assignment.metadata.updatedAt = new Date().toISOString();
                     }
                 });
+
+                return assignment.id;
             } catch (err) {
                 set({
                     error: err instanceof Error ? err.message : "Failed to save assignment",
                     isLoading: false
                 });
+                throw err;
             }
+        },
+
+        // Save assignment to backend API
+        saveToBackend: async (classSessionId: string) => {
+            const { assignment } = get();
+            if (!assignment) return;
+
+            set({ isLoading: true, error: null });
+
+            try {
+                // Map assignment type to proper AssignmentType enum
+                let assignmentType: AssignmentType;
+                const skill = assignment.skill;
+
+                if (skill === IeltsSkill.WRITING) {
+                    assignmentType = assignment.type === "TASK1" ? AssignmentType.WRITING_TASK1 : AssignmentType.WRITING_TASK2;
+                } else if (skill === IeltsSkill.SPEAKING) {
+                    assignmentType = AssignmentType.SPEAKING;
+                } else if (skill === IeltsSkill.LISTENING) {
+                    assignmentType = AssignmentType.LISTENING;
+                } else if (skill === IeltsSkill.READING) {
+                    assignmentType = AssignmentType.READING;
+                } else {
+                    assignmentType = AssignmentType.MOCK_TEST;
+                }
+
+                await apiFetch<{
+                    success: boolean;
+                    data: { assignment: { id: string } };
+                }>("/api/teacher/assignments", {
+                    method: "POST",
+                    body: JSON.stringify({
+                        classSessionId,
+                        title: assignment.title,
+                        description: assignment.description,
+                        type: assignmentType,
+                        skill: assignment.skill,
+                        instructions: assignment.instructions,
+                        isPublished: assignment.metadata?.isPublished || false
+                    })
+                });
+
+                set((state) => {
+                    state.isDirty = false;
+                    state.isLoading = false;
+                });
+            } catch (err) {
+                set({
+                    error: err instanceof Error ? err.message : "Failed to save assignment",
+                    isLoading: false
+                });
+                throw err;
+            }
+        },
+
+        // Set classSessionId
+        setClassSessionId: (classSessionId: string | null) => {
+            set((state) => {
+                state.classSessionId = classSessionId;
+            });
         },
 
         // Reset assignment
@@ -434,7 +506,8 @@ export const useAssignmentBuilderStore = create<AssignmentBuilderState>()(
                 selectedId: null,
                 expandedSections: [],
                 isDirty: false,
-                error: null
+                error: null,
+                classSessionId: null
             });
         },
 

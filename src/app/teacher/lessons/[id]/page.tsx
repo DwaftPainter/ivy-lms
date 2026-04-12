@@ -526,6 +526,14 @@ export default function TeacherLessonDetailPage() {
                                             Manage assignments linked to this session
                                         </p>
                                     </div>
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => router.push(`/teacher/assignments/builder?classSessionId=${id}&skill=${session.skill}&returnTo=/teacher/lessons/${id}`)}
+                                    >
+                                        <Plus className="w-4 h-4 mr-2" />
+                                        Create Assignment
+                                    </Button>
                                 </div>
                             </CardHeader>
                             <CardContent>
@@ -559,16 +567,26 @@ export default function TeacherLessonDetailPage() {
                                                         )}
                                                     </div>
                                                 </div>
-                                                <Button
-                                                    variant="ghost"
-                                                    size="sm"
-                                                    onClick={() => handleUnlinkAssignment(assignment.id)}
-                                                    disabled={isLinking}
-                                                    className="text-destructive hover:text-destructive"
-                                                >
-                                                    <Unlink className="w-4 h-4 mr-2" />
-                                                    Unlink
-                                                </Button>
+                                                <div className="flex items-center gap-2">
+                                                    <Button
+                                                        variant="outline"
+                                                        size="sm"
+                                                        onClick={() => router.push(`/teacher/assignments/builder?assignmentId=${assignment.id}&classSessionId=${id}&skill=${session.skill}&returnTo=/teacher/lessons/${id}`)}
+                                                    >
+                                                        <Edit3 className="w-4 h-4 mr-2" />
+                                                        Edit
+                                                    </Button>
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="sm"
+                                                        onClick={() => handleUnlinkAssignment(assignment.id)}
+                                                        disabled={isLinking}
+                                                        className="text-destructive hover:text-destructive"
+                                                    >
+                                                        <Unlink className="w-4 h-4 mr-2" />
+                                                        Unlink
+                                                    </Button>
+                                                </div>
                                             </div>
                                         ))}
                                     </div>

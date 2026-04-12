@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import { useAssignmentBuilderStore } from "@/store/assignment-builder.store";
 import { ComponentLibraryPanel } from "@/components/assignment-builder/component-library";
 import { BuilderCanvas } from "@/components/assignment-builder/builder-canvas";
@@ -15,6 +15,7 @@ import {
   Settings,
   ChevronLeft,
   Play,
+  Link as LinkIcon,
 } from "lucide-react";
 import Link from "next/link";
 import { IeltsSkill } from "@/generated/prisma/enums";
@@ -23,7 +24,10 @@ import { DndProvider } from "@/components/assignment-builder/dnd-context";
 
 export default function AssignmentBuilderPage() {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const skill = (searchParams.get("skill") as IeltsSkill) || IeltsSkill.READING;
+  const classSessionId = searchParams.get("classSessionId");
+  const returnTo = searchParams.get("returnTo");
   const [isPreview, setIsPreview] = useState(false);
 
   const {
@@ -32,18 +36,51 @@ export default function AssignmentBuilderPage() {
     isDirty,
     isLoading,
     saveAssignment,
+    saveToBackend,
+    setClassSessionId,
     viewMode,
     setViewMode,
     getTotalQuestions,
   } = useAssignmentBuilderStore();
 
   useEffect(() => {
-    initializeAssignment(skill, "current-teacher-id");
-  }, [initializeAssignment, skill]);
+    initializeAssignment(skill, "current-teacher-id", classSessionId || undefined);
+    if (classSessionId) {
+      setClassSessionId(classSessionId);
+    }
+  }, [initializeAssignment, skill, classSessionId, setClassSessionId]);
 
   const handleSave = async () => {
-    await saveAssignment();
-    toast.success("Assignment saved successfully");
+    try {
+      // First save locally
+      await saveAssignment();
+
+      // If we have a classSessionId, also save to backend
+      if (classSessionId) {
+        await saveToBackend(classSessionId);
+
+        // Optionally link the assignment to the session
+        toast.success("Assignment created and linked to session");
+
+        // Navigate back to lesson details if returnTo is specified
+        if (returnTo) {
+          router.push(returnTo);
+          return;
+        }
+      } else {
+        toast.success("Assignment saved successfully");
+      }
+    } catch (error) {
+      toast.error("Failed to save assignment");
+    }
+  };
+
+  const handleBack = () => {
+    if (returnTo) {
+      router.push(returnTo);
+    } else {
+      router.push("/teacher/assignments");
+    }
   };
 
   const togglePreview = () => {
@@ -65,16 +102,22 @@ export default function AssignmentBuilderPage() {
         {/* Header */}
         <header className="h-14 border-b bg-card flex items-center justify-between px-4 shrink-0">
           <div className="flex items-center gap-4">
-            <Link href="/teacher/assignments">
-              <Button variant="ghost" size="icon">
-                <ChevronLeft className="h-5 w-5" />
-              </Button>
-            </Link>
-            <div>
-              <h1 className="font-semibold text-sm">Assignment Builder</h1>
-              <p className="text-xs text-muted-foreground">
-                {assignment.title} • {getTotalQuestions()} questions
-              </p>
+            <Button variant="ghost" size="icon" onClick={handleBack}>
+              <ChevronLeft className="h-5 w-5" />
+            </Button>
+            <div className="flex items-center gap-3">
+              <div>
+                <h1 className="font-semibold text-sm">Assignment Builder</h1>
+                <p className="text-xs text-muted-foreground">
+                  {assignment.title} • {getTotalQuestions()} questions
+                </p>
+              </div>
+              {classSessionId && (
+                <div className="flex items-center gap-1.5 text-xs text-muted-foreground bg-primary/10 px-2 py-1 rounded">
+                  <LinkIcon className="h-3 w-3" />
+                  <span>Linked to Session</span>
+                </div>
+              )}
             </div>
           </div>
 
@@ -123,7 +166,7 @@ export default function AssignmentBuilderPage() {
               className="gap-1.5"
             >
               <Save className="h-4 w-4" />
-              {isLoading ? "Saving..." : "Save"}
+              {isLoading ? "Saving..." : (classSessionId ? "Save & Link" : "Save")}
             </Button>
           </div>
         </header>
