@@ -6,7 +6,7 @@ const TeamSwitcher = () => {
         <SidebarMenu>
             <SidebarMenuItem>
                 <SidebarMenuButton size="lg">
-                    <img className="size-8 rounded-xs" src="./IVY_IELTS_Logo.svg" />
+                    <img className="size-8 rounded-xs" src="/IVY_IELTS_Logo.svg" />
 
                     <div className="grid flex-1 text-left text-sm leading-tight">
                         <span className="truncate font-semibold">IVY LMS</span>

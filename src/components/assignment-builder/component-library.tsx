@@ -59,7 +59,7 @@ export function ComponentLibraryPanel({ skill }: ComponentLibraryPanelProps) {
   );
 
   return (
-    <div className="w-72 border-r bg-card flex flex-col">
+    <div className="w-100 border-r bg-card flex flex-col overflow-y-auto">
       {/* Header */}
       <div className="p-4 border-b">
         <h2 className="font-semibold text-sm mb-3">Component Library</h2>

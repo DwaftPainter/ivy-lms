@@ -55,7 +55,11 @@ export default function AssignmentLayout({ children }: { children: React.ReactNo
             setIsFullscreen(!!document.fullscreenElement);
         };
         document.addEventListener("fullscreenchange", handleFullscreenChange);
-        return () => document.removeEventListener("fullscreenchange", handleFullscreenChange);
+        return () => {
+            document.removeEventListener("fullscreenchange", handleFullscreenChange);
+            // Cleanup assignment session state when component unmounts
+            useAssignmentSessionStore.getState().clearSession();
+        };
     }, []);
 
     const handleFinish = async () => {

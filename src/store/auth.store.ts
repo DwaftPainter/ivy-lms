@@ -64,6 +64,14 @@ export const useAuthStore = create<AuthState>()(
                 }),
 
             fetchMe: async () => {
+                // Debounce rapid auth checks to prevent flickering
+                const currentState = useAuthStore.getState();
+                if (currentState.isLoading) {
+                    // If already loading, wait a bit and return
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                    return;
+                }
+
                 try {
                     set({ isLoading: true });
 
@@ -74,10 +82,15 @@ export const useAuthStore = create<AuthState>()(
                         isAuthenticated: true
                     });
                 } catch {
-                    set({
-                        user: null,
-                        isAuthenticated: false
-                    });
+                    // Only clear auth state if we were previously authenticated
+                    // This prevents flickering when navigating between pages
+                    const currentState = useAuthStore.getState();
+                    if (currentState.isAuthenticated) {
+                        set({
+                            user: null,
+                            isAuthenticated: false
+                        });
+                    }
                 } finally {
                     set({ isLoading: false });
                 }
@@ -192,7 +205,10 @@ export const useAuthStore = create<AuthState>()(
                     isAuthenticated: false
                 });
 
-                window.location.href = "/login";
+                // Add a small delay before redirecting to prevent flickering
+                setTimeout(() => {
+                    window.location.href = "/login";
+                }, 100);
             }
         }),
         {
