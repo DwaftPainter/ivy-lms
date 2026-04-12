@@ -364,10 +364,10 @@ export default function TeacherLessonDetailPage() {
                             <BookOpen className="w-4 h-4" />
                             Assignments
                         </TabsTrigger>
-                        <TabsTrigger value="materials" className="gap-2">
+                        {/* <TabsTrigger value="materials" className="gap-2">
                             <FileText className="w-4 h-4" />
                             Materials
-                        </TabsTrigger>
+                        </TabsTrigger> */}
                         <TabsTrigger value="access" className="gap-2">
                             <Shield className="w-4 h-4" />
                             Access Control
@@ -660,7 +660,7 @@ export default function TeacherLessonDetailPage() {
                     </TabsContent>
 
                     {/* Materials Tab */}
-                    <TabsContent value="materials" className="space-y-6">
+                    {/* <TabsContent value="materials" className="space-y-6">
                         <Card>
                             <CardHeader>
                                 <div className="flex items-center justify-between">
@@ -711,7 +711,7 @@ export default function TeacherLessonDetailPage() {
                                 )}
                             </CardContent>
                         </Card>
-                    </TabsContent>
+                    </TabsContent> */}
 
                     {/* Access Control Tab */}
                     <TabsContent value="access" className="space-y-6">

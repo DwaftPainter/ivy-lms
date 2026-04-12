@@ -288,7 +288,7 @@ export default function LessonDetailPage() {
             </Card>
 
             {/* Materials Section */}
-            <Card className="mb-6 shadow-none border">
+            {/* <Card className="mb-6 shadow-none border">
                 <CardHeader>
                     <h2 className="text-lg font-semibold">Session Materials</h2>
                 </CardHeader>
@@ -323,7 +323,7 @@ export default function LessonDetailPage() {
                         </div>
                     )}
                 </CardContent>
-            </Card>
+            </Card> */}
 
             {/* Assignments Section */}
             <Card className="mb-6 shadow-none border">
