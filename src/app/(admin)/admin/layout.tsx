@@ -12,7 +12,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             <SidebarProvider>
                 <AppSidebar navMain={adminSidebarNavConfig} />
                 <SidebarInset>
-                    <MainHeader />
+                    <MainHeader navMain={adminSidebarNavConfig} />
                     <main className="flex-1 overflow-auto bg-[rgb(241,241,241)] mt-16">{children}</main>
                 </SidebarInset>
             </SidebarProvider>

@@ -2,6 +2,7 @@
 
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Calendar, ClipboardList } from "lucide-react";
 import { useAssignmentStore } from "@/store/assignment.store";
 import { SubmissionStatus } from "@/generated/prisma/enums";
@@ -60,12 +61,10 @@ export function UpcomingAssignments() {
             </div>
 
             {isLoading ? (
-                <div className="flex items-center justify-center py-10">
-                    <div className="animate-pulse space-y-4 w-full">
-                        {[1, 2, 3].map((i) => (
-                            <div key={i} className="h-20 bg-muted rounded-lg"></div>
-                        ))}
-                    </div>
+                <div className="space-y-4 py-10">
+                    {[1, 2, 3].map((i) => (
+                        <Skeleton key={i} className="h-20 w-full" />
+                    ))}
                 </div>
             ) : isEmpty ? (
                 <div className="flex flex-col items-center justify-center text-center py-10">
