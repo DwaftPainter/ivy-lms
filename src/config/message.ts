@@ -35,6 +35,10 @@ export const MESSAGES = {
             "You have entered the wrong password 5 times. Your account is temporarily locked. Please try again later."
     },
 
+    user: {
+        userNotFound: "User not found"
+    },
+
     common: {
         serverError: "Internal server error"
     },
