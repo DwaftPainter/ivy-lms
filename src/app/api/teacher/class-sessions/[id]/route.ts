@@ -58,6 +58,12 @@ import { AttendanceStatus, Role } from "@/generated/prisma/enums";
  *                 type: string
  *               description:
  *                 type: string
+ *               skill:
+ *                 type: string
+ *                 enum: [LISTENING, READING, WRITING, SPEAKING]
+ *               sessionType:
+ *                 type: string
+ *                 enum: [LIVE, RECORDED, WORKSHOP]
  *               scheduledDate:
  *                 type: string
  *                 format: date-time
@@ -65,6 +71,8 @@ import { AttendanceStatus, Role } from "@/generated/prisma/enums";
  *                 type: string
  *               endTime:
  *                 type: string
+ *               durationMins:
+ *                 type: integer
  *               meetingUrl:
  *                 type: string
  *               isPublished:
@@ -351,9 +359,12 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
             data: {
                 ...(body.title !== undefined && { title: body.title }),
                 ...(body.description !== undefined && { description: body.description }),
+                ...(body.skill !== undefined && { skill: body.skill }),
+                ...(body.sessionType !== undefined && { sessionType: body.sessionType }),
                 ...(body.scheduledDate !== undefined && { scheduledDate: new Date(body.scheduledDate) }),
                 ...(body.startTime !== undefined && { startTime: body.startTime }),
                 ...(body.endTime !== undefined && { endTime: body.endTime }),
+                ...(body.durationMins !== undefined && { durationMins: body.durationMins }),
                 ...(body.meetingUrl !== undefined && { meetingUrl: body.meetingUrl }),
                 ...(body.isPublished !== undefined && { isPublished: body.isPublished })
             },
