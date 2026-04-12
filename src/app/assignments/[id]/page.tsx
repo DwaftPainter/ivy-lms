@@ -60,7 +60,7 @@ export default function AssignmentPage() {
         return () => {
             resetElapsedTime();
         };
-    }, [id, resetElapsedTime]);
+    }, [resetElapsedTime]);
 
     const currentPart = parts[currentPartIndex];
     const currentQuestion = currentPart?.questions[currentQuestionIndex];
