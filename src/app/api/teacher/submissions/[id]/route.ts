@@ -56,10 +56,16 @@ import { SubmissionStatus, Role } from "@/generated/prisma/enums";
  *             properties:
  *               score:
  *                 type: number
+ *                 description: Raw score (optional for drafts)
  *               bandScore:
  *                 type: number
+ *                 description: IELTS band score 0-9 (optional for drafts)
  *               feedback:
  *                 type: string
+ *                 description: Teacher feedback (optional for drafts)
+ *               isDraft:
+ *                 type: boolean
+ *                 description: If true, saves as draft without changing status
  *               criteriaScores:
  *                 type: array
  *                 items:
@@ -285,7 +291,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 
         const { id: submissionId } = await params;
         const body = await req.json();
-        const { score, bandScore, feedback, criteriaScores } = body;
+        const { score, bandScore, feedback, criteriaScores, isDraft } = body;
 
         // Verify submission — ownership via submission → assignment → classSession → course → teacherId
         const submission = await prisma.assignmentSubmission.findFirst({
@@ -341,12 +347,12 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
             return tx.assignmentSubmission.update({
                 where: { id: submissionId },
                 data: {
-                    score,
-                    bandScore,
-                    feedback,
-                    status: SubmissionStatus.GRADED,
-                    gradedById: teacherProfileId,
-                    gradedAt: new Date()
+                    score: score ?? null,
+                    bandScore: bandScore ?? null,
+                    feedback: feedback ?? null,
+                    status: isDraft === true ? undefined : SubmissionStatus.GRADED,
+                    gradedById: isDraft === true ? undefined : teacherProfileId,
+                    gradedAt: isDraft === true ? undefined : new Date()
                 },
                 include: {
                     criteriaScores: {
