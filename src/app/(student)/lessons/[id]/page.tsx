@@ -105,12 +105,7 @@ export default function LessonDetailPage() {
     const router = useRouter();
     const { id } = params;
 
-    const {
-        lesson,
-        isLoading,
-        error,
-        fetchLesson
-    } = useLessonDetailStore();
+    const { lesson, isLoading, error, fetchLesson } = useLessonDetailStore();
 
     useEffect(() => {
         if (id) {
@@ -210,11 +205,7 @@ export default function LessonDetailPage() {
                         </Badge>
                     </div>
                     <h1 className="text-2xl font-bold text-foreground">{lesson.title}</h1>
-                    {lesson.course && (
-                        <p className="text-muted-foreground mt-1">
-                            {lesson.course.title}
-                        </p>
-                    )}
+                    {lesson.course && <p className="text-muted-foreground mt-1">{lesson.course.title}</p>}
                 </CardHeader>
                 <CardContent className="pt-0">
                     {/* Session Info Grid */}
@@ -339,7 +330,9 @@ export default function LessonDetailPage() {
                     ) : (
                         <div className="space-y-4">
                             {lesson.assignments.map((assignment) => {
-                                const status = assignmentStatusConfig[assignment.status] || assignmentStatusConfig.NOT_STARTED;
+                                const status =
+                                    assignmentStatusConfig[assignment.status] ||
+                                    assignmentStatusConfig.NOT_STARTED;
                                 return (
                                     <div
                                         key={assignment.id}

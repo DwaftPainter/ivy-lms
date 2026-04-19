@@ -72,6 +72,7 @@ export const useLessonDetailStore = create<LessonDetailState>((set) => ({
             const response = await apiFetch<{ success: boolean; data: LessonDetail }>(
                 `/api/student/lessons/${id}`
             );
+            console.log('🚀 ~ response:', response.data)
             set({ lesson: response.data, isLoading: false });
         } catch (error: unknown) {
             const errorMessage = error instanceof Error ? error.message : "Failed to fetch lesson details";
