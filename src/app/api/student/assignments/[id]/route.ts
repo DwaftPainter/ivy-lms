@@ -273,7 +273,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
 
         // For speaking assignments, parse audio URLs from content JSON
         let audioUrls: any = null;
-        let submissionContent = content;
+        const submissionContent = content;
         if (assignment.skill === IeltsSkill.SPEAKING && content) {
             try {
                 const parsedContent = JSON.parse(content);
