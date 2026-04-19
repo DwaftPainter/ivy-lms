@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Separator } from "@/components/ui/separator";
+import { Button } from "@/components/ui/button";
 import {
   Select,
   SelectContent,
@@ -18,6 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { ImageUpload } from "@/components/ui/image-upload";
 import {
   useAssignmentBuilderStore,
 } from "@/store/assignment-builder.store";
@@ -27,6 +29,8 @@ import {
   LayoutGrid,
   Settings,
   Type,
+  Music,
+  ImageIcon,
 } from "lucide-react";
 import { QuestionType, Question } from "@/types/assignment-builder";
 import { getQuestionConfig } from "@/lib/assignment-builder/question-config";
@@ -295,6 +299,7 @@ interface PassageInspectorProps {
     wordCount?: number;
     audioUrl?: string;
     audioDuration?: number;
+    imageUrl?: string;
   };
   onUpdate: (updates: Partial<PassageInspectorProps['passage']>) => void;
 }
@@ -324,6 +329,50 @@ function PassageInspector({ passage, onUpdate }: PassageInspectorProps) {
         <p className="text-xs text-muted-foreground">
           Word count: {passage.wordCount || 0}
         </p>
+      </div>
+
+      {/* Image Upload */}
+      <div className="space-y-2">
+        <Label className="flex items-center gap-2">
+          <ImageIcon className="w-4 h-4" />
+          Passage Image (Optional)
+        </Label>
+        <ImageUpload
+          value={passage.imageUrl}
+          onChange={(url) => onUpdate({ imageUrl: url })}
+          onClear={() => onUpdate({ imageUrl: undefined })}
+          folder="assignments/passages"
+          placeholder="Upload a passage image"
+        />
+      </div>
+
+      {/* Audio Upload - Only for Listening passages */}
+      <div className="space-y-2">
+        <Label className="flex items-center gap-2">
+          <Music className="w-4 h-4" />
+          Audio File (Optional)
+        </Label>
+        <div className="p-4 border-2 border-dashed rounded-lg text-center">
+          {passage.audioUrl ? (
+            <div className="space-y-3">
+              <audio controls className="w-full" src={passage.audioUrl}>
+                Your browser does not support the audio element.
+              </audio>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => onUpdate({ audioUrl: undefined })}
+              >
+                Remove Audio
+              </Button>
+            </div>
+          ) : (
+            <div className="text-muted-foreground">
+              <p className="text-sm">Audio uploads managed through assignment settings</p>
+              <p className="text-xs mt-1">Supports MP3, WAV, WEBM</p>
+            </div>
+          )}
+        </div>
       </div>
 
       <div className="space-y-2">

@@ -104,10 +104,7 @@ import { Role } from "@/generated/prisma/enums";
  */
 
 // GET /api/teacher/class-sessions/[id]/assignments - Get available assignments for linking
-export async function GET(
-    req: NextRequest,
-    { params }: { params: Promise<{ id: string }> }
-) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     try {
         const token = req.cookies.get("token");
 
@@ -224,10 +221,7 @@ export async function GET(
 }
 
 // POST /api/teacher/class-sessions/[id]/assignments - Link an assignment to session
-export async function POST(
-    req: NextRequest,
-    { params }: { params: Promise<{ id: string }> }
-) {
+export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     try {
         const token = req.cookies.get("token");
 
@@ -319,10 +313,7 @@ export async function POST(
 }
 
 // DELETE /api/teacher/class-sessions/[id]/assignments - Unlink an assignment from session
-export async function DELETE(
-    req: NextRequest,
-    { params }: { params: Promise<{ id: string }> }
-) {
+export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     try {
         const token = req.cookies.get("token");
 
@@ -387,7 +378,7 @@ export async function DELETE(
             );
         }
 
-        if (session.assignments.length === 0) {
+        if (!session?.assignments?.length) {
             return NextResponse.json(
                 { success: false, message: "Assignment not linked to this session" },
                 { status: StatusCodes.NOT_FOUND }

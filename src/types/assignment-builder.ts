@@ -168,6 +168,8 @@ export interface Passage {
     audioUrl?: string;
     audioDuration?: number;
     transcript?: string;
+    // For images
+    imageUrl?: string;
 }
 
 export interface Section {

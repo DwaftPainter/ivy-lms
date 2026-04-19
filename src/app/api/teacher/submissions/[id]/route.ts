@@ -56,10 +56,16 @@ import { SubmissionStatus, Role } from "@/generated/prisma/enums";
  *             properties:
  *               score:
  *                 type: number
+ *                 description: Raw score (optional for drafts)
  *               bandScore:
  *                 type: number
+ *                 description: IELTS band score 0-9 (optional for drafts)
  *               feedback:
  *                 type: string
+ *                 description: Teacher feedback (optional for drafts)
+ *               isDraft:
+ *                 type: boolean
+ *                 description: If true, saves as draft without changing status
  *               criteriaScores:
  *                 type: array
  *                 items:
@@ -194,6 +200,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
                         content: submission.content,
                         fileUrl: submission.fileUrl,
                         audioUrl: submission.audioUrl,
+                        audioUrls: submission.audioUrls,
                         score: submission.score,
                         bandScore: submission.bandScore,
                         feedback: submission.feedback,
@@ -285,7 +292,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 
         const { id: submissionId } = await params;
         const body = await req.json();
-        const { score, bandScore, feedback, criteriaScores } = body;
+        const { score, bandScore, feedback, criteriaScores, isDraft } = body;
 
         // Verify submission — ownership via submission → assignment → classSession → course → teacherId
         const submission = await prisma.assignmentSubmission.findFirst({
@@ -312,6 +319,12 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
                 { status: StatusCodes.NOT_FOUND }
             );
         }
+
+        // Get student user ID for notification before transaction
+        const studentUser = await prisma.studentProfile.findUnique({
+            where: { id: submission.studentId },
+            select: { userId: true }
+        });
 
         // Use transaction to update submission and criteria scores atomically
         const updatedSubmission = await prisma.$transaction(async (tx) => {
@@ -341,12 +354,12 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
             return tx.assignmentSubmission.update({
                 where: { id: submissionId },
                 data: {
-                    score,
-                    bandScore,
-                    feedback,
-                    status: SubmissionStatus.GRADED,
-                    gradedById: teacherProfileId,
-                    gradedAt: new Date()
+                    score: score ?? null,
+                    bandScore: bandScore ?? null,
+                    feedback: feedback ?? null,
+                    status: isDraft === true ? undefined : SubmissionStatus.GRADED,
+                    gradedById: isDraft === true ? undefined : teacherProfileId,
+                    gradedAt: isDraft === true ? undefined : new Date()
                 },
                 include: {
                     criteriaScores: {
@@ -366,6 +379,18 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
                 }
             });
         });
+
+        // Create notification for student if not a draft
+        if (isDraft !== true && studentUser) {
+            await prisma.notification.create({
+                data: {
+                    userId: studentUser.userId,
+                    title: `Assignment graded: ${submission.assignment.title}`,
+                    body: `Your submission for "${submission.assignment.title}" has been graded.${bandScore ? ` Band score: ${bandScore}` : ""}`,
+                    link: `/assignments/${submission.assignmentId}`
+                }
+            });
+        }
 
         return NextResponse.json(
             {

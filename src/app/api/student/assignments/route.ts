@@ -135,6 +135,7 @@ export async function GET(req: NextRequest) {
                 maxScore: assignment.maxScore,
                 instructions: assignment.instructions,
                 attachmentUrl: assignment.attachmentUrl,
+                content: assignment.content,
                 isOverdue: isOverdue && !submission,
                 submission: submission
                     ? {

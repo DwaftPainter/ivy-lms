@@ -152,6 +152,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
             content: submission.content,
             fileUrl: submission.fileUrl,
             audioUrl: submission.audioUrl,
+            audioUrls: submission.audioUrls,
             score: submission.score,
             bandScore: submission.bandScore,
             feedback: submission.feedback,

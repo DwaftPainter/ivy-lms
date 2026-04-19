@@ -375,6 +375,12 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
                         title: true,
                         skill: true
                     }
+                },
+                materials: {
+                    orderBy: { createdAt: "asc" }
+                },
+                assignments: {
+                    orderBy: { createdAt: "desc" }
                 }
             }
         });
@@ -404,6 +410,27 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
             });
         }
 
+        // Format materials and assignments for response
+        const formattedMaterials = updatedSession.materials.map((material) => ({
+            id: material.id,
+            name: material.name,
+            fileUrl: material.fileUrl,
+            fileType: material.fileType,
+            createdAt: material.createdAt.toISOString()
+        }));
+
+        const formattedAssignments = updatedSession.assignments.map((assignment) => ({
+            id: assignment.id,
+            title: assignment.title,
+            description: assignment.description,
+            type: assignment.type,
+            skill: assignment.skill,
+            dueDate: assignment.dueDate?.toISOString() || null,
+            maxScore: assignment.maxScore,
+            isPublished: assignment.isPublished,
+            createdAt: assignment.createdAt.toISOString()
+        }));
+
         return NextResponse.json(
             {
                 success: true,
@@ -421,7 +448,11 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
                         durationMins: updatedSession.durationMins,
                         meetingUrl: updatedSession.meetingUrl,
                         isPublished: updatedSession.isPublished,
-                        course: updatedSession.course
+                        course: updatedSession.course,
+                        materials: formattedMaterials,
+                        assignments: formattedAssignments,
+                        createdAt: updatedSession.createdAt.toISOString(),
+                        updatedAt: updatedSession.updatedAt.toISOString()
                     }
                 }
             },

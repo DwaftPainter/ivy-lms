@@ -1,7 +1,7 @@
-import { LayoutGridIcon, SettingsIcon, MessageSquareIcon } from "lucide-react";
+import { LayoutGridIcon, SettingsIcon, AwardIcon } from "lucide-react";
 
 export const teacherSidebarNavConfig = [
     { title: "Dashboard", url: "/teacher", icon: LayoutGridIcon },
-    { title: "Messages", url: "/teacher/messages", icon: MessageSquareIcon },
+    { title: "Grading", url: "/teacher/grading", icon: AwardIcon },
     { title: "Settings", url: "/teacher/settings", icon: SettingsIcon }
 ];

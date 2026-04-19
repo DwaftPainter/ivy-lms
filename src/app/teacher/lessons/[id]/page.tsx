@@ -11,7 +11,6 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
@@ -166,12 +165,16 @@ export default function TeacherLessonDetailPage() {
     const handleSaveSession = async () => {
         if (!session) return;
         try {
+            // Ensure scheduledDate is in proper ISO format
+            const scheduledDate = session.scheduledDate.includes("T")
+                ? session.scheduledDate
+                : `${session.scheduledDate}T00:00:00.000Z`;
+
             await updateSession(session.id, {
                 title: session.title,
-                description: session.description,
                 skill: session.skill,
                 sessionType: session.sessionType,
-                scheduledDate: session.scheduledDate,
+                scheduledDate: scheduledDate,
                 startTime: session.startTime,
                 endTime: session.endTime,
                 durationMins: session.durationMins,
@@ -179,8 +182,10 @@ export default function TeacherLessonDetailPage() {
             });
             setHasUnsavedChanges(false);
             toast.success("Session updated successfully");
-        } catch {
+        } catch (err) {
             toast.error("Failed to update session");
+            // eslint-disable-next-line no-console
+            console.error("Save session error:", err);
         }
     };
 
@@ -288,9 +293,9 @@ export default function TeacherLessonDetailPage() {
                     </Button>
                 </div>
                 <div className="flex items-center gap-3">
-                    <div className="flex items-center bg-muted rounded-lg p-1">
+                    <div className="flex items-center bg-muted/50 rounded-lg p-1 border">
                         <Button
-                            variant={viewMode === "edit" ? "secondary" : "ghost"}
+                            variant={viewMode === "edit" ? "default" : "ghost"}
                             size="sm"
                             onClick={() => setViewMode("edit")}
                             className="gap-2"
@@ -299,7 +304,7 @@ export default function TeacherLessonDetailPage() {
                             Edit
                         </Button>
                         <Button
-                            variant={viewMode === "preview" ? "secondary" : "ghost"}
+                            variant={viewMode === "preview" ? "default" : "ghost"}
                             size="sm"
                             onClick={() => setViewMode("preview")}
                             className="gap-2"
@@ -392,18 +397,6 @@ export default function TeacherLessonDetailPage() {
                                         value={session.title}
                                         onChange={(e) => handleFieldChange("title", e.target.value)}
                                         placeholder="Enter lesson title"
-                                    />
-                                </div>
-
-                                {/* Description */}
-                                <div className="space-y-2">
-                                    <Label htmlFor="description">Description</Label>
-                                    <Textarea
-                                        id="description"
-                                        value={session.description || ""}
-                                        onChange={(e) => handleFieldChange("description", e.target.value)}
-                                        placeholder="Enter lesson description"
-                                        rows={4}
                                     />
                                 </div>
 
@@ -537,7 +530,7 @@ export default function TeacherLessonDetailPage() {
                                 </div>
                             </CardHeader>
                             <CardContent>
-                                {session.assignments.length === 0 ? (
+                                {!session?.assignments?.length ? (
                                     <div className="text-center py-8 bg-muted/30 rounded-lg">
                                         <BookOpen className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
                                         <p className="text-muted-foreground mb-4">
@@ -950,7 +943,7 @@ export default function TeacherLessonDetailPage() {
                             <h2 className="text-lg font-semibold">Linked Assignments</h2>
                         </CardHeader>
                         <CardContent className="pt-0">
-                            {session.assignments.length === 0 ? (
+                            {!session?.assignments?.length ? (
                                 <div className="text-center py-8 bg-muted/30 rounded-lg">
                                     <BookOpen className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
                                     <p className="text-muted-foreground">

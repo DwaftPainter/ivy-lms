@@ -111,6 +111,7 @@ export async function GET(req: NextRequest) {
             const day = dayNames[sessionDate.getDay()];
 
             const attendance = session.attendances[0];
+            console.log('🚀 ~ GET ~ attendance:', attendance)
 
             const totalAssignments = session.assignments.length;
 
