@@ -5,12 +5,14 @@ import { useParams } from "next/navigation";
 import { useTeacherGradingStore } from "@/store/teacher-grading.store";
 import { StudentSubmissionList } from "@/components/grading/student-submission-list";
 import { SubmissionViewer } from "@/components/grading/submission-viewer";
+import { AssignmentContentViewer } from "@/components/grading/assignment-content-viewer";
 import { RubricScoring } from "@/components/grading/rubric-scoring";
 import { GradingHeader } from "@/components/grading/grading-header";
 import { GradingActionBar } from "@/components/grading/grading-action-bar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default function TeacherGradingPage() {
     const params = useParams();
@@ -120,29 +122,43 @@ export default function TeacherGradingPage() {
                     <div className="flex-1 overflow-auto p-6">
                         {currentSubmission ? (
                             <div className="max-w-5xl mx-auto space-y-6">
-                                {/* Submission Viewer */}
-                                <SubmissionViewer
-                                    submission={currentSubmission}
-                                    skill={assignment.skill}
-                                />
+                                <Tabs defaultValue="submission" className="w-full">
+                                    <TabsList className="mb-4">
+                                        <TabsTrigger value="submission">Student Submission</TabsTrigger>
+                                        <TabsTrigger value="assignment">Assignment Questions</TabsTrigger>
+                                    </TabsList>
 
-                                {/* Rubric Scoring */}
-                                <RubricScoring
-                                    criteria={criteria}
-                                    bandScore={currentSubmission.bandScore}
-                                    feedback={currentSubmission.feedback}
-                                    maxScore={assignment.maxScore}
-                                    draftScores={draft?.criteriaScores || {}}
-                                    draftBandScore={draft?.bandScore}
-                                    draftFeedback={draft?.feedback}
-                                    onScoreChange={updateDraftScore}
-                                    onBandScoreChange={updateBandScore}
-                                    onFeedbackChange={updateFeedback}
-                                />
+                                    <TabsContent value="submission" className="space-y-6">
+                                        {/* Submission Viewer */}
+                                        <SubmissionViewer
+                                            submission={currentSubmission}
+                                            skill={assignment.skill}
+                                        />
+
+                                        {/* Rubric Scoring */}
+                                        <RubricScoring
+                                            criteria={criteria}
+                                            bandScore={currentSubmission.bandScore}
+                                            feedback={currentSubmission.feedback}
+                                            maxScore={assignment.maxScore}
+                                            draftScores={draft?.criteriaScores || {}}
+                                            draftBandScore={draft?.bandScore}
+                                            draftFeedback={draft?.feedback}
+                                            onScoreChange={updateDraftScore}
+                                            onBandScoreChange={updateBandScore}
+                                            onFeedbackChange={updateFeedback}
+                                        />
+                                    </TabsContent>
+
+                                    <TabsContent value="assignment">
+                                        {/* Assignment Content / Questions */}
+                                        <AssignmentContentViewer assignment={assignment} />
+                                    </TabsContent>
+                                </Tabs>
                             </div>
                         ) : (
-                            <div className="h-full flex items-center justify-center text-muted-foreground">
-                                Select a student to begin grading
+                            <div className="max-w-5xl mx-auto">
+                                <AssignmentContentViewer assignment={assignment} />
                             </div>
                         )}
                     </div>

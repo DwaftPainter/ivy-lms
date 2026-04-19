@@ -276,6 +276,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
                     instructions: assignment.instructions,
                     attachmentUrl: assignment.attachmentUrl,
                     isPublished: assignment.isPublished,
+                    content: assignment.content,
                     classSession: assignment.classSession,
                     course: assignment.classSession?.course || null,
                     rubric: assignment.rubric,
@@ -357,7 +358,8 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
             instructions,
             attachmentUrl,
             isPublished,
-            rubric
+            rubric,
+            content
         } = body;
 
         // Verify assignment exists and belongs to this teacher
@@ -392,7 +394,8 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
                     maxScore: maxScore ?? undefined,
                     instructions: instructions !== undefined ? instructions : undefined,
                     attachmentUrl: attachmentUrl !== undefined ? attachmentUrl : undefined,
-                    isPublished: isPublished !== undefined ? isPublished : undefined
+                    isPublished: isPublished !== undefined ? isPublished : undefined,
+                    content: content !== undefined ? content : undefined
                 }
             });
 

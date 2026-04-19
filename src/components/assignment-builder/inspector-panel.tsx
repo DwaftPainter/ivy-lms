@@ -156,6 +156,8 @@ export function InspectorPanel() {
   );
 }
 
+import type { Assignment } from "@/types/assignment-builder";
+
 // Assignment Inspector
 interface AssignmentInspectorProps {
   assignment: {
@@ -164,8 +166,11 @@ interface AssignmentInspectorProps {
     totalTime: number;
     totalPoints: number;
     instructions?: string;
+    metadata?: {
+      isPublished: boolean;
+    };
   };
-  onUpdate: (updates: Partial<AssignmentInspectorProps['assignment']>) => void;
+  onUpdate: (updates: Partial<Assignment>) => void;
 }
 
 function AssignmentInspector({ assignment, onUpdate }: AssignmentInspectorProps) {
@@ -224,6 +229,27 @@ function AssignmentInspector({ assignment, onUpdate }: AssignmentInspectorProps)
           placeholder="Enter instructions for students"
           rows={4}
         />
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="isPublished">Publication Status</Label>
+        <Select
+          value={assignment.metadata?.isPublished ? "published" : "draft"}
+          onValueChange={(value) => {
+            const currentMetadata = (assignment as Assignment).metadata;
+            onUpdate({
+              metadata: { ...currentMetadata, isPublished: value === "published" }
+            } as Partial<Assignment>);
+          }}
+        >
+          <SelectTrigger id="isPublished">
+            <SelectValue placeholder="Select status" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="draft">Draft</SelectItem>
+            <SelectItem value="published">Published</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
     </div>
   );

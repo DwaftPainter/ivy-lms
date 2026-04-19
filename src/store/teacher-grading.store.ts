@@ -47,6 +47,7 @@ export interface AssignmentInfo {
     courseName: string;
     dueDate?: string | null;
     maxScore?: number | null;
+    content?: unknown | null; // Assignment content with sections/questions
     rubric?: {
         id: string;
         name: string;

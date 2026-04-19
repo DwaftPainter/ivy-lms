@@ -73,6 +73,7 @@ interface AssignmentBuilderState {
     // Persistence
     saveAssignment: () => Promise<string | void>;
     saveToBackend: (classSessionId: string) => Promise<void>;
+    updateToBackend: (assignmentId: string) => Promise<void>;
     resetAssignment: () => void;
 
     // Computed
@@ -491,6 +492,63 @@ export const useAssignmentBuilderStore = create<AssignmentBuilderState>()(
             } catch (err) {
                 set({
                     error: err instanceof Error ? err.message : "Failed to save assignment",
+                    isLoading: false
+                });
+                throw err;
+            }
+        },
+
+        // Update existing assignment to backend API
+        updateToBackend: async (assignmentId: string) => {
+            const { assignment } = get();
+            if (!assignment) return;
+
+            set({ isLoading: true, error: null });
+
+            try {
+                // Map assignment type to proper AssignmentType enum
+                let assignmentType: AssignmentType;
+                const skill = assignment.skill;
+
+                if (skill === IeltsSkill.WRITING) {
+                    assignmentType = assignment.type === "WRITING_TASK1" ? AssignmentType.WRITING_TASK1 : AssignmentType.WRITING_TASK2;
+                } else if (skill === IeltsSkill.SPEAKING) {
+                    assignmentType = AssignmentType.SPEAKING;
+                } else if (skill === IeltsSkill.LISTENING) {
+                    assignmentType = AssignmentType.LISTENING;
+                } else if (skill === IeltsSkill.READING) {
+                    assignmentType = AssignmentType.READING;
+                } else {
+                    assignmentType = AssignmentType.MOCK_TEST;
+                }
+
+                await apiFetch<{
+                    success: boolean;
+                    data: { assignment: { id: string } };
+                }>(`/api/teacher/assignments/${assignmentId}`, {
+                    method: "PUT",
+                    body: JSON.stringify({
+                        title: assignment.title,
+                        description: assignment.description,
+                        type: assignmentType,
+                        skill: assignment.skill,
+                        instructions: assignment.instructions,
+                        isPublished: assignment.metadata?.isPublished || false,
+                        content: {
+                            sections: assignment.sections,
+                            totalTime: assignment.totalTime,
+                            totalPoints: assignment.totalPoints
+                        }
+                    })
+                });
+
+                set((state) => {
+                    state.isDirty = false;
+                    state.isLoading = false;
+                });
+            } catch (err) {
+                set({
+                    error: err instanceof Error ? err.message : "Failed to update assignment",
                     isLoading: false
                 });
                 throw err;

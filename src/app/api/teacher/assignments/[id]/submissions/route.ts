@@ -189,7 +189,8 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
                         courseName: assignment.classSession?.course?.title || "Unknown Course",
                         dueDate: assignment.dueDate?.toISOString() || null,
                         maxScore: assignment.maxScore,
-                        rubric: assignment.rubric
+                        rubric: assignment.rubric,
+                        content: assignment.content
                     },
                     submissions: formattedSubmissions,
                     summary: {

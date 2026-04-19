@@ -14,6 +14,7 @@ export interface AssignmentDetails {
     instructions?: string;
     attachmentUrl?: string;
     isPublished: boolean;
+    content?: unknown; // Assignment content metadata (sections, questions, etc.)
     createdAt: Date;
     isOverdue: boolean;
     course: {
@@ -523,8 +524,115 @@ export const useAssignmentSessionStore = create<AssignmentSessionState>()(
     )
 );
 
+// Helper function to map builder question type to session question type
+function mapQuestionType(builderType: string): Question["type"] {
+    switch (builderType) {
+        case "multiple_choice_single":
+        case "multiple_choice_multiple":
+            return "multiple_choice";
+        case "true_false_not_given":
+            return "true_false";
+        case "matching_headings":
+        case "matching_information":
+        case "matching_features":
+            return "matching";
+        case "sentence_completion":
+        case "summary_completion":
+        case "summary_completion_word_bank":
+        case "form_completion":
+        case "table_completion":
+        case "flow_chart_completion":
+            return "fill_blank";
+        case "short_answer":
+            return "essay"; // Short answer uses text input like essay
+        default:
+            return "essay";
+    }
+}
+
 // Helper function to generate parts based on assignment type
-function generatePartsFromAssignment(assignment: AssignmentDetails): Part[] {
+function generatePartsFromAssignment(assignment: AssignmentDetails & { content?: unknown }): Part[] {
+    // Try to parse content from assignment metadata first
+    const content = assignment.content;
+    if (content && typeof content === "object") {
+        const contentData = content as {
+            sections?: Array<{
+                id: string;
+                title: string;
+                description?: string;
+                timeLimit?: number;
+                passage?: {
+                    id: string;
+                    title: string;
+                    content?: string;
+                    audioUrl?: string;
+                    imageUrl?: string;
+                    wordCount?: number;
+                };
+                questions: Array<{
+                    id: string;
+                    type: string;
+                    questionNumber: number;
+                    instructions?: string;
+                    questionText?: string;
+                    points: number;
+                    config: Record<string, unknown>;
+                }>;
+            }>;
+            totalTime?: number;
+            totalPoints?: number;
+        };
+
+        if (contentData.sections && Array.isArray(contentData.sections) && contentData.sections.length > 0) {
+            // Map builder sections to Parts format
+            return contentData.sections.map((section) => {
+                // Extract passage info if available
+                const passageContent = section.passage?.content;
+                const passageAudioUrl = section.passage?.audioUrl;
+                const passageImageUrl = section.passage?.imageUrl;
+
+                return {
+                    id: section.id,
+                    title: section.title,
+                    description: section.description,
+                    timeLimit: section.timeLimit,
+                    questions: section.questions.map((q) => {
+                        const mappedType = mapQuestionType(q.type);
+
+                        // Extract options from config based on question type
+                        let options: string[] | undefined;
+                        if (mappedType === "multiple_choice" && q.config?.options) {
+                            options = q.config.options as string[];
+                        } else if (mappedType === "true_false") {
+                            options = ["True", "False", "Not Given"];
+                        } else if (mappedType === "matching" && q.config?.options) {
+                            options = q.config.options as string[];
+                        }
+
+                        // Build prompt from instructions and question text
+                        const prompt = q.instructions
+                            ? `${q.instructions}\n\n${q.questionText || ""}`
+                            : (q.questionText || "Answer the question");
+
+                        return {
+                            id: q.id,
+                            type: mappedType,
+                            prompt: prompt.trim(),
+                            options,
+                            // For reading: passage content is shown separately, not per question
+                            // But we include it for reference/hint purposes
+                            passage: passageContent,
+                            // For listening: audio URL is shared across the section
+                            audioUrl: passageAudioUrl,
+                            imageUrl: passageImageUrl
+                        };
+                    })
+                };
+            });
+        }
+    }
+
+    // Fallback to default generation if no content or empty content
     switch (assignment.type) {
         case AssignmentType.WRITING_TASK1:
             return [
