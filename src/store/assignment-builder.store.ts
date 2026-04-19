@@ -475,7 +475,12 @@ export const useAssignmentBuilderStore = create<AssignmentBuilderState>()(
                         type: assignmentType,
                         skill: assignment.skill,
                         instructions: assignment.instructions,
-                        isPublished: assignment.metadata?.isPublished || false
+                        isPublished: assignment.metadata?.isPublished || false,
+                        content: {
+                            sections: assignment.sections,
+                            totalTime: assignment.totalTime,
+                            totalPoints: assignment.totalPoints
+                        }
                     })
                 });
 

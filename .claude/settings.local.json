@@ -3,7 +3,9 @@
     "allow": [
       "Bash(npm run *)",
       "Bash(npx tsc *)",
-      "WebFetch(domain:)"
+      "WebFetch(domain:)",
+      "Bash(npx prisma *)",
+      "Bash(npm install *)"
     ]
   }
 }

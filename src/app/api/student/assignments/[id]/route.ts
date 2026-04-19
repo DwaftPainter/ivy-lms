@@ -145,6 +145,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
                     instructions: assignment.instructions,
                     attachmentUrl: assignment.attachmentUrl,
                     isPublished: assignment.isPublished,
+                    content: assignment.content,
                     createdAt: assignment.createdAt,
                     // Expose both session context and the nested course
                     classSession: assignment.classSession,
@@ -214,12 +215,22 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
             );
         }
 
-        // Get assignment — traverse classSession to reach courseId
+        // Get assignment — traverse classSession to reach courseId and teacher
         const assignment = await prisma.assignment.findUnique({
             where: { id: assignmentId },
             include: {
                 classSession: {
-                    select: { courseId: true }
+                    select: {
+                        courseId: true,
+                        course: {
+                            select: {
+                                title: true,
+                                teacher: {
+                                    select: { userId: true }
+                                }
+                            }
+                        }
+                    }
                 }
             }
         });
@@ -343,6 +354,23 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
                 console.error("Auto AI grading failed:", error);
                 // Continue with submission even if AI grading fails
             }
+        }
+
+        // Notify teacher about new submission
+        const teacherUserId = assignment.classSession?.course?.teacher?.userId;
+        if (teacherUserId && submission.status === SubmissionStatus.SUBMITTED) {
+            const studentUser = await prisma.user.findUnique({
+                where: { id: userId },
+                select: { firstName: true, lastName: true }
+            });
+            await prisma.notification.create({
+                data: {
+                    userId: teacherUserId,
+                    title: `New submission: ${assignment.title}`,
+                    body: `${studentUser?.firstName} ${studentUser?.lastName} submitted "${assignment.title}" in ${assignment.classSession?.course?.title || "your course"}.`,
+                    link: `/teacher/assignments/${assignmentId}/grade`
+                }
+            });
         }
 
         // Update enrollment status to STUDYING if it was UPCOMING

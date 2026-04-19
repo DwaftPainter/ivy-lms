@@ -5,16 +5,19 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Question } from "@/store/assignment-session.store";
-import { Mic, Square, Play, Pause, RotateCcw } from "lucide-react";
+import { Mic, Square, Play, Pause, RotateCcw, Loader2 } from "lucide-react";
 import { useAssignmentSessionStore } from "@/store/assignment-session.store";
+import { uploadAudio } from "@/lib/upload";
+import { toast } from "sonner";
 
 interface SpeakingQuestionProps {
     question: Question;
-    answer: string; // This will be the audio URL
+    answer: string; // This will be the Cloudinary audio URL
     onAnswerChange: (value: string) => void;
     questionNumber: number;
     partTimeLimit?: number; // in seconds
     isSubmitted?: boolean;
+    assignmentId?: string;
 }
 
 export function SpeakingQuestion({
@@ -23,12 +26,15 @@ export function SpeakingQuestion({
     onAnswerChange,
     questionNumber,
     partTimeLimit,
-    isSubmitted
+    isSubmitted,
+    assignmentId
 }: SpeakingQuestionProps) {
     const [isRecording, setIsRecording] = useState(false);
     const [isPlaying, setIsPlaying] = useState(false);
     const [recordingTime, setRecordingTime] = useState(0);
     const [audioUrl, setAudioUrl] = useState<string | null>(answer || null);
+    const [isUploading, setIsUploading] = useState(false);
+    const [uploadProgress, setUploadProgress] = useState(0);
     const mediaRecorderRef = useRef<MediaRecorder | null>(null);
     const audioChunksRef = useRef<Blob[]>([]);
     const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -64,25 +70,48 @@ export function SpeakingQuestion({
     const startRecording = async () => {
         try {
             const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-            const mediaRecorder = new MediaRecorder(stream);
+            const mediaRecorder = new MediaRecorder(stream, {
+                mimeType: "audio/webm;codecs=opus"
+            });
             mediaRecorderRef.current = mediaRecorder;
             audioChunksRef.current = [];
 
             mediaRecorder.ondataavailable = (event) => {
-                audioChunksRef.current.push(event.data);
+                if (event.data.size > 0) {
+                    audioChunksRef.current.push(event.data);
+                }
             };
 
-            mediaRecorder.onstop = () => {
-                const audioBlob = new Blob(audioChunksRef.current, { type: "audio/wav" });
-                const url = URL.createObjectURL(audioBlob);
-                setAudioUrl(url);
-                onAnswerChange(url);
+            mediaRecorder.onstop = async () => {
+                const audioBlob = new Blob(audioChunksRef.current, { type: "audio/webm" });
+
+                // Upload to Cloudinary
+                setIsUploading(true);
+                setUploadProgress(0);
+
+                try {
+                    const result = await uploadAudio(
+                        audioBlob,
+                        `speaking-${question.id}-${Date.now()}.webm`,
+                        assignmentId ? `student-audio/${assignmentId}` : "student-audio"
+                    );
+
+                    setAudioUrl(result.url);
+                    onAnswerChange(result.url);
+                    toast.success("Recording uploaded successfully");
+                } catch (error) {
+                    console.error("Upload error:", error);
+                    toast.error("Failed to upload recording. Please try again.");
+                } finally {
+                    setIsUploading(false);
+                    setUploadProgress(0);
+                }
 
                 // Stop all tracks
                 stream.getTracks().forEach((track) => track.stop());
             };
 
-            mediaRecorder.start();
+            mediaRecorder.start(1000); // Collect data every second
             setIsRecording(true);
             setRecordingTime(0);
             if (partTimeLimit) {
@@ -90,7 +119,7 @@ export function SpeakingQuestion({
             }
         } catch (error) {
             console.error("Error accessing microphone:", error);
-            alert("Could not access microphone. Please check your permissions.");
+            toast.error("Could not access microphone. Please check your permissions.");
         }
     };
 
@@ -118,12 +147,10 @@ export function SpeakingQuestion({
     };
 
     const rerecord = () => {
-        if (audioUrl) {
-            URL.revokeObjectURL(audioUrl);
-        }
         setAudioUrl(null);
         onAnswerChange("");
         setRecordingTime(0);
+        toast.info("Previous recording cleared. You can now re-record.");
     };
 
     const formatTime = (time: number) => {
@@ -153,8 +180,16 @@ export function SpeakingQuestion({
                         </div>
                     )}
 
+                    {/* Upload Progress */}
+                    {isUploading && (
+                        <div className="flex flex-col items-center gap-2">
+                            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                            <p className="text-sm text-muted-foreground">Uploading to Cloud...</p>
+                        </div>
+                    )}
+
                     {/* Main Recording Button */}
-                    {!audioUrl ? (
+                    {!audioUrl && !isUploading ? (
                         <Button
                             size="lg"
                             onClick={isRecording ? stopRecording : startRecording}
@@ -165,46 +200,50 @@ export function SpeakingQuestion({
                             {isRecording ? <Square className="h-6 w-6" /> : <Mic className="h-6 w-6" />}
                         </Button>
                     ) : (
-                        <div className="flex items-center gap-3">
-                            <Button
-                                size="lg"
-                                onClick={togglePlayback}
-                                variant="outline"
-                                className="h-14 w-14 rounded-full"
-                            >
-                                {isPlaying ? (
-                                    <Pause className="h-5 w-5" />
-                                ) : (
-                                    <Play className="h-5 w-5 ml-0.5" />
-                                )}
-                            </Button>
-                            {!isSubmitted && (
+                        !isUploading && (
+                            <div className="flex items-center gap-3">
                                 <Button
                                     size="lg"
-                                    onClick={rerecord}
+                                    onClick={togglePlayback}
                                     variant="outline"
                                     className="h-14 w-14 rounded-full"
                                 >
-                                    <RotateCcw className="h-5 w-5" />
+                                    {isPlaying ? (
+                                        <Pause className="h-5 w-5" />
+                                    ) : (
+                                        <Play className="h-5 w-5 ml-0.5" />
+                                    )}
                                 </Button>
-                            )}
-                        </div>
+                                {!isSubmitted && (
+                                    <Button
+                                        size="lg"
+                                        onClick={rerecord}
+                                        variant="outline"
+                                        className="h-14 w-14 rounded-full"
+                                    >
+                                        <RotateCcw className="h-5 w-5" />
+                                    </Button>
+                                )}
+                            </div>
+                        )
                     )}
 
                     {/* Status Text */}
                     <p className="text-sm text-muted-foreground">
                         {isSubmitted
                             ? "Submitted"
-                            : isRecording
-                              ? "Recording... Click to stop"
-                              : audioUrl
-                                ? "Recording saved. Play to review or re-record."
-                                : "Click the microphone to start recording"}
+                            : isUploading
+                              ? "Uploading..."
+                              : isRecording
+                                ? "Recording... Click to stop"
+                                : audioUrl
+                                  ? "Recording saved to cloud. Play to review or re-record."
+                                  : "Click the microphone to start recording"}
                     </p>
                 </div>
 
                 {/* Audio Playback */}
-                {audioUrl && (
+                {audioUrl && !isUploading && (
                     <div className="bg-muted/50 rounded-lg p-4">
                         <audio
                             ref={audioRef}
@@ -224,7 +263,7 @@ export function SpeakingQuestion({
                             <li>Speak clearly and at a natural pace</li>
                             <li>Try to use a variety of vocabulary and grammar structures</li>
                             <li>If you make a mistake, just continue speaking</li>
-                            <li>You can re-record as many times as you like before submitting</li>
+                            <li>Recordings are automatically uploaded to cloud storage</li>
                         </ul>
                     </div>
                 )}

@@ -84,5 +84,13 @@ export const MESSAGES = {
         missingContent: "Submission content is required",
         notEnrolled: "Not enrolled in this course",
         submissionError: "Failed to submit assignment"
+    },
+
+    notification: {
+        fetchSuccess: "Notifications fetched successfully",
+        markAsReadSuccess: "Notification marked as read",
+        markAllAsReadSuccess: "All notifications marked as read",
+        notFound: "Notification not found",
+        unauthorized: "Unauthorized to access this notification"
     }
 };
