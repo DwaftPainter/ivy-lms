@@ -48,6 +48,8 @@ function getSessionStatus(scheduledDate: Date, startTime: string, endTime: strin
     const sessionEnd = new Date(sessionDate);
     sessionEnd.setHours(endHour, endMinute, 0, 0);
 
+    console.log('🚀 ~ getSessionStatus ~ now:', now)
+    console.log('🚀 ~ getSessionStatus ~ sessionStart:', sessionStart)
     if (now < sessionStart) {
         return "UPCOMING";
     } else if (now >= sessionStart && now <= sessionEnd) {
