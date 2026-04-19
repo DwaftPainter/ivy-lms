@@ -20,6 +20,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ImageUpload } from "@/components/ui/image-upload";
+import { AudioUpload } from "@/components/ui/audio-upload";
 import {
   useAssignmentBuilderStore,
 } from "@/store/assignment-builder.store";
@@ -132,9 +133,9 @@ export function InspectorPanel() {
   };
 
   return (
-    <div className="w-80 border-l bg-card flex flex-col">
+    <div className="flex flex-col h-full">
       {/* Header */}
-      <div className="p-4 border-b">
+      <div className="p-4 border-b shrink-0">
         <div className="flex items-center gap-2 mb-3">
           {selected.type === "assignment" && <LayoutGrid className="h-4 w-4" />}
           {selected.type === "section" && <FileText className="h-4 w-4" />}
@@ -147,11 +148,13 @@ export function InspectorPanel() {
       </div>
 
       {/* Content */}
-      <ScrollArea className="flex-1">
-        <div className="p-4">
-          {renderInspector()}
-        </div>
-      </ScrollArea>
+      <div className="flex-1 overflow-hidden">
+        <ScrollArea className="h-full overflow-y-auto">
+          <div className="p-4">
+            {renderInspector()}
+          </div>
+        </ScrollArea>
+      </div>
     </div>
   );
 }
@@ -378,27 +381,14 @@ function PassageInspector({ passage, onUpdate }: PassageInspectorProps) {
           <Music className="w-4 h-4" />
           Audio File (Optional)
         </Label>
-        <div className="p-4 border-2 border-dashed rounded-lg text-center">
-          {passage.audioUrl ? (
-            <div className="space-y-3">
-              <audio controls className="w-full" src={passage.audioUrl}>
-                Your browser does not support the audio element.
-              </audio>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => onUpdate({ audioUrl: undefined })}
-              >
-                Remove Audio
-              </Button>
-            </div>
-          ) : (
-            <div className="text-muted-foreground">
-              <p className="text-sm">Audio uploads managed through assignment settings</p>
-              <p className="text-xs mt-1">Supports MP3, WAV, WEBM</p>
-            </div>
-          )}
-        </div>
+        <AudioUpload
+          value={passage.audioUrl}
+          onChange={(url) => onUpdate({ audioUrl: url })}
+          onClear={() => onUpdate({ audioUrl: undefined })}
+          folder="assignments/passages/audio"
+          placeholder="Upload audio for listening passage"
+          maxSizeMB={50}
+        />
       </div>
 
       <div className="space-y-2">
