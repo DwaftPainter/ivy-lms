@@ -59,9 +59,9 @@ export function ComponentLibraryPanel({ skill }: ComponentLibraryPanelProps) {
   );
 
   return (
-    <div className="w-100 border-r bg-card flex flex-col overflow-y-auto">
+    <div className="flex flex-col h-full">
       {/* Header */}
-      <div className="p-4 border-b">
+      <div className="p-4 border-b shrink-0">
         <h2 className="font-semibold text-sm mb-3">Component Library</h2>
         <div className="relative">
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -75,7 +75,7 @@ export function ComponentLibraryPanel({ skill }: ComponentLibraryPanelProps) {
       </div>
 
       {/* Component Categories */}
-      <ScrollArea className="flex-1">
+      <ScrollArea className="flex-1 h-full overflow-y-auto">
         <div className="p-2">
           {/* Structure Section */}
           <Accordion
@@ -179,7 +179,7 @@ export function ComponentLibraryPanel({ skill }: ComponentLibraryPanelProps) {
       </ScrollArea>
 
       {/* Footer Info */}
-      <div className="p-3 border-t bg-muted/50">
+      <div className="p-3 border-t bg-muted/50 shrink-0">
         <p className="text-xs text-muted-foreground">
           Drag components to the canvas
         </p>

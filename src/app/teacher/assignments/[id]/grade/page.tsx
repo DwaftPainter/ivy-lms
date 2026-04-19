@@ -133,6 +133,7 @@ export default function TeacherGradingPage() {
                                         <SubmissionViewer
                                             submission={currentSubmission}
                                             skill={assignment.skill}
+                                            assignment={assignment}
                                         />
 
                                         {/* Rubric Scoring */}

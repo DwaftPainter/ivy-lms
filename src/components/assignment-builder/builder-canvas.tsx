@@ -73,7 +73,7 @@ export function BuilderCanvas({ isPreview }: BuilderCanvasProps) {
   };
 
   return (
-    <div className="flex-1 flex flex-col bg-muted/30 overflow-hidden">
+    <div className="flex flex-col h-full">
       {/* Canvas Header */}
       <div className="h-14 border-b bg-card px-4 flex items-center justify-between shrink-0">
         <div className="flex items-center gap-4">
@@ -91,36 +91,38 @@ export function BuilderCanvas({ isPreview }: BuilderCanvasProps) {
       </div>
 
       {/* Canvas Content */}
-      <ScrollArea className="flex-1">
-        <div
-          ref={canvasRef}
-          className="p-6 space-y-4 min-h-[calc(100vh-200px)]"
-          onDragOver={handleDragOver}
-          onDrop={(e) => handleCanvasDrop(e)}
-        >
-          {assignment.sections.length === 0 ? (
-            <EmptyCanvas onDrop={handleCanvasDrop} />
-          ) : (
-            assignment.sections.map((section) => (
-              <SectionCard
-                key={section.id}
-                section={section}
-                isExpanded={expandedSections.includes(section.id)}
-                isSelected={selectedId === section.id}
-                isPreview={isPreview}
-                onToggleExpand={() => toggleSectionExpanded(section.id)}
-                onSelect={() => selectItem(section.id)}
-                onDelete={() => deleteSection(section.id)}
-                onDrop={(e) => handleCanvasDrop(e, section.id)}
-                onDragOver={handleDragOver}
-                _onAddQuestion={(type) => addQuestion(section.id, type)}
-                _onAddPassage={() => addPassage(section.id)}
-                _onUpdate={(updates) => updateSection(section.id, updates)}
-              />
-            ))
-          )}
-        </div>
-      </ScrollArea>
+      <div className="flex-1 overflow-hidden">
+        <ScrollArea className="h-full overflow-y-auto">
+          <div
+            ref={canvasRef}
+            className="p-6 space-y-4 min-h-full"
+            onDragOver={handleDragOver}
+            onDrop={(e) => handleCanvasDrop(e)}
+          >
+            {assignment.sections.length === 0 ? (
+              <EmptyCanvas onDrop={handleCanvasDrop} />
+            ) : (
+              assignment.sections.map((section) => (
+                <SectionCard
+                  key={section.id}
+                  section={section}
+                  isExpanded={expandedSections.includes(section.id)}
+                  isSelected={selectedId === section.id}
+                  isPreview={isPreview}
+                  onToggleExpand={() => toggleSectionExpanded(section.id)}
+                  onSelect={() => selectItem(section.id)}
+                  onDelete={() => deleteSection(section.id)}
+                  onDrop={(e) => handleCanvasDrop(e, section.id)}
+                  onDragOver={handleDragOver}
+                  _onAddQuestion={(type) => addQuestion(section.id, type)}
+                  _onAddPassage={() => addPassage(section.id)}
+                  _onUpdate={(updates) => updateSection(section.id, updates)}
+                />
+              ))
+            )}
+          </div>
+        </ScrollArea>
+      </div>
     </div>
   );
 }
@@ -325,12 +327,16 @@ interface QuestionCardProps {
 
 function QuestionCard({ question, isPreview }: QuestionCardProps) {
   const config = getQuestionConfig(question.type);
+  const { selectedId, selectItem } = useAssignmentBuilderStore();
+  const isSelected = selectedId === question.id;
 
   return (
     <div
+      onClick={() => selectItem(question.id)}
       className={cn(
         "flex items-center gap-3 p-3 rounded-lg border bg-card",
-        "hover:border-primary/50 transition-colors cursor-pointer"
+        "hover:border-primary/50 transition-colors cursor-pointer",
+        isSelected && "ring-2 ring-primary ring-offset-2"
       )}
     >
       <GripVertical className="h-4 w-4 text-muted-foreground" />

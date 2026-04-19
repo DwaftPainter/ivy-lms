@@ -172,7 +172,7 @@ export default function AssignmentBuilderPage() {
 
   return (
     <DndProvider>
-      <div className="h-screen flex flex-col bg-background">
+      <div className="h-screen flex flex-col bg-background overflow-hidden">
         {/* Header */}
         <header className="h-14 border-b bg-card flex items-center justify-between px-4 shrink-0">
           <div className="flex items-center gap-4">
@@ -248,13 +248,23 @@ export default function AssignmentBuilderPage() {
         {/* Main Content */}
         <div className="flex-1 flex overflow-hidden">
           {/* Left Panel - Component Library */}
-          {!isPreview && <ComponentLibraryPanel skill={skill} />}
+          {!isPreview && (
+            <div className="w-80 border-r bg-card flex flex-col overflow-hidden">
+              <ComponentLibraryPanel skill={skill} />
+            </div>
+          )}
 
           {/* Center - Builder Canvas */}
-          <BuilderCanvas isPreview={isPreview} />
+          <div className="flex-1 flex flex-col overflow-hidden">
+            <BuilderCanvas isPreview={isPreview} />
+          </div>
 
           {/* Right Panel - Inspector */}
-          {!isPreview && <InspectorPanel />}
+          {!isPreview && (
+            <div className="w-80 border-l bg-card flex flex-col overflow-hidden">
+              <InspectorPanel />
+            </div>
+          )}
         </div>
       </div>
     </DndProvider>
