@@ -200,6 +200,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
                         content: submission.content,
                         fileUrl: submission.fileUrl,
                         audioUrl: submission.audioUrl,
+                        audioUrls: submission.audioUrls,
                         score: submission.score,
                         bandScore: submission.bandScore,
                         feedback: submission.feedback,
@@ -319,6 +320,12 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
             );
         }
 
+        // Get student user ID for notification before transaction
+        const studentUser = await prisma.studentProfile.findUnique({
+            where: { id: submission.studentId },
+            select: { userId: true }
+        });
+
         // Use transaction to update submission and criteria scores atomically
         const updatedSubmission = await prisma.$transaction(async (tx) => {
             if (criteriaScores && criteriaScores.length > 0) {
@@ -372,6 +379,18 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
                 }
             });
         });
+
+        // Create notification for student if not a draft
+        if (isDraft !== true && studentUser) {
+            await prisma.notification.create({
+                data: {
+                    userId: studentUser.userId,
+                    title: `Assignment graded: ${submission.assignment.title}`,
+                    body: `Your submission for "${submission.assignment.title}" has been graded.${bandScore ? ` Band score: ${bandScore}` : ""}`,
+                    link: `/assignments/${submission.assignmentId}`
+                }
+            });
+        }
 
         return NextResponse.json(
             {

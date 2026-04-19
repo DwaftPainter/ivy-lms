@@ -2,9 +2,10 @@
 
 import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
-import { BellIcon, MessageSquareIcon } from "lucide-react";
+import { MessageSquareIcon } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { useMemo } from "react";
+import { NotificationBell } from "@/components/notifications/notification-bell";
 
 interface NavItem {
     title: string;
@@ -46,13 +47,7 @@ const MainHeader = ({ navMain = [] }: MainHeaderProps) => {
                 )}
             </div>
             <div className="flex gap-2">
-                <div className="border-gradient size-9 flex items-center justify-center cursor-pointer">
-                    <button className="p-1.5 flex items-center h-9 w-9 cursor-pointer">
-                        <span className="flex items-center justify-center size-full">
-                            <BellIcon className="text-text-secondary size-4" />
-                        </span>
-                    </button>
-                </div>
+                <NotificationBell />
                 <div className="border-gradient size-9 flex items-center justify-center cursor-pointer">
                     <button className="p-1.5 flex items-center h-9 w-9 cursor-pointer">
                         <span className="flex items-center justify-center size-full">

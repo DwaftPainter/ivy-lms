@@ -301,7 +301,8 @@ export async function POST(req: NextRequest) {
             instructions,
             attachmentUrl,
             isPublished = false,
-            rubric
+            rubric,
+            content
         } = body;
 
         // Validate required fields
@@ -344,7 +345,8 @@ export async function POST(req: NextRequest) {
                     maxScore,
                     instructions,
                     attachmentUrl,
-                    isPublished
+                    isPublished,
+                    content: content || null
                 }
             });
 
