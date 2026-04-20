@@ -5,7 +5,8 @@
       "Bash(npx tsc *)",
       "WebFetch(domain:)",
       "Bash(npx prisma *)",
-      "Bash(npm install *)"
+      "Bash(npm install *)",
+      "Bash(npx eslint *)"
     ]
   }
 }

@@ -17,6 +17,7 @@ interface ListeningQuestionProps {
     onAnswerChange: (value: string) => void;
     questionNumber: number;
     audioUrl?: string;
+    passage?: string;
 }
 
 export function ListeningQuestion({
@@ -24,7 +25,8 @@ export function ListeningQuestion({
     answer,
     onAnswerChange,
     questionNumber,
-    audioUrl
+    audioUrl,
+    passage
 }: ListeningQuestionProps) {
     const [isPlaying, setIsPlaying] = useState(false);
     const [currentTime, setCurrentTime] = useState(0);
@@ -146,6 +148,17 @@ export function ListeningQuestion({
                 </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
+                {/* Passage Content */}
+                {passage && (
+                    <div className="bg-muted/30 rounded-lg p-4 border">
+                        <h4 className="text-sm font-medium mb-2 flex items-center gap-2">
+                            <Headphones className="h-4 w-4" />
+                            Listening Context
+                        </h4>
+                        <p className="text-sm text-muted-foreground whitespace-pre-wrap">{passage}</p>
+                    </div>
+                )}
+
                 {/* Audio Player */}
                 {audioUrl && (
                     <div className="bg-muted/50 rounded-lg p-4 space-y-3">
