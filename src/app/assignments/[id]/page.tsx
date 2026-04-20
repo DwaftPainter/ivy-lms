@@ -9,6 +9,7 @@ import { WritingQuestion } from "@/components/assignment/WritingQuestion";
 import { ReadingQuestion } from "@/components/assignment/ReadingQuestion";
 import { ListeningQuestion } from "@/components/assignment/ListeningQuestion";
 import { SpeakingQuestion } from "@/components/assignment/SpeakingQuestion";
+import { SectionContent } from "@/components/assignment/SectionContent";
 import { Timer } from "@/components/assignment/Timer";
 import { WritingTimer } from "@/components/assignment/WritingTimer";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -104,7 +105,6 @@ export default function AssignmentPage() {
                         answer={answers[currentQuestion.id] || ""}
                         onAnswerChange={(value) => setAnswer(currentQuestion.id, value)}
                         questionNumber={questionNumber}
-                        audioUrl={currentQuestion.audioUrl}
                     />
                 );
 
@@ -199,8 +199,18 @@ export default function AssignmentPage() {
                         <QuestionSidebar />
                     </div>
 
-                    {/* Right Content - Question */}
-                    <div className="min-h-[calc(100vh-300px)]">{renderQuestion()}</div>
+                    {/* Right Content - Section Content + Question */}
+                    <div className="min-h-[calc(100vh-300px)]">
+                        {/* Section-level content (audio, passage, image) */}
+                        {currentPart && (
+                            <SectionContent
+                                audioUrl={currentPart.audioUrl}
+                                passage={currentPart.passage}
+                                imageUrl={currentPart.imageUrl}
+                            />
+                        )}
+                        {renderQuestion()}
+                    </div>
                 </div>
             </div>
 
