@@ -12,7 +12,8 @@ import {
     Search,
     Edit,
     Trash2,
-    MoreHorizontal
+    MoreHorizontal,
+    Calendar
 } from "lucide-react";
 import {
     DropdownMenu,
@@ -32,6 +33,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useCourseStore, Course } from "@/store/course.store";
 import { CourseDialog } from "./course-dialog";
+import { ClassSessionsDialog } from "./class-sessions-dialog";
 import { toast } from "sonner";
 
 export function CourseManagement() {
@@ -49,6 +51,8 @@ export function CourseManagement() {
     const [editingCourse, setEditingCourse] = useState<Course | null>(null);
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
     const [deletingCourse, setDeletingCourse] = useState<Course | null>(null);
+    const [sessionsDialogOpen, setSessionsDialogOpen] = useState(false);
+    const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
 
     useEffect(() => {
         fetchCourses();
@@ -107,6 +111,11 @@ export function CourseManagement() {
     const confirmDelete = (course: Course) => {
         setDeletingCourse(course);
         setDeleteDialogOpen(true);
+    };
+
+    const openSessionsDialog = (course: Course) => {
+        setSelectedCourse(course);
+        setSessionsDialogOpen(true);
     };
 
     return (
@@ -202,6 +211,14 @@ export function CourseManagement() {
                                                     Edit
                                                 </DropdownMenuItem>
                                                 <DropdownMenuItem
+                                                    onClick={() =>
+                                                        openSessionsDialog(course)
+                                                    }
+                                                >
+                                                    <Calendar className="w-4 h-4 mr-2" />
+                                                    Manage Lessons
+                                                </DropdownMenuItem>
+                                                <DropdownMenuItem
                                                     className="text-destructive"
                                                     onClick={() =>
                                                         confirmDelete(course)
@@ -249,6 +266,12 @@ export function CourseManagement() {
                 course={editingCourse}
                 onSubmit={editingCourse ? handleUpdate : handleCreate}
                 isLoading={isLoading}
+            />
+
+            <ClassSessionsDialog
+                open={sessionsDialogOpen}
+                onOpenChange={setSessionsDialogOpen}
+                course={selectedCourse}
             />
 
             <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
