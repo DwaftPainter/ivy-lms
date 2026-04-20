@@ -89,6 +89,9 @@ export interface Part {
     description?: string;
     questions: Question[];
     timeLimit?: number; // in seconds, for speaking
+    audioUrl?: string; // Section-level audio for listening
+    passage?: string; // Section-level passage text for reading
+    imageUrl?: string; // Section-level image (for writing task 1)
 }
 
 export interface AICorrection {
@@ -553,7 +556,17 @@ function mapQuestionType(builderType: string): Question["type"] {
 // Helper function to generate parts based on assignment type
 function generatePartsFromAssignment(assignment: AssignmentDetails & { content?: unknown }): Part[] {
     // Try to parse content from assignment metadata first
-    const content = assignment.content;
+    let content = assignment.content;
+
+    // Content might be a JSON string from the database - parse it if needed
+    if (typeof content === "string") {
+        try {
+            content = JSON.parse(content);
+        } catch {
+            // Invalid JSON, continue with raw value
+        }
+    }
+
     if (content && typeof content === "object") {
         const contentData = content as {
             sections?: Array<{
@@ -596,6 +609,10 @@ function generatePartsFromAssignment(assignment: AssignmentDetails & { content?:
                     title: section.title,
                     description: section.description,
                     timeLimit: section.timeLimit,
+                    // Section-level content
+                    audioUrl: passageAudioUrl,
+                    passage: passageContent,
+                    imageUrl: passageImageUrl,
                     questions: section.questions.map((q) => {
                         const mappedType = mapQuestionType(q.type);
 
@@ -618,13 +635,7 @@ function generatePartsFromAssignment(assignment: AssignmentDetails & { content?:
                             id: q.id,
                             type: mappedType,
                             prompt: prompt.trim(),
-                            options,
-                            // For reading: passage content is shown separately, not per question
-                            // But we include it for reference/hint purposes
-                            passage: passageContent,
-                            // For listening: audio URL is shared across the section
-                            audioUrl: passageAudioUrl,
-                            imageUrl: passageImageUrl
+                            options
                         };
                     })
                 };

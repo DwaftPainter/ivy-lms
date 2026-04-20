@@ -231,7 +231,9 @@ export function SpeakingQuestion({
                     {/* Status Text */}
                     <p className="text-sm text-muted-foreground">
                         {isSubmitted
-                            ? "Submitted"
+                            ? audioUrl
+                                ? "Your response has been submitted. You can play to review."
+                                : "No recording submitted"
                             : isUploading
                               ? "Uploading..."
                               : isRecording
