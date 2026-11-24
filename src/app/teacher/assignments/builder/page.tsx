@@ -17,7 +17,6 @@ import {
   Play,
   Link as LinkIcon,
 } from "lucide-react";
-import Link from "next/link";
 import { IeltsSkill } from "@/generated/prisma/enums";
 import { toast } from "sonner";
 import { DndProvider } from "@/components/assignment-builder/dnd-context";
@@ -100,7 +99,7 @@ export default function AssignmentBuilderPage() {
 
       loadAssignment(loadedAssignment, classSessionId || undefined);
       setIsEditMode(true);
-    } catch (error) {
+    } catch {
       toast.error("Failed to load assignment");
       // Initialize new assignment on error
       initializeAssignment(skill, "current-teacher-id", classSessionId || undefined);
@@ -144,7 +143,7 @@ export default function AssignmentBuilderPage() {
       if (returnTo) {
         router.push(returnTo);
       }
-    } catch (error) {
+    } catch {
       toast.error(isEditMode ? "Failed to update assignment" : "Failed to save assignment");
     }
   };

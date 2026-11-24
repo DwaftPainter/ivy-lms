@@ -3,7 +3,7 @@
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { TeacherClassItem } from "@/store/teacher-class.store";
-import { Clock, Users, CalendarDays, Eye, ChevronRightIcon } from "lucide-react";
+import { Clock, Users, CalendarDays, ChevronRightIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 interface TeacherUpcomingClassesProps {

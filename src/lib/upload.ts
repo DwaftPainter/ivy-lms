@@ -1,5 +1,3 @@
-import { apiFetch } from "@/lib/api-fetch";
-
 export type UploadType = "audio" | "image" | "document";
 
 export interface UploadResult {
@@ -16,7 +14,7 @@ export async function uploadFile(
     file: File,
     type: UploadType,
     folder?: string,
-    onProgress?: (progress: number) => void
+    _onProgress?: (progress: number) => void
 ): Promise<UploadResult> {
     const formData = new FormData();
     formData.append("file", file);

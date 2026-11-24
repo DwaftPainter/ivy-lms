@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { StatusCodes } from "http-status-codes";
 import { MESSAGES } from "@/config/message";
 import jwt from "jsonwebtoken";
-import { Role, IeltsSkill, SubmissionStatus } from "@/generated/prisma/enums";
+import { Role, SubmissionStatus } from "@/generated/prisma/enums";
 
 /**
  * @swagger
@@ -381,7 +381,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
         }
 
         // Update assignment in transaction
-        const updatedAssignment = await prisma.$transaction(async (tx) => {
+        await prisma.$transaction(async (tx) => {
             // Update assignment fields
             const assignment = await tx.assignment.update({
                 where: { id: assignmentId },

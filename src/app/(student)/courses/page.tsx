@@ -2,14 +2,14 @@
 
 import { useEffect, useState } from "react";
 import { CourseCard } from "@/components/course/course-card";
-import { useEnrollmentStore } from "@/store/enrollment.store";
+import { useEnrollmentStore, EnrolledCourse } from "@/store/enrollment.store";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { BookOpen, Loader2, BookCheck, BookOpen as BookOpenIcon, Calendar } from "lucide-react";
+import { BookOpen, BookCheck, BookOpen as BookOpenIcon, Calendar } from "lucide-react";
 import { EnrollmentStatus } from "@/enums/erollment.enum";
 import Loader from "@/components/custom-ui/loader";
 
 const CoursesPage = () => {
-    const { enrolledCourses, isLoading, fetchEnrolledCourses, getCoursesByStatus } = useEnrollmentStore();
+    const { isLoading, fetchEnrolledCourses, getCoursesByStatus } = useEnrollmentStore();
     const [activeTab, setActiveTab] = useState<EnrollmentStatus>(EnrollmentStatus.STUDYING);
 
     useEffect(() => {
@@ -20,7 +20,7 @@ const CoursesPage = () => {
     const upcomingCourses = getCoursesByStatus(EnrollmentStatus.UPCOMING);
     const doneCourses = getCoursesByStatus(EnrollmentStatus.DONE);
 
-    const renderCourseGrid = (courses: typeof enrolledCourses, emptyMessage: string) => {
+    const renderCourseGrid = (courses: EnrolledCourse[], emptyMessage: string) => {
         if (courses.length === 0) {
             return (
                 <div className="p-4 w-full">
@@ -54,8 +54,6 @@ const CoursesPage = () => {
             </div>
         );
     }
-
-    const isEmpty = enrolledCourses.length === 0;
 
     // if (isEmpty) {
     //     return (

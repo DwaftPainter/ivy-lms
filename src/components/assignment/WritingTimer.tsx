@@ -11,7 +11,7 @@ interface WritingTimerProps {
 }
 
 export function WritingTimer({ className, isSubmitted }: WritingTimerProps) {
-    const { elapsedTime, isTrackingTime, tickElapsedTime, startTimeTracking, pauseTimeTracking } = useAssignmentSessionStore();
+    const { elapsedTime, isTrackingTime, tickElapsedTime, startTimeTracking } = useAssignmentSessionStore();
 
     useEffect(() => {
         if (!isTrackingTime || isSubmitted) return;

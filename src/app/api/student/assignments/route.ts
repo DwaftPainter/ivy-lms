@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { StatusCodes } from "http-status-codes";
-import { MESSAGES } from "@/config/message";
 import jwt from "jsonwebtoken";
 import { SubmissionStatus } from "@/generated/prisma/enums";
 

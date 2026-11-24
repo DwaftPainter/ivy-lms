@@ -1,6 +1,6 @@
 "use client";
 
-import { useTeacherGradingStore, Submission, Student } from "@/store/teacher-grading.store";
+import { useTeacherGradingStore, Submission } from "@/store/teacher-grading.store";
 import { SubmissionStatus } from "@/generated/prisma/enums";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";

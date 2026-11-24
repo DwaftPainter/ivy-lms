@@ -9,8 +9,6 @@ import { Question, useAssignmentSessionStore } from "@/store/assignment-session.
 import { cn } from "@/lib/utils";
 import { Sparkles, Loader2, CheckCircle2, User } from "lucide-react";
 import { AICorrectionsModal } from "./AICorrectionsModal";
-import { WritingTimer } from "./WritingTimer";
-import { WritingAnalyticsChart } from "./WritingAnalyticsChart";
 import Image from "next/image";
 
 interface WritingQuestionProps {

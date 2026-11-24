@@ -1,6 +1,6 @@
 "use client";
 
-import { useTeacherGradingStore, CriterionScore } from "@/store/teacher-grading.store";
+import { CriterionScore } from "@/store/teacher-grading.store";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";

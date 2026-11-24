@@ -1,4 +1,3 @@
-import { MESSAGES } from "@/config/message";
 import { Ollama } from "ollama";
 
 export interface AIGradingInput {

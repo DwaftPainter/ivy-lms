@@ -79,7 +79,7 @@ interface CourseState {
     clearError: () => void;
 }
 
-export const useCourseStore = create<CourseState>((set, get) => ({
+export const useCourseStore = create<CourseState>((set) => ({
     courses: [],
     currentCourse: null,
     isLoading: false,

@@ -43,7 +43,7 @@ export function proxy(req: NextRequest) {
         }
 
         return NextResponse.next();
-    } catch (error) {
+    } catch {
         return NextResponse.redirect(new URL("/login", req.url));
     }
 }

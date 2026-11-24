@@ -3,7 +3,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { TrendingUp, FileText } from "lucide-react";
-import Image from "next/image";
 
 interface WritingAnalyticsChartProps {
     imageUrl: string | null | undefined;

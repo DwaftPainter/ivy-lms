@@ -94,7 +94,7 @@ interface AdminClassSessionState {
     clearError: () => void;
 }
 
-export const useAdminClassSessionStore = create<AdminClassSessionState>((set, get) => ({
+export const useAdminClassSessionStore = create<AdminClassSessionState>((set) => ({
     sessions: [],
     currentSession: null,
     isLoading: false,

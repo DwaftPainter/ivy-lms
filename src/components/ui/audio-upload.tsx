@@ -3,7 +3,7 @@
 import { useState, useRef, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Loader2, Upload, X, Music, FileAudio } from "lucide-react";
+import { Loader2, Upload, X, FileAudio } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { uploadFile } from "@/lib/upload";
 import { toast } from "sonner";
