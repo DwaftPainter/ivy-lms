@@ -108,29 +108,27 @@ cd ivy-lms
 ### 2. Install dependencies
 
 ```bash
-npm install
+pnpm install
 ```
 
 ### 3. Setup environment variables
 
-Create `.env`:
+Create `.env` (copied from `.env.example`):
 
-```env
-DATABASE_URL=postgresql://user:password@localhost:5432/ivy_lms
-NEXTAUTH_SECRET=your_secret
-NEXTAUTH_URL=http://localhost:3000
+```bash
+cp .env.example .env
 ```
 
 ### 4. Run database migration
 
 ```bash
-npx prisma migrate dev
+pnpm dlx prisma migrate dev
 ```
 
 ### 5. Start development server
 
 ```bash
-npm run dev
+pnpm dev
 ```
 
 ---
@@ -138,11 +136,11 @@ npm run dev
 ## Scripts
 
 ```bash
-npm run dev          # start dev server
-npm run build        # production build
-npm run start        # start production server
-npm run lint         # lint code
-npx prisma studio    # database GUI
+pnpm dev                # start dev server
+pnpm build              # production build
+pnpm start              # start production server
+pnpm lint               # lint code
+pnpm dlx prisma studio  # database GUI
 ```
 
 ---
