@@ -436,7 +436,6 @@ export const useAssignmentSessionStore = create<AssignmentSessionState>()(
 
             // AI Grading Actions
             gradeWithAI: async (id: string) => {
-                console.log("hello");
                 set({ isAIGrading: true, error: null });
                 try {
                     const response = await apiFetch<{

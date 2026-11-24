@@ -70,12 +70,10 @@ const Login = () => {
                             authorizationParams: {
                                 connection: "google-oauth2"
                             }
-                        }).then((response) => {
-                            console.log(response);
                         })
                     }
                 >
-                    <img src={googleIcon.src} className="w-5 h-5" />
+                    <img src={googleIcon.src} alt="Google" className="w-5 h-5" />
                     Continue With Google
                 </Button>
                 <div className="flex items-center overflow-hidden gap-[4%]">

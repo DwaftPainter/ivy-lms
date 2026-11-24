@@ -72,7 +72,6 @@ export async function POST(req: Request) {
 
         // Generate temporary password
         const tempPassword = generateTemporaryPassword();
-        console.log('🚀 ~ POST ~ tempPassword:', tempPassword)
         const hashedPassword = await bcrypt.hash(tempPassword, 10);
 
         // Create user with teacher role
