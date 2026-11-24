@@ -143,7 +143,7 @@ export function NotificationBell() {
                         <Empty className="py-12 border-none">
                             <EmptyHeader>
                                 <EmptyTitle>No notifications</EmptyTitle>
-                                <EmptyDescription>You're all caught up!</EmptyDescription>
+                                <EmptyDescription>You&apos;re all caught up!</EmptyDescription>
                             </EmptyHeader>
                         </Empty>
                     ) : (

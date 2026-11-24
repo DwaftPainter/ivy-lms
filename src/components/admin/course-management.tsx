@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Progress } from "@/components/ui/progress";
 import {
     BookOpen,
     Plus,
@@ -69,7 +68,7 @@ export function CourseManagement() {
             await createCourse(data);
             setDialogOpen(false);
             toast.success("Course created successfully");
-        } catch (error) {
+        } catch {
             toast.error("Failed to create course");
         }
     };
@@ -81,7 +80,7 @@ export function CourseManagement() {
             setDialogOpen(false);
             setEditingCourse(null);
             toast.success("Course updated successfully");
-        } catch (error) {
+        } catch {
             toast.error("Failed to update course");
         }
     };
@@ -93,7 +92,7 @@ export function CourseManagement() {
             setDeleteDialogOpen(false);
             setDeletingCourse(null);
             toast.success("Course deleted successfully");
-        } catch (error) {
+        } catch {
             toast.error("Failed to delete course");
         }
     };
@@ -279,8 +278,8 @@ export function CourseManagement() {
                     <AlertDialogHeader>
                         <AlertDialogTitle>Are you sure?</AlertDialogTitle>
                         <AlertDialogDescription>
-                            This will permanently delete the course "
-                            {deletingCourse?.title}". This action cannot be
+                            This will permanently delete the course &quot;
+                            {deletingCourse?.title}&quot;. This action cannot be
                             undone.
                         </AlertDialogDescription>
                     </AlertDialogHeader>

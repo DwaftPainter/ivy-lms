@@ -4,7 +4,7 @@ import { useAuthStore } from "@/store/auth.store";
 import { useRouter } from "next/navigation";
 import React from "react";
 
-const layout = ({ children }: { children: React.ReactNode }) => {
+const AuthLayout = ({ children }: { children: React.ReactNode }) => {
     const router = useRouter();
 
     const { isAuthenticated, user } = useAuthStore();
@@ -13,7 +13,7 @@ const layout = ({ children }: { children: React.ReactNode }) => {
         if (user && isAuthenticated) {
             router.push("/");
         }
-    }, [isAuthenticated, user]);
+    }, [isAuthenticated, user, router]);
 
     return (
         <div className="flex w-screen h-screen">
@@ -23,4 +23,4 @@ const layout = ({ children }: { children: React.ReactNode }) => {
     );
 };
 
-export default layout;
+export default AuthLayout;

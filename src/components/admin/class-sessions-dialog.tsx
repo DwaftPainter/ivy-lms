@@ -39,9 +39,7 @@ import {
     Edit,
     Users,
     FileText,
-    Video,
-    CheckCircle,
-    XCircle
+    Video
 } from "lucide-react";
 import { toast } from "sonner";
 import { Course } from "@/store/course.store";
@@ -109,6 +107,7 @@ export function ClassSessionsDialog({
     useEffect(() => {
         if (open && course) {
             fetchSessionsByCourse(course.id);
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setFormData((prev) => ({ ...prev, courseId: course.id }));
         }
     }, [open, course, fetchSessionsByCourse]);
@@ -141,7 +140,7 @@ export function ClassSessionsDialog({
             await createSession(formData);
             toast.success("Class session created successfully");
             resetForm();
-        } catch (error) {
+        } catch {
             toast.error("Failed to create class session");
         }
     };
@@ -153,7 +152,7 @@ export function ClassSessionsDialog({
             await updateSession(editingSession.id, formData);
             toast.success("Class session updated successfully");
             resetForm();
-        } catch (error) {
+        } catch {
             toast.error("Failed to update class session");
         }
     };
@@ -166,7 +165,7 @@ export function ClassSessionsDialog({
             toast.success("Class session deleted successfully");
             setDeleteDialogOpen(false);
             setDeletingSession(null);
-        } catch (error) {
+        } catch {
             toast.error("Failed to delete class session");
         }
     };

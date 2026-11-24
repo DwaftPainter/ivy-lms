@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useSyncExternalStore } from "react";
 import { usePathname } from "next/navigation";
 import Loader from "./loader";
 import { Card } from "@/components/ui/card";
@@ -9,13 +9,15 @@ import { Construction } from "lucide-react";
 // List of unimplemented routes that should show the WIP screen
 const UNIMPLEMENTED_ROUTES = ["/settings", "/teacher/settings", "/teacher/messages"];
 
+const emptySubscribe = () => () => {};
+
 export function WorkInProgressWrapper({ children }: { children: React.ReactNode }) {
     const pathname = usePathname();
-    const [mounted, setMounted] = useState(false);
-
-    useEffect(() => {
-        setMounted(true);
-    }, []);
+    const mounted = useSyncExternalStore(
+        emptySubscribe,
+        () => true,
+        () => false
+    );
 
     // Don't render anything until mounted to avoid hydration mismatch
     if (!mounted) {
