@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import bcrypt from "bcrypt";
 import { PrismaClient } from "@/generated/prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
