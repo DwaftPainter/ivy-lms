@@ -40,7 +40,7 @@ export function InspectorPanel() {
 
   if (!selectedId || !assignment) {
     return (
-      <div className="w-80 border-l bg-card flex flex-col">
+      <div className="w-full h-full bg-card flex flex-col">
         <div className="flex-1 flex flex-col items-center justify-center p-6 text-center">
           <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center mb-4">
             <Settings className="h-6 w-6 text-muted-foreground" />
@@ -80,7 +80,7 @@ export function InspectorPanel() {
 
   if (!selected || selected.type === null) {
     return (
-      <div className="w-80 border-l bg-card flex flex-col">
+      <div className="w-full h-full bg-card flex flex-col">
         <div className="flex-1 flex flex-col items-center justify-center p-6 text-center">
           <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center mb-4">
             <Settings className="h-6 w-6 text-muted-foreground" />

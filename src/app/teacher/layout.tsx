@@ -23,12 +23,12 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         <AuthGuard>
             <SidebarProvider>
                 <AppSidebar navMain={teacherSidebarNavConfig} />
-                <SidebarInset>
+                <SidebarInset className="min-w-0">
                     <MainHeader navMain={teacherSidebarNavConfig} />
                     <WorkInProgressWrapper>
                         <main
                             className={cn(
-                                "flex-1 overflow-auto bg-[rgb(241,241,241)]",
+                                "flex-1 min-w-0 overflow-auto bg-[rgb(241,241,241)]",
                                 !isFullWidthPage && "sm:mt-12 mt-16"
                             )}
                         >
