@@ -85,7 +85,7 @@ const Register = () => {
                 </Button>
                 <div className="flex items-center overflow-hidden gap-[4%]">
                     <Separator className="data-[orientation=horizontal]:w-[45%]"></Separator>
-                    <p className="opacity-40 text-sm">or</p>
+                    <p className="text-muted-foreground text-sm">or</p>
                     <Separator className="data-[orientation=horizontal]:w-[45%]"></Separator>
                 </div>
                 <div className="flex w-full gap-5">
