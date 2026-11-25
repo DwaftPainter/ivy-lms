@@ -283,6 +283,9 @@ export const useAssignmentBuilderStore = create<AssignmentBuilderState>()(
                     const questionNumber = get().getQuestionNumber(sectionId, "");
                     const question = createQuestion(type, questionNumber);
                     section.questions.push(question as Question);
+                    if (!state.expandedSections.includes(sectionId)) {
+                        state.expandedSections.push(sectionId);
+                    }
                     state.isDirty = true;
                     state.selectedId = question.id;
                 }

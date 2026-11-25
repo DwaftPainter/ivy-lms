@@ -66,22 +66,33 @@ export function NotificationBell() {
 
     return (
         <Popover open={open} onOpenChange={setOpen}>
-            <PopoverTrigger asChild>
-                <div className="relative">
-                    <div className="border-gradient size-9 flex items-center justify-center cursor-pointer">
-                        <button className="p-1.5 flex items-center h-9 w-9 cursor-pointer relative">
+            <div className="relative">
+                <div className="border-gradient size-9 flex items-center justify-center cursor-pointer">
+                    <PopoverTrigger asChild>
+                        <button
+                            type="button"
+                            aria-label={
+                                unreadCount > 0
+                                    ? `Notifications (${unreadCount} unread)`
+                                    : "Notifications"
+                            }
+                            className="p-1.5 flex items-center h-9 w-9 cursor-pointer relative"
+                        >
                             <span className="flex items-center justify-center size-full">
-                                <BellIcon className="text-text-secondary size-4" />
+                                <BellIcon className="text-text-secondary size-4" aria-hidden="true" />
                             </span>
                         </button>
-                    </div>
-                    {unreadCount > 0 && (
-                        <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-medium text-white ring-2 ring-primary">
-                            {unreadCount > 9 ? "9+" : unreadCount}
-                        </span>
-                    )}
+                    </PopoverTrigger>
                 </div>
-            </PopoverTrigger>
+                {unreadCount > 0 && (
+                    <span
+                        aria-hidden="true"
+                        className="pointer-events-none absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-medium text-white ring-2 ring-primary"
+                    >
+                        {unreadCount > 9 ? "9+" : unreadCount}
+                    </span>
+                )}
+            </div>
             <PopoverContent
                 className="w-[400px] p-0"
                 align="end"
@@ -97,9 +108,10 @@ export function NotificationBell() {
                                 <Button
                                     variant="ghost"
                                     size="icon"
+                                    aria-label="Filter notifications"
                                     className="h-8 w-8 text-gray-500 hover:text-gray-700"
                                 >
-                                    <ListFilterIcon className="h-4 w-4" />
+                                    <ListFilterIcon className="h-4 w-4" aria-hidden="true" />
                                 </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
@@ -124,12 +136,13 @@ export function NotificationBell() {
                         <Button
                             variant="ghost"
                             size="icon"
+                            aria-label="Mark all as read"
                             className="h-8 w-8 text-gray-500 hover:text-gray-700"
                             onClick={handleMarkAllAsRead}
                             disabled={unreadCount === 0}
                             title="Mark all as read"
                         >
-                            <CheckIcon className="h-4 w-4" />
+                            <CheckIcon className="h-4 w-4" aria-hidden="true" />
                         </Button>
                     </div>
                 </div>

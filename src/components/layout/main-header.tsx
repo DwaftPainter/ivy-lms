@@ -49,9 +49,13 @@ const MainHeader = ({ navMain = [] }: MainHeaderProps) => {
             <div className="flex gap-2">
                 <NotificationBell />
                 <div className="border-gradient size-9 flex items-center justify-center cursor-pointer">
-                    <button className="p-1.5 flex items-center h-9 w-9 cursor-pointer">
+                    <button
+                        type="button"
+                        aria-label="Messages"
+                        className="p-1.5 flex items-center h-9 w-9 cursor-pointer"
+                    >
                         <span className="flex items-center justify-center size-full">
-                            <MessageSquareIcon className="text-text-secondary size-4" />
+                            <MessageSquareIcon className="text-text-secondary size-4" aria-hidden="true" />
                         </span>
                     </button>
                 </div>
