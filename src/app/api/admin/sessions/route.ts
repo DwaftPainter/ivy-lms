@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import type { Prisma } from "@/generated/prisma/client";
 import { StatusCodes } from "http-status-codes";
 import { MESSAGES } from "@/config/message";
 import jwt from "jsonwebtoken";
+import type { AuthTokenPayload } from "@/types/common";
 import { Role, AttendanceStatus } from "@/generated/prisma/enums";
 
 // GET /api/admin/sessions - Get all class sessions (admin only)
@@ -17,7 +19,7 @@ export async function GET(req: NextRequest) {
             );
         }
 
-        const payload = jwt.verify(token.value, process.env.JWT_SECRET_KEY!) as any;
+        const payload = jwt.verify(token.value, process.env.JWT_SECRET_KEY!) as AuthTokenPayload;
         const userId = payload.userId;
 
         // Get user and verify admin role
@@ -35,7 +37,7 @@ export async function GET(req: NextRequest) {
         const { searchParams } = new URL(req.url);
         const courseId = searchParams.get("courseId");
 
-        const whereClause: any = {};
+        const whereClause: Prisma.ClassSessionWhereInput = {};
         if (courseId) {
             whereClause.courseId = courseId;
         }
@@ -120,7 +122,7 @@ export async function POST(req: NextRequest) {
             );
         }
 
-        const payload = jwt.verify(token.value, process.env.JWT_SECRET_KEY!) as any;
+        const payload = jwt.verify(token.value, process.env.JWT_SECRET_KEY!) as AuthTokenPayload;
         const userId = payload.userId;
 
         // Get user and verify admin role

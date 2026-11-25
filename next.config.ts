@@ -8,7 +8,7 @@ const nextConfig: NextConfig = {
     reactCompiler: true,
 
     webpack(config) {
-        const fileLoaderRule = config.module.rules.find((rule: { test: { test: (arg0: string) => any } }) =>
+        const fileLoaderRule = config.module.rules.find((rule: { test?: RegExp }) =>
             rule.test?.test?.(".svg")
         );
 

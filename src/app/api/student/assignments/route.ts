@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getErrorMessage } from "@/lib/api-fetch";
 import { prisma } from "@/lib/prisma";
+import type { Prisma } from "@/generated/prisma/client";
 import { StatusCodes } from "http-status-codes";
 import jwt from "jsonwebtoken";
+import type { AuthTokenPayload } from "@/types/common";
 import { SubmissionStatus } from "@/generated/prisma/enums";
 
 // GET /api/student/assignments - Get assignments for the logged-in student
@@ -16,7 +19,7 @@ export async function GET(req: NextRequest) {
             );
         }
 
-        const payload = jwt.verify(token.value, process.env.JWT_SECRET_KEY!) as any;
+        const payload = jwt.verify(token.value, process.env.JWT_SECRET_KEY!) as AuthTokenPayload;
         const userId = payload.userId;
 
         // Get student profile
@@ -58,7 +61,7 @@ export async function GET(req: NextRequest) {
         const filterCourseId = searchParams.get("courseId");
 
         // Build where clause — scope assignments through classSession → courseId
-        const where: any = {
+        const where: Prisma.AssignmentWhereInput = {
             classSession: {
                 courseId: { in: enrolledCourseIds }
             },
@@ -248,20 +251,19 @@ export async function GET(req: NextRequest) {
                         submitted: filteredAssignments.filter(
                             (a) => a.submissionStatus === SubmissionStatus.SUBMITTED
                         ).length,
-                        graded: filteredAssignments.filter((a) =>
-                            [SubmissionStatus.GRADED, SubmissionStatus.RETURNED].includes(
-                                a.submissionStatus as any
-                            )
+                        graded: filteredAssignments.filter(
+                            (a) => a.submissionStatus === SubmissionStatus.GRADED ||
+                                a.submissionStatus === SubmissionStatus.RETURNED
                         ).length
                     }
                 }
             },
             { status: StatusCodes.OK }
         );
-    } catch (error: any) {
+    } catch (error) {
         console.error("Get student assignments error:", error);
         return NextResponse.json(
-            { message: error?.message ?? "" },
+            { message: getErrorMessage(error) ?? "" },
             { status: StatusCodes.INTERNAL_SERVER_ERROR }
         );
     }

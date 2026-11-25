@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -60,12 +60,20 @@ export function SpeakingQuestion({
         };
     }, [isRecording, tickTimer]);
 
+    const stopRecording = useCallback(() => {
+        if (mediaRecorderRef.current && isRecording) {
+            mediaRecorderRef.current.stop();
+            setIsRecording(false);
+            pauseTimer();
+        }
+    }, [isRecording, pauseTimer]);
+
     // Auto-stop recording when time limit is reached
     useEffect(() => {
         if (isRecording && partTimeLimit && recordingTime >= partTimeLimit) {
             stopRecording();
         }
-    }, [recordingTime, partTimeLimit, isRecording]);
+    }, [recordingTime, partTimeLimit, isRecording, stopRecording]);
 
     const startRecording = async () => {
         try {
@@ -120,14 +128,6 @@ export function SpeakingQuestion({
         } catch (error) {
             console.error("Error accessing microphone:", error);
             toast.error("Could not access microphone. Please check your permissions.");
-        }
-    };
-
-    const stopRecording = () => {
-        if (mediaRecorderRef.current && isRecording) {
-            mediaRecorderRef.current.stop();
-            setIsRecording(false);
-            pauseTimer();
         }
     };
 

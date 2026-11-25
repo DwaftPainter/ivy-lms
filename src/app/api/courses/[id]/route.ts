@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import type { Prisma } from "@/generated/prisma/client";
 import { StatusCodes } from "http-status-codes";
 import { MESSAGES } from "@/config/message";
 import { CourseLevel, IeltsSkill } from "@/generated/prisma/enums";
@@ -64,7 +65,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
             return NextResponse.json({ message: "Invalid level value" }, { status: StatusCodes.BAD_REQUEST });
         }
 
-        const updateData: any = {};
+        const updateData: Prisma.CourseUncheckedUpdateInput = {};
         if (title !== undefined) updateData.title = title;
         if (description !== undefined) updateData.description = description;
         if (teacherId !== undefined) updateData.teacherId = teacherId;

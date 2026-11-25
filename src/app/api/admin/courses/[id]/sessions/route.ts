@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { StatusCodes } from "http-status-codes";
 import { MESSAGES } from "@/config/message";
 import jwt from "jsonwebtoken";
+import type { AuthTokenPayload } from "@/types/common";
 import { Role } from "@/generated/prisma/enums";
 
 // GET /api/admin/courses/[id]/sessions - Get all class sessions for a course (admin only)
@@ -20,7 +21,7 @@ export async function GET(
             );
         }
 
-        const payload = jwt.verify(token.value, process.env.JWT_SECRET_KEY!) as any;
+        const payload = jwt.verify(token.value, process.env.JWT_SECRET_KEY!) as AuthTokenPayload;
         const userId = payload.userId;
 
         // Get user and verify admin role

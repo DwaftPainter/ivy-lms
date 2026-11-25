@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import type { Prisma } from "@/generated/prisma/client";
 import { StatusCodes } from "http-status-codes";
 import { MESSAGES } from "@/config/message";
 import jwt from "jsonwebtoken";
+import type { AuthTokenPayload } from "@/types/common";
 import { EnrollmentStatus } from "@/generated/prisma/enums";
 
 // POST /api/student/enrollments - Enroll the logged-in student in a course
@@ -17,7 +19,7 @@ export async function POST(req: NextRequest) {
             );
         }
 
-        const payload = jwt.verify(token.value, process.env.JWT_SECRET_KEY!) as any;
+        const payload = jwt.verify(token.value, process.env.JWT_SECRET_KEY!) as AuthTokenPayload;
         const userId = payload.userId;
 
         const body = await req.json();
@@ -121,7 +123,7 @@ export async function GET(req: NextRequest) {
             );
         }
 
-        const payload = jwt.verify(token.value, process.env.JWT_SECRET_KEY!) as any;
+        const payload = jwt.verify(token.value, process.env.JWT_SECRET_KEY!) as AuthTokenPayload;
         const userId = payload.userId;
 
         // Get student profile
@@ -140,7 +142,7 @@ export async function GET(req: NextRequest) {
         const status = searchParams.get("status") as EnrollmentStatus | null;
 
         // Build where clause
-        const where: any = { studentId: studentProfile.id };
+        const where: Prisma.EnrollmentWhereInput = { studentId: studentProfile.id };
 
         if (status && Object.values(EnrollmentStatus).includes(status)) {
             where.status = status;

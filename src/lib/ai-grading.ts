@@ -7,13 +7,13 @@ export interface AIGradingInput {
     description?: string | null;
 }
 
-export interface AICorrection {
+export type AICorrection = {
     original: string;
     corrected: string;
     explanation: string;
     type: "grammar" | "vocabulary" | "spelling" | "structure";
     position?: { start: number; end: number };
-}
+};
 
 export interface AIGradingResult {
     score: number;

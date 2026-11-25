@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import type { Prisma } from "@/generated/prisma/client";
 import { StatusCodes } from "http-status-codes";
 import { MESSAGES } from "@/config/message";
 import jwt from "jsonwebtoken";
+import type { AuthTokenPayload } from "@/types/common";
 import { Role, IeltsSkill } from "@/generated/prisma/enums";
 
 /**
@@ -122,7 +124,7 @@ export async function GET(req: NextRequest) {
             );
         }
 
-        const payload = jwt.verify(token.value, process.env.JWT_SECRET_KEY!) as any;
+        const payload = jwt.verify(token.value, process.env.JWT_SECRET_KEY!) as AuthTokenPayload;
         const userId = payload.userId;
 
         // Get user with teacher profile
@@ -153,14 +155,13 @@ export async function GET(req: NextRequest) {
         const skill = searchParams.get("skill") as IeltsSkill | null;
 
         // Build where clause
-        const whereClause: any = {
-            classSession: {
-                course: { teacherId: teacherProfileId }
-            }
+        const classSession: Prisma.ClassSessionWhereInput = {
+            course: { teacherId: teacherProfileId }
         };
+        const whereClause: Prisma.AssignmentWhereInput = { classSession };
 
         if (courseId) {
-            whereClause.classSession.courseId = courseId;
+            classSession.courseId = courseId;
         }
 
         if (classSessionId) {
@@ -265,7 +266,7 @@ export async function POST(req: NextRequest) {
             );
         }
 
-        const payload = jwt.verify(token.value, process.env.JWT_SECRET_KEY!) as any;
+        const payload = jwt.verify(token.value, process.env.JWT_SECRET_KEY!) as AuthTokenPayload;
         const userId = payload.userId;
 
         // Get user with teacher profile
@@ -359,7 +360,7 @@ export async function POST(req: NextRequest) {
                 });
 
                 await tx.rubricCriterion.createMany({
-                    data: rubric.criteria.map((criterion: any) => ({
+                    data: rubric.criteria.map((criterion: Omit<Prisma.RubricCriterionCreateManyInput, "rubricId">) => ({
                         rubricId: createdRubric.id,
                         name: criterion.name,
                         description: criterion.description,

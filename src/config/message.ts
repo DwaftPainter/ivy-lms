@@ -1,5 +1,3 @@
-type MessageFn<T = any> = (params?: T) => string;
-
 export const MESSAGES = {
     validation: {
         format: {
@@ -23,11 +21,11 @@ export const MESSAGES = {
         registerSuccess: "Register successfully",
         emailAlreadyExists: "Email already exists",
         emailNotFound: "Email not found",
-        wrongPasswordRemaining: ((params?: { remaining?: number }) => {
+        wrongPasswordRemaining: (params?: { remaining?: number }) => {
             const remaining = params?.remaining ?? 0;
 
             return `Wrong password. You have ${remaining} attempt(s) left.`;
-        }) as MessageFn<{ remaining?: number }>,
+        },
         useGoogleLogin: "Please login with Google",
         emailLinkedGoogle: "This email is already linked to Google. Please log in with Google!",
         loginSuccess: "Login successfully",

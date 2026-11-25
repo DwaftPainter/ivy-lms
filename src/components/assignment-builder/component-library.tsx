@@ -40,7 +40,7 @@ import {
   Table,
   GitBranch,
   Map,
-  Image,
+  Image as ImageIcon,
   MessageSquare,
 } from "lucide-react";
 
@@ -212,7 +212,7 @@ const iconComponents: Record<string, React.ReactNode> = {
   Table: <Table className="h-4 w-4" />,
   "git-branch": <GitBranch className="h-4 w-4" />,
   Map: <Map className="h-4 w-4" />,
-  Image: <Image className="h-4 w-4" />,
+  Image: <ImageIcon className="h-4 w-4" />,
   "message-square": <MessageSquare className="h-4 w-4" />,
 };
 

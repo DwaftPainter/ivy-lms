@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { apiFetch } from "@/lib/api-fetch";
+import { apiFetch, getErrorMessage } from "@/lib/api-fetch";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -111,8 +111,8 @@ export default function StudentAssignmentsPage() {
                 data: AssignmentsData;
             }>("/api/student/assignments");
             setData(response.data);
-        } catch (err: any) {
-            setError(err?.message || "Failed to fetch assignments");
+        } catch (err) {
+            setError(getErrorMessage(err) || "Failed to fetch assignments");
         } finally {
             setIsLoading(false);
         }

@@ -1,7 +1,7 @@
 "use client";
 
 import { create } from "zustand";
-import { apiFetch } from "@/lib/api-fetch";
+import { apiFetch, getErrorMessage } from "@/lib/api-fetch";
 import { IeltsSkill } from "@/generated/prisma/enums";
 
 export interface ClassSession {
@@ -112,9 +112,9 @@ export const useAdminClassSessionStore = create<AdminClassSessionState>((set) =>
                 sessions: response.data.classSessions,
                 isLoading: false
             });
-        } catch (error: any) {
+        } catch (error) {
             set({
-                error: error?.message || "Failed to fetch class sessions",
+                error: getErrorMessage(error) || "Failed to fetch class sessions",
                 isLoading: false
             });
         }
@@ -129,9 +129,9 @@ export const useAdminClassSessionStore = create<AdminClassSessionState>((set) =>
             }>(`/api/admin/sessions/${id}`);
 
             set({ currentSession: response.data.classSession, isLoading: false });
-        } catch (error: any) {
+        } catch (error) {
             set({
-                error: error?.message || "Failed to fetch class session",
+                error: getErrorMessage(error) || "Failed to fetch class session",
                 isLoading: false
             });
         }
@@ -154,9 +154,9 @@ export const useAdminClassSessionStore = create<AdminClassSessionState>((set) =>
                 isLoading: false
             }));
             return response.data.classSession;
-        } catch (error: any) {
+        } catch (error) {
             set({
-                error: error?.message || "Failed to create class session",
+                error: getErrorMessage(error) || "Failed to create class session",
                 isLoading: false
             });
             throw error;
@@ -181,9 +181,9 @@ export const useAdminClassSessionStore = create<AdminClassSessionState>((set) =>
                 isLoading: false
             }));
             return response.data.classSession;
-        } catch (error: any) {
+        } catch (error) {
             set({
-                error: error?.message || "Failed to update class session",
+                error: getErrorMessage(error) || "Failed to update class session",
                 isLoading: false
             });
             throw error;
@@ -202,9 +202,9 @@ export const useAdminClassSessionStore = create<AdminClassSessionState>((set) =>
                 currentSession: state.currentSession?.id === id ? null : state.currentSession,
                 isLoading: false
             }));
-        } catch (error: any) {
+        } catch (error) {
             set({
-                error: error?.message || "Failed to delete class session",
+                error: getErrorMessage(error) || "Failed to delete class session",
                 isLoading: false
             });
             throw error;

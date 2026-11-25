@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getErrorMessage } from "@/lib/api-fetch";
 import { prisma } from "@/lib/prisma";
 import { StatusCodes } from "http-status-codes";
 import { MESSAGES } from "@/config/message";
 import jwt from "jsonwebtoken";
+import type { AuthTokenPayload } from "@/types/common";
 import { gradeWithOllama, AIGradingInput, AIGradingResult, AICorrection } from "@/lib/ai-grading";
 
 // POST /api/student/assignments/[id]/ai-grade - Grade writing assignment with Ollama AI
@@ -18,7 +20,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
             );
         }
 
-        const payload = jwt.verify(token.value, process.env.JWT_SECRET_KEY!) as any;
+        const payload = jwt.verify(token.value, process.env.JWT_SECRET_KEY!) as AuthTokenPayload;
         const userId = payload.userId;
 
         // Get student profile
@@ -100,7 +102,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
                 aiScore: aiResult.score,
                 aiFeedback: aiResult.feedback,
                 aiGradedAt: new Date(),
-                aiCorrections: aiResult.corrections as any,
+                aiCorrections: aiResult.corrections,
                 teacherRegradeRequested: false
             }
         });
@@ -118,10 +120,10 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
             },
             { status: StatusCodes.OK }
         );
-    } catch (error: any) {
+    } catch (error) {
         console.error("AI grade assignment error:", error);
         return NextResponse.json(
-            { success: false, message: error?.message || MESSAGES.common.serverError },
+            { success: false, message: getErrorMessage(error) || MESSAGES.common.serverError },
             { status: StatusCodes.INTERNAL_SERVER_ERROR }
         );
     }
@@ -140,7 +142,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
             );
         }
 
-        const payload = jwt.verify(token.value, process.env.JWT_SECRET_KEY!) as any;
+        const payload = jwt.verify(token.value, process.env.JWT_SECRET_KEY!) as AuthTokenPayload;
         const userId = payload.userId;
 
         const studentProfile = await prisma.studentProfile.findUnique({
@@ -192,10 +194,10 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
             },
             { status: StatusCodes.OK }
         );
-    } catch (error: any) {
+    } catch (error) {
         console.error("Get AI grade error:", error);
         return NextResponse.json(
-            { success: false, message: error?.message || MESSAGES.common.serverError },
+            { success: false, message: getErrorMessage(error) || MESSAGES.common.serverError },
             { status: StatusCodes.INTERNAL_SERVER_ERROR }
         );
     }

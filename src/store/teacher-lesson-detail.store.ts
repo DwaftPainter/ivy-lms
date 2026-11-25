@@ -158,7 +158,6 @@ export const useTeacherLessonDetailStore = create<TeacherLessonDetailState>(
 
                 set({ availableAssignments: response.data.assignments });
             } catch (error: unknown) {
-                // eslint-disable-next-line no-console
                 console.error("Failed to fetch available assignments:", error);
             }
         },
@@ -263,7 +262,6 @@ export const useTeacherLessonDetailStore = create<TeacherLessonDetailState>(
                 // Refresh available assignments
                 await get().fetchAvailableAssignments(sessionId);
             } catch (error: unknown) {
-                // eslint-disable-next-line no-console
                 console.error("Failed to link assignment:", error);
                 throw error;
             } finally {
@@ -285,7 +283,6 @@ export const useTeacherLessonDetailStore = create<TeacherLessonDetailState>(
                 // Refresh available assignments
                 await get().fetchAvailableAssignments(sessionId);
             } catch (error: unknown) {
-                // eslint-disable-next-line no-console
                 console.error("Failed to unlink assignment:", error);
                 throw error;
             } finally {

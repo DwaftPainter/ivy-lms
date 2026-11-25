@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { apiFetch } from "@/lib/api-fetch";
+import { apiFetch, getErrorMessage } from "@/lib/api-fetch";
 import { IeltsSkill } from "@/generated/prisma/enums";
 
 export interface TeacherClassItem {
@@ -35,9 +35,9 @@ export const useTeacherClassStore = create<TeacherClassState>((set) => ({
                 "/api/teacher/classes"
             );
             set({ classes: response.data, isLoading: false });
-        } catch (error: any) {
+        } catch (error) {
             set({
-                error: error?.message || "Failed to fetch teacher classes",
+                error: getErrorMessage(error) || "Failed to fetch teacher classes",
                 isLoading: false
             });
         }
