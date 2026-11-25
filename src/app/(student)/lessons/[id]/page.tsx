@@ -9,19 +9,13 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Separator } from "@/components/ui/separator";
 import {
     ArrowLeft,
     Calendar,
     Clock,
-    FileText,
-    Video,
-    Link as LinkIcon,
-    Headphones,
     CheckCircle2,
     AlertCircle,
     PlayCircle,
-    File,
     ExternalLink,
     BookOpen
 } from "lucide-react";
@@ -65,29 +59,6 @@ const assignmentStatusConfig: Record<string, { label: string; color: string }> =
     SUBMITTED: { label: "Submitted", color: "bg-blue-100 text-blue-700" },
     GRADED: { label: "Graded", color: "bg-green-100 text-green-700" },
     RETURNED: { label: "Returned", color: "bg-purple-100 text-purple-700" }
-};
-
-const getFileIcon = (fileType: string) => {
-    const type = fileType.toUpperCase();
-    switch (type) {
-        case "VIDEO":
-            return <Video className="w-5 h-5 text-blue-500" />;
-        case "AUDIO":
-            return <Headphones className="w-5 h-5 text-purple-500" />;
-        case "LINK":
-            return <LinkIcon className="w-5 h-5 text-green-500" />;
-        case "PDF":
-        default:
-            return <FileText className="w-5 h-5 text-red-500" />;
-    }
-};
-
-const formatTime = (timeString: string) => {
-    const [hours, minutes] = timeString.split(":");
-    const hour = parseInt(hours, 10);
-    const ampm = hour >= 12 ? "PM" : "AM";
-    const displayHour = hour % 12 || 12;
-    return `${displayHour}:${minutes} ${ampm}`;
 };
 
 const formatDueDate = (dateString: string | null) => {

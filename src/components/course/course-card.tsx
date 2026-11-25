@@ -1,7 +1,6 @@
 "use client";
 
 import { Card } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
 import { EnrolledCourse } from "@/store/enrollment.store";
 import { BookOpen, Calendar, CheckCircle2, ArrowRight } from "lucide-react";
 import Image from "next/image";

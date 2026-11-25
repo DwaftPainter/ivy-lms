@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { apiFetch } from "@/lib/api-fetch";
+import { apiFetch, getErrorMessage } from "@/lib/api-fetch";
 
 export interface ScheduleLesson {
     id: string;
@@ -32,9 +32,9 @@ export const useScheduleStore = create<ScheduleState>((set) => ({
                 "/api/student/schedule"
             );
             set({ lessons: response.data, isLoading: false });
-        } catch (error: any) {
+        } catch (error) {
             set({
-                error: error?.message || "Failed to fetch schedule",
+                error: getErrorMessage(error) || "Failed to fetch schedule",
                 isLoading: false
             });
         }

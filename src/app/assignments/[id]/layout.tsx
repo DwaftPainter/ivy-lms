@@ -1,7 +1,7 @@
 "use client";
 
 import { useParams, useRouter } from "next/navigation";
-import { ArrowLeft, HelpCircle, Menu, Maximize2, Minimize2, CheckCircle2, X } from "lucide-react";
+import { ArrowLeft, HelpCircle, Maximize2, Minimize2, CheckCircle2, X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {

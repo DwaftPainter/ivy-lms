@@ -1,9 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import type { Prisma } from "@/generated/prisma/client";
 import { StatusCodes } from "http-status-codes";
 import { MESSAGES } from "@/config/message";
 import jwt from "jsonwebtoken";
-import { Role, IeltsSkill, SubmissionStatus } from "@/generated/prisma/enums";
+import type { AuthTokenPayload } from "@/types/common";
+import { Role, SubmissionStatus } from "@/generated/prisma/enums";
 
 /**
  * @swagger
@@ -159,7 +161,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
             );
         }
 
-        const payload = jwt.verify(token.value, process.env.JWT_SECRET_KEY!) as any;
+        const payload = jwt.verify(token.value, process.env.JWT_SECRET_KEY!) as AuthTokenPayload;
         const userId = payload.userId;
 
         const user = await prisma.user.findUnique({
@@ -323,7 +325,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
             );
         }
 
-        const payload = jwt.verify(token.value, process.env.JWT_SECRET_KEY!) as any;
+        const payload = jwt.verify(token.value, process.env.JWT_SECRET_KEY!) as AuthTokenPayload;
         const userId = payload.userId;
 
         const user = await prisma.user.findUnique({
@@ -381,7 +383,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
         }
 
         // Update assignment in transaction
-        const updatedAssignment = await prisma.$transaction(async (tx) => {
+        await prisma.$transaction(async (tx) => {
             // Update assignment fields
             const assignment = await tx.assignment.update({
                 where: { id: assignmentId },
@@ -417,7 +419,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
                 });
 
                 await tx.rubricCriterion.createMany({
-                    data: rubric.criteria.map((criterion: any) => ({
+                    data: rubric.criteria.map((criterion: Omit<Prisma.RubricCriterionCreateManyInput, "rubricId">) => ({
                         rubricId,
                         name: criterion.name,
                         description: criterion.description,
@@ -474,7 +476,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
             );
         }
 
-        const payload = jwt.verify(token.value, process.env.JWT_SECRET_KEY!) as any;
+        const payload = jwt.verify(token.value, process.env.JWT_SECRET_KEY!) as AuthTokenPayload;
         const userId = payload.userId;
 
         const user = await prisma.user.findUnique({
@@ -527,7 +529,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
         }
 
         // Update only provided fields
-        const updateData: any = {};
+        const updateData: Prisma.AssignmentUpdateInput = {};
         if (body.isPublished !== undefined) updateData.isPublished = body.isPublished;
         if (body.title !== undefined) updateData.title = body.title;
         if (body.description !== undefined) updateData.description = body.description;
@@ -594,7 +596,7 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
             );
         }
 
-        const payload = jwt.verify(token.value, process.env.JWT_SECRET_KEY!) as any;
+        const payload = jwt.verify(token.value, process.env.JWT_SECRET_KEY!) as AuthTokenPayload;
         const userId = payload.userId;
 
         const user = await prisma.user.findUnique({

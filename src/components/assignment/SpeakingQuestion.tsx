@@ -1,11 +1,11 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Question } from "@/store/assignment-session.store";
-import { Mic, Square, Play, Pause, RotateCcw, Loader2 } from "lucide-react";
+import { Mic, Square, Play, Pause, RotateCcw } from "lucide-react";
 import { useAssignmentSessionStore } from "@/store/assignment-session.store";
 import { uploadAudio } from "@/lib/upload";
 import { toast } from "sonner";
@@ -34,12 +34,12 @@ export function SpeakingQuestion({
     const [recordingTime, setRecordingTime] = useState(0);
     const [audioUrl, setAudioUrl] = useState<string | null>(answer || null);
     const [isUploading, setIsUploading] = useState(false);
-    const [uploadProgress, setUploadProgress] = useState(0);
+    const [_uploadProgress, setUploadProgress] = useState(0);
     const mediaRecorderRef = useRef<MediaRecorder | null>(null);
     const audioChunksRef = useRef<Blob[]>([]);
     const audioRef = useRef<HTMLAudioElement | null>(null);
     const timerRef = useRef<NodeJS.Timeout | null>(null);
-    const { isTimerRunning, timeRemaining, startTimer, pauseTimer, tickTimer } = useAssignmentSessionStore();
+    const { startTimer, pauseTimer, tickTimer } = useAssignmentSessionStore();
 
     useEffect(() => {
         if (isRecording) {
@@ -60,12 +60,20 @@ export function SpeakingQuestion({
         };
     }, [isRecording, tickTimer]);
 
+    const stopRecording = useCallback(() => {
+        if (mediaRecorderRef.current && isRecording) {
+            mediaRecorderRef.current.stop();
+            setIsRecording(false);
+            pauseTimer();
+        }
+    }, [isRecording, pauseTimer]);
+
     // Auto-stop recording when time limit is reached
     useEffect(() => {
         if (isRecording && partTimeLimit && recordingTime >= partTimeLimit) {
             stopRecording();
         }
-    }, [recordingTime, partTimeLimit, isRecording]);
+    }, [recordingTime, partTimeLimit, isRecording, stopRecording]);
 
     const startRecording = async () => {
         try {
@@ -120,14 +128,6 @@ export function SpeakingQuestion({
         } catch (error) {
             console.error("Error accessing microphone:", error);
             toast.error("Could not access microphone. Please check your permissions.");
-        }
-    };
-
-    const stopRecording = () => {
-        if (mediaRecorderRef.current && isRecording) {
-            mediaRecorderRef.current.stop();
-            setIsRecording(false);
-            pauseTimer();
         }
     };
 

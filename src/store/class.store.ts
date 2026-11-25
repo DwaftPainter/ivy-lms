@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { apiFetch } from "@/lib/api-fetch";
+import { apiFetch, getErrorMessage } from "@/lib/api-fetch";
 import { AttendanceStatus } from "@/generated/prisma/enums";
 
 export interface LessonResource {
@@ -41,9 +41,9 @@ export const useClassStore = create<ClassState>((set) => ({
         try {
             const response = await apiFetch<{ success: boolean; data: ClassItem[] }>("/api/student/classes");
             set({ classes: response.data, isLoading: false });
-        } catch (error: any) {
+        } catch (error) {
             set({
-                error: error?.message || "Failed to fetch classes",
+                error: getErrorMessage(error) || "Failed to fetch classes",
                 isLoading: false
             });
         }

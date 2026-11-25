@@ -5,7 +5,7 @@ import { TeacherUpcomingClasses } from "@/components/dashboard/teacher-upcoming-
 import { PendingGrading } from "@/components/dashboard/pending-grading";
 import { FeedbackTasks } from "@/components/dashboard/feedback-tasks";
 import { useAuthStore } from "@/store/auth.store";
-import { apiFetch } from "@/lib/api-fetch";
+import { apiFetch, getErrorMessage } from "@/lib/api-fetch";
 import { getGreeting } from "@/lib/greeting";
 import { IeltsSkill } from "@/generated/prisma/enums";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -59,8 +59,8 @@ const Dashboard = () => {
                     "/api/teacher/dashboard"
                 );
                 setDashboardData(response.data);
-            } catch (err: any) {
-                setError(err?.message || "Failed to fetch dashboard data");
+            } catch (err) {
+                setError(getErrorMessage(err) || "Failed to fetch dashboard data");
             } finally {
                 setIsLoading(false);
             }
@@ -98,9 +98,6 @@ const Dashboard = () => {
             submissionsAwaiting: item.pendingCount,
             deadline: item.deadline || ""
         })) || [];
-
-    // Feedback tasks - dashboard endpoint doesn't return this yet, so pass empty array
-    const feedbackTasks: any[] = [];
 
     if (isLoading) {
         return (

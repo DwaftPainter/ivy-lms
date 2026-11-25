@@ -2,10 +2,13 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
     /* config options here */
+    turbopack: {
+        root: __dirname,
+    },
     reactCompiler: true,
 
     webpack(config) {
-        const fileLoaderRule = config.module.rules.find((rule: { test: { test: (arg0: string) => any } }) =>
+        const fileLoaderRule = config.module.rules.find((rule: { test?: RegExp }) =>
             rule.test?.test?.(".svg")
         );
 

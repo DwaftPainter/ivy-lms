@@ -1,7 +1,7 @@
 import { UseFormReturn } from "react-hook-form";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { apiFetch } from "@/lib/api-fetch";
+import { apiFetch, getErrorMessage } from "@/lib/api-fetch";
 import { ApiResponse } from "@/types/common";
 
 type User = {
@@ -24,6 +24,15 @@ type LoginPayload = {
     email: string;
     password: string;
 };
+
+function getAuthFieldError(response: unknown) {
+    if (typeof response === "object" && response !== null && "error" in response) {
+        const { error } = response;
+        if (typeof error === "object" && error !== null && "field" in error) {
+            return { field: error.field, message: getErrorMessage(error) };
+        }
+    }
+}
 
 export type GoogleLoginPayload = {
     email: string;
@@ -75,7 +84,7 @@ export const useAuthStore = create<AuthState>()(
                 try {
                     set({ isLoading: true });
 
-                    const data = await apiFetch("/api/auth/me");
+                    const data = await apiFetch<ApiResponse<User>>("/api/auth/me");
 
                     set({
                         user: data.data,
@@ -100,7 +109,7 @@ export const useAuthStore = create<AuthState>()(
                 set({ isLoading: true });
 
                 try {
-                    const data = await apiFetch<ApiResponse<any>>("/api/auth/login", {
+                    const data = await apiFetch<ApiResponse<User>>("/api/auth/login", {
                         method: "POST",
                         body: JSON.stringify(payload)
                     });
@@ -113,10 +122,10 @@ export const useAuthStore = create<AuthState>()(
                     if (data.success && data.redirectTo) {
                         window.location.href = data.redirectTo;
                     }
-                } catch (err: any) {
-                    const error = err?.error;
+                } catch (err) {
+                    const error = getAuthFieldError(err);
 
-                    if (error?.field) {
+                    if (error?.field === "email" || error?.field === "password") {
                         form.setError(error.field, {
                             type: "server",
                             message: error.message
@@ -131,7 +140,7 @@ export const useAuthStore = create<AuthState>()(
                 set({ isLoading: true });
 
                 try {
-                    const data = await apiFetch("/api/auth/register", {
+                    const data = await apiFetch<ApiResponse<User>>("/api/auth/register", {
                         method: "POST",
                         body: JSON.stringify(payload)
                     });
@@ -144,10 +153,13 @@ export const useAuthStore = create<AuthState>()(
                     if (data.success && data.redirectTo) {
                         window.location.href = data.redirectTo;
                     }
-                } catch (err: any) {
-                    const error = err?.error;
+                } catch (err) {
+                    const error = getAuthFieldError(err);
 
-                    if (error?.field) {
+                    if (
+                        error?.field === "email" || error?.field === "password" ||
+                        error?.field === "firstName" || error?.field === "lastName"
+                    ) {
                         form.setError(error.field, {
                             type: "server",
                             message: error.message
@@ -169,7 +181,7 @@ export const useAuthStore = create<AuthState>()(
                         lastName: payload.family_name
                     };
 
-                    const data = await apiFetch("/api/auth/google", {
+                    const data = await apiFetch<ApiResponse<User>>("/api/auth/google", {
                         method: "POST",
                         body: JSON.stringify(builtPayload)
                     });

@@ -1,6 +1,7 @@
 import { create } from "zustand";
-import { apiFetch } from "@/lib/api-fetch";
+import { apiFetch, getErrorMessage } from "@/lib/api-fetch";
 import { AssignmentType, IeltsSkill, SubmissionStatus } from "@/generated/prisma/enums";
+import type { AssignmentSubmissionResult } from "@/types/assignment-submission";
 
 export interface Submission {
     id: string;
@@ -54,7 +55,10 @@ interface AssignmentState {
     error: string | null;
 
     fetchAssignments: (courseId?: string, status?: string) => Promise<void>;
-    submitAssignment: (assignmentId: string, data: { content?: string; fileUrl?: string; audioUrl?: string }) => Promise<any>;
+    submitAssignment: (
+        assignmentId: string,
+        data: { content?: string; fileUrl?: string; audioUrl?: string }
+    ) => Promise<AssignmentSubmissionResult>;
     getAssignmentById: (id: string) => Assignment | undefined;
     getAssignmentsByCourse: (courseId: string) => Assignment[];
     getPendingAssignments: () => Assignment[];
@@ -91,9 +95,9 @@ export const useAssignmentStore = create<AssignmentState>((set, get) => ({
                 summary: response.data.summary,
                 isLoading: false
             });
-        } catch (error: any) {
+        } catch (error) {
             set({
-                error: error?.message || "Failed to fetch assignments",
+                error: getErrorMessage(error) || "Failed to fetch assignments",
                 isLoading: false
             });
         }
@@ -104,14 +108,7 @@ export const useAssignmentStore = create<AssignmentState>((set, get) => ({
             const response = await apiFetch<{
                 success: boolean;
                 message: string;
-                data: {
-                    submission: Submission;
-                    progress: {
-                        completed: number;
-                        total: number;
-                        percentage: number;
-                    }
-                }
+                data: AssignmentSubmissionResult;
             }>(`/api/student/assignments/${assignmentId}`, {
                 method: "POST",
                 body: JSON.stringify(data)
@@ -121,8 +118,8 @@ export const useAssignmentStore = create<AssignmentState>((set, get) => ({
             await get().fetchAssignments();
 
             return response.data;
-        } catch (error: any) {
-            throw new Error(error?.message || "Failed to submit assignment");
+        } catch (error) {
+            throw new Error(getErrorMessage(error) || "Failed to submit assignment");
         }
     },
 

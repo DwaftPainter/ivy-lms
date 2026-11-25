@@ -118,7 +118,6 @@ export async function GET(req: NextRequest) {
             { status: StatusCodes.OK }
         );
     } catch (error) {
-        // eslint-disable-next-line no-console
         console.error("Get student schedule error:", error);
         return NextResponse.json(
             { message: MESSAGES.common.serverError },

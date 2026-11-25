@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { apiFetch } from "@/lib/api-fetch";
+import { apiFetch, getErrorMessage } from "@/lib/api-fetch";
 
 export interface PendingGradingItem {
     assignmentId: string;
@@ -29,9 +29,9 @@ export const useGradingStore = create<GradingState>((set) => ({
                 "/api/teacher/grading/pending"
             );
             set({ pendingGrading: response.data, isLoading: false });
-        } catch (error: any) {
+        } catch (error) {
             set({
-                error: error?.message || "Failed to fetch pending grading",
+                error: getErrorMessage(error) || "Failed to fetch pending grading",
                 isLoading: false
             });
         }

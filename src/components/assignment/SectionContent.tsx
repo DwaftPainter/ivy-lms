@@ -1,10 +1,11 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import Image from "next/image";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
-import { Play, Pause, Volume2, Headphones, BookOpen, ImageIcon } from "lucide-react";
+import { Play, Pause, Volume2, Headphones, BookOpen } from "lucide-react";
 
 interface SectionContentProps {
     audioUrl?: string;
@@ -14,6 +15,7 @@ interface SectionContentProps {
 }
 
 export function SectionContent({ audioUrl, passage, imageUrl, title }: SectionContentProps) {
+    const illustrationUrl = imageUrl?.trim();
     const [isPlaying, setIsPlaying] = useState(false);
     const [currentTime, setCurrentTime] = useState(0);
     const [duration, setDuration] = useState(0);
@@ -126,13 +128,16 @@ export function SectionContent({ audioUrl, passage, imageUrl, title }: SectionCo
                     </div>
                 )}
 
-                {/* Image */}
-                {imageUrl && (
+                {/* The browser sizes uploaded images from their intrinsic dimensions. */}
+                {illustrationUrl && (
                     <div className="rounded-lg overflow-hidden border">
-                        <img
-                            src={imageUrl}
+                        <Image
+                            src={illustrationUrl}
                             alt="Section illustration"
-                            className="w-full max-h-[400px] object-contain bg-muted"
+                            width={0}
+                            height={0}
+                            unoptimized
+                            className="w-full h-auto max-h-[400px] object-contain bg-muted"
                         />
                     </div>
                 )}

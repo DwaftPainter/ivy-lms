@@ -7,12 +7,12 @@ import { GoogleLoginPayload, useAuthStore } from "@/store/auth.store";
 
 const CallbackPage = () => {
     const { user, isAuthenticated } = useAuth0();
-    const { loginWithGoogle } = useAuthStore();
+    const loginWithGoogle = useAuthStore((state) => state.loginWithGoogle);
     React.useEffect(() => {
         if (user && isAuthenticated && user?.email) {
             loginWithGoogle(user as GoogleLoginPayload);
         }
-    }, [user, isAuthenticated]);
+    }, [user, isAuthenticated, loginWithGoogle]);
 
     return (
         <div className="flex h-screen w-1/2 justify-center items-center">

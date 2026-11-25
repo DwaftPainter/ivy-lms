@@ -10,12 +10,12 @@ import { useEffect } from "react";
 const Dashboard = () => {
     const { user } = useAuthStore();
     const { classes, isLoading: classesLoading, fetchClasses } = useClassStore();
-    const { enrolledCourses, fetchEnrolledCourses, isLoading: enrollmentsLoading } = useEnrollmentStore();
+    const { fetchEnrolledCourses } = useEnrollmentStore();
 
     useEffect(() => {
         fetchEnrolledCourses();
         fetchClasses()
-    }, [fetchEnrolledCourses]);
+    }, [fetchEnrolledCourses, fetchClasses]);
 
     // const studyingCount = enrolledCourses.filter(c => c.status === "STUDYING").length;
     // const upcomingCount = enrolledCourses.filter(c => c.status === "UPCOMING").length;

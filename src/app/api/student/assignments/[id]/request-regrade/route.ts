@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getErrorMessage } from "@/lib/api-fetch";
 import { prisma } from "@/lib/prisma";
 import { StatusCodes } from "http-status-codes";
 import { MESSAGES } from "@/config/message";
 import jwt from "jsonwebtoken";
+import type { AuthTokenPayload } from "@/types/common";
 
 // POST /api/student/assignments/[id]/request-regrade - Request teacher regrade
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -17,7 +19,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
             );
         }
 
-        const payload = jwt.verify(token.value, process.env.JWT_SECRET_KEY!) as any;
+        const payload = jwt.verify(token.value, process.env.JWT_SECRET_KEY!) as AuthTokenPayload;
         const userId = payload.userId;
 
         const studentProfile = await prisma.studentProfile.findUnique({
@@ -65,10 +67,10 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
             },
             { status: StatusCodes.OK }
         );
-    } catch (error: any) {
+    } catch (error) {
         console.error("Request regrade error:", error);
         return NextResponse.json(
-            { success: false, message: error?.message || MESSAGES.common.serverError },
+            { success: false, message: getErrorMessage(error) || MESSAGES.common.serverError },
             { status: StatusCodes.INTERNAL_SERVER_ERROR }
         );
     }

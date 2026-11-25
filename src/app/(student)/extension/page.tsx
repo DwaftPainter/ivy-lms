@@ -7,11 +7,10 @@ import { useClassStore } from "@/store/class.store";
 import { useAssignmentStore } from "@/store/assignment.store";
 import { useEnrollmentStore } from "@/store/enrollment.store";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Calendar, BookOpen, ClipboardList, CheckCircle } from "lucide-react";
+import { Calendar, BookOpen, ClipboardList } from "lucide-react";
 import { ScheduleTab } from "@/components/extension/schedule-tab";
 import { ClassesTab } from "@/components/extension/classes-tab";
 import { AssignmentsTab } from "@/components/extension/assignments-tab";
-import { ProgressTab } from "@/components/extension/progress-tab";
 import Loader from "@/components/custom-ui/loader";
 
 const ExtensionPage = () => {

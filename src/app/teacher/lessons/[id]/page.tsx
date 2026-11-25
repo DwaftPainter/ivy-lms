@@ -184,7 +184,6 @@ export default function TeacherLessonDetailPage() {
             toast.success("Session updated successfully");
         } catch (err) {
             toast.error("Failed to update session");
-            // eslint-disable-next-line no-console
             console.error("Save session error:", err);
         }
     };

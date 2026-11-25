@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { apiFetch } from "@/lib/api-fetch";
+import { apiFetch, getErrorMessage } from "@/lib/api-fetch";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -23,7 +23,7 @@ import {
     CheckCircle2,
     BarChart3
 } from "lucide-react";
-import { IeltsSkill, SubmissionStatus } from "@/generated/prisma/enums";
+import { IeltsSkill } from "@/generated/prisma/enums";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 
@@ -92,8 +92,8 @@ export default function TeacherGradingOverviewPage() {
                 "/api/teacher/dashboard"
             );
             setData(response.data);
-        } catch (err: any) {
-            setError(err?.message || "Failed to fetch grading data");
+        } catch (err) {
+            setError(getErrorMessage(err) || "Failed to fetch grading data");
         } finally {
             setIsLoading(false);
         }

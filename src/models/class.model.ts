@@ -9,7 +9,6 @@ export interface IClassResponse {
     description: string | null;
     materials: Array<IMaterial>
 }
-[];
 
 export interface IMaterial {
     id: string;

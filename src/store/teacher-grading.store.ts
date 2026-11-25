@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { apiFetch } from "@/lib/api-fetch";
+import { apiFetch, getErrorMessage } from "@/lib/api-fetch";
 import { SubmissionStatus, IeltsSkill, AssignmentType } from "@/generated/prisma/enums";
 
 export interface Student {
@@ -163,9 +163,9 @@ export const useTeacherGradingStore = create<TeacherGradingState>((set, get) => 
                 currentSubmissionId: response.data.submissions[0]?.id || null,
                 isLoading: false
             });
-        } catch (error: any) {
+        } catch (error) {
             set({
-                error: error?.message || "Failed to fetch submissions",
+                error: getErrorMessage(error) || "Failed to fetch submissions",
                 isLoading: false
             });
         }
@@ -307,9 +307,9 @@ export const useTeacherGradingStore = create<TeacherGradingState>((set, get) => 
                 draftGrades: new Map(draftGrades).set(currentSubmissionId, updatedDraft),
                 isSaving: false
             });
-        } catch (error: any) {
+        } catch (error) {
             set({
-                error: error?.message || "Failed to save draft",
+                error: getErrorMessage(error) || "Failed to save draft",
                 isSaving: false
             });
             throw error;
@@ -384,9 +384,9 @@ export const useTeacherGradingStore = create<TeacherGradingState>((set, get) => 
                 draftGrades: newDraftGrades,
                 isSaving: false
             });
-        } catch (error: any) {
+        } catch (error) {
             set({
-                error: error?.message || "Failed to submit grade",
+                error: getErrorMessage(error) || "Failed to submit grade",
                 isSaving: false
             });
             throw error;
@@ -407,7 +407,7 @@ export const useTeacherGradingStore = create<TeacherGradingState>((set, get) => 
             const newDraftGrades = new Map(draftGrades);
             newDraftGrades.delete(currentSubmissionId);
             set({ draftGrades: newDraftGrades });
-        } catch (error: any) {
+        } catch {
             // Even if API fails, clear local state
             const newDraftGrades = new Map(draftGrades);
             newDraftGrades.delete(currentSubmissionId);
@@ -436,9 +436,9 @@ export const useTeacherGradingStore = create<TeacherGradingState>((set, get) => 
                 submissions: updatedSubmissions,
                 isSaving: false
             });
-        } catch (error: any) {
+        } catch (error) {
             set({
-                error: error?.message || "Failed to add comment",
+                error: getErrorMessage(error) || "Failed to add comment",
                 isSaving: false
             });
         }

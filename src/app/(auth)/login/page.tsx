@@ -10,6 +10,7 @@ import { Separator } from "@/components/ui/separator";
 import { MESSAGES } from "@/config/message";
 import { passwordRegex } from "@/config/regex";
 import { useAuth0 } from "@auth0/auth0-react";
+import Image from "next/image";
 import Link from "next/link";
 import googleIcon from "@/assets/icons/google.svg";
 import { useAuthStore } from "@/store/auth.store";
@@ -44,7 +45,7 @@ const Login = () => {
                 className="flex flex-col lg:basis-1/2 lg:p-22 md:p-14 p-7 w-full justify-center md:gap-8 gap-5"
             >
                 <div className="flex-col flex gap-4">
-                    <img src="/IVY_IELTS_Logo.svg" alt="" className="h-10 w-10 -ml-1" />
+                    <Image src="/IVY_IELTS_Logo.svg" alt="" width={40} height={40} className="h-10 w-10 -ml-1" />
                     <h1 className="text-xl font-medium">Welcome back</h1>
                     <div className="flex justify-between text-[13px] items-center">
                         <p>
@@ -70,12 +71,10 @@ const Login = () => {
                             authorizationParams: {
                                 connection: "google-oauth2"
                             }
-                        }).then((response) => {
-                            console.log(response);
                         })
                     }
                 >
-                    <img src={googleIcon.src} className="w-5 h-5" />
+                    <Image src={googleIcon.src} alt="" width={20} height={20} className="w-5 h-5" />
                     Continue With Google
                 </Button>
                 <div className="flex items-center overflow-hidden gap-[4%]">
