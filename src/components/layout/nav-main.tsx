@@ -11,7 +11,8 @@ import {
     SidebarMenuItem,
     SidebarMenuSub,
     SidebarMenuSubButton,
-    SidebarMenuSubItem
+    SidebarMenuSubItem,
+    useSidebar
 } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
 
@@ -40,6 +41,15 @@ export function NavMain({
     }[];
 }) {
     const pathname = usePathname();
+    const { isMobile, setOpenMobile, skipRestoreFocusRef } = useSidebar();
+
+    const handleMobileNav = () => {
+        if (isMobile) {
+            skipRestoreFocusRef.current = true;
+            setOpenMobile(false);
+        }
+    };
+
     return (
         <SidebarGroup>
             <SidebarMenu>
@@ -87,7 +97,7 @@ export function NavMain({
                                                         asChild
                                                         className={cn(subItemIsActive && "bg-muted text-primary font-semibold")}
                                                     >
-                                                        <a href={subItem.url}>
+                                                        <a href={subItem.url} onClick={handleMobileNav}>
                                                             <span className="font-[550] text-[13px] text-text-primary">
                                                                 {subItem.title}
                                                             </span>
@@ -107,7 +117,7 @@ export function NavMain({
                                 tooltip={item.title}
                                 className={cn("transition-colors", itemIsActive && "bg-muted text-primary font-semibold")}
                             >
-                                <a href={item.url}>
+                                <a href={item.url} onClick={handleMobileNav}>
                                     {item.icon && (
                                         <item.icon
                                             className="font-semibold size-5"
