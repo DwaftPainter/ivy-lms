@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import jwt from "jsonwebtoken";
+import type { AuthTokenPayload } from "@/types/common";
 import { redirectMap } from "./config/auth/role-map";
 
 export function proxy(req: NextRequest) {
@@ -16,7 +17,7 @@ export function proxy(req: NextRequest) {
     }
 
     try {
-        const payload = jwt.verify(token.value, process.env.JWT_SECRET_KEY!) as any;
+        const payload = jwt.verify(token.value, process.env.JWT_SECRET_KEY!) as AuthTokenPayload;
 
         const { role } = payload;
 

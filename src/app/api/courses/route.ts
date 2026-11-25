@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import type { Prisma } from "@/generated/prisma/client";
 import { StatusCodes } from "http-status-codes";
 import { MESSAGES } from "@/config/message";
 import { CourseLevel, IeltsSkill } from "@/generated/prisma/enums";
@@ -18,7 +19,7 @@ export async function GET(req: NextRequest) {
         const skip = (page - 1) * limit;
 
         // Build where clause
-        const where: any = {};
+        const where: Prisma.CourseWhereInput = {};
         if (search) {
             where.title = { contains: search, mode: "insensitive" };
         }

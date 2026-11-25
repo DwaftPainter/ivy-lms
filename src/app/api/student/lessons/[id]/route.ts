@@ -260,7 +260,6 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
             { status: StatusCodes.OK }
         );
     } catch (error) {
-        // eslint-disable-next-line no-console
         console.error("Get lesson detail error:", error);
         return NextResponse.json(
             { message: MESSAGES.common.serverError },

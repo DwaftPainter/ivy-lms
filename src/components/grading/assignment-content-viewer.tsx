@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { AssignmentInfo } from "@/store/teacher-grading.store";
 import { IeltsSkill } from "@/generated/prisma/enums";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -209,16 +210,19 @@ export function AssignmentContentViewer({ assignment, className }: AssignmentCon
                                                         </div>
                                                     )}
 
-                                                    {section.passage.imageUrl && (
+                                                    {section.passage.imageUrl?.trim() && (
                                                         <div className="bg-muted/50 rounded-lg p-4">
                                                             <div className="flex items-center gap-2 text-sm font-medium mb-2">
                                                                 <ImageIcon className="w-4 h-4" />
                                                                 <span>Image</span>
                                                             </div>
-                                                            <img
-                                                                src={section.passage.imageUrl}
+                                                            <Image
+                                                                src={section.passage.imageUrl.trim()}
                                                                 alt="Passage"
-                                                                className="max-w-full h-auto rounded"
+                                                                width={0}
+                                                                height={0}
+                                                                unoptimized
+                                                                className="w-auto max-w-full h-auto rounded"
                                                             />
                                                         </div>
                                                     )}

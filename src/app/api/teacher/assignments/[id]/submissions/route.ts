@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { StatusCodes } from "http-status-codes";
 import { MESSAGES } from "@/config/message";
 import jwt from "jsonwebtoken";
+import type { AuthTokenPayload } from "@/types/common";
 import { SubmissionStatus, Role } from "@/generated/prisma/enums";
 
 /**
@@ -47,7 +48,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
             );
         }
 
-        const payload = jwt.verify(token.value, process.env.JWT_SECRET_KEY!) as any;
+        const payload = jwt.verify(token.value, process.env.JWT_SECRET_KEY!) as AuthTokenPayload;
         const userId = payload.userId;
 
         // Get user with teacher profile

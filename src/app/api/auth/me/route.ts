@@ -1,4 +1,5 @@
 import jwt from "jsonwebtoken";
+import type { AuthTokenPayload } from "@/types/common";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { StatusCodes } from "http-status-codes";
@@ -52,7 +53,7 @@ export async function GET(req: NextRequest) {
             return NextResponse.redirect(new URL("/login", req.url));
         }
 
-        const payload = jwt.verify(token.value, process.env.JWT_SECRET_KEY!) as any;
+        const payload = jwt.verify(token.value, process.env.JWT_SECRET_KEY!) as AuthTokenPayload;
 
         const userId = payload.userId;
 

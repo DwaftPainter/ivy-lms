@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { apiFetch } from "@/lib/api-fetch";
+import { apiFetch, getErrorMessage } from "@/lib/api-fetch";
 import { IeltsSkill } from "@/generated/prisma/enums";
 
 export interface Teacher {
@@ -50,9 +50,9 @@ export const useTeacherStore = create<TeacherState>((set, get) => ({
                 "/api/teachers"
             );
             set({ teachers: response.data, isLoading: false });
-        } catch (error: any) {
+        } catch (error) {
             set({
-                error: error?.message || "Failed to fetch teachers",
+                error: getErrorMessage(error) || "Failed to fetch teachers",
                 isLoading: false
             });
         }
@@ -75,8 +75,8 @@ export const useTeacherStore = create<TeacherState>((set, get) => ({
             set({ isLoading: false });
 
             return response.data;
-        } catch (error: any) {
-            const errorMessage = error?.message || "Failed to create teacher";
+        } catch (error) {
+            const errorMessage = getErrorMessage(error) || "Failed to create teacher";
             set({ error: errorMessage, isLoading: false });
             throw error;
         }

@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { apiFetch } from "@/lib/api-fetch";
+import { apiFetch, getErrorMessage } from "@/lib/api-fetch";
 import { CourseLevel, IeltsSkill } from "@/generated/prisma/enums";
 import { EnrollmentStatus } from "@/enums/erollment.enum";
 
@@ -47,9 +47,9 @@ export const useEnrollmentStore = create<EnrollmentState>((set, get) => ({
                 "/api/student/enrollments"
             );
             set({ enrolledCourses: response.data, isLoading: false });
-        } catch (error: any) {
+        } catch (error) {
             set({
-                error: error?.message || "Failed to fetch enrolled courses",
+                error: getErrorMessage(error) || "Failed to fetch enrolled courses",
                 isLoading: false
             });
         }

@@ -1,7 +1,8 @@
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
-import { apiFetch } from "@/lib/api-fetch";
+import { apiFetch, getErrorMessage } from "@/lib/api-fetch";
 import { AssignmentType, IeltsSkill, SubmissionStatus } from "@/generated/prisma/enums";
+import type { AssignmentSubmissionResult } from "@/types/assignment-submission";
 
 export interface AssignmentDetails {
     id: string;
@@ -163,7 +164,7 @@ interface AssignmentSessionState {
 
     // Data Fetching
     fetchAssignment: (id: string) => Promise<void>;
-    submitAssignment: (id: string) => Promise<any>;
+    submitAssignment: (id: string) => Promise<AssignmentSubmissionResult>;
 
     // AI Grading Actions
     gradeWithAI: (id: string) => Promise<void>;
@@ -336,9 +337,9 @@ export const useAssignmentSessionStore = create<AssignmentSessionState>()(
                         answers: loadedAnswers,
                         isLoading: false
                     });
-                } catch (error: any) {
+                } catch (error) {
                     set({
-                        error: error?.message || "Failed to fetch assignment",
+                        error: getErrorMessage(error) || "Failed to fetch assignment",
                         isLoading: false
                     });
                 }
@@ -355,19 +356,7 @@ export const useAssignmentSessionStore = create<AssignmentSessionState>()(
                     const response = await apiFetch<{
                         success: boolean;
                         message: string;
-                        data: {
-                            submission: {
-                                id: string;
-                                status: string;
-                                submittedAt: string;
-                                content: string;
-                                aiScore?: number;
-                                aiFeedback?: string;
-                                aiCorrections?: AICorrection[];
-                                aiGradedAt?: string | null;
-                            };
-                            progress: any;
-                        };
+                        data: AssignmentSubmissionResult;
                     }>(`/api/student/assignments/${id}`, {
                         method: "POST",
                         body: JSON.stringify({ content })
@@ -382,7 +371,7 @@ export const useAssignmentSessionStore = create<AssignmentSessionState>()(
                                 submission: {
                                     ...assignment.submission,
                                     id: response.data.submission.id,
-                                    status: response.data.submission.status as SubmissionStatus,
+                                    status: response.data.submission.status,
                                     submittedAt: new Date(response.data.submission.submittedAt),
                                     content: response.data.submission.content
                                 }
@@ -406,9 +395,9 @@ export const useAssignmentSessionStore = create<AssignmentSessionState>()(
                     }
 
                     return response.data;
-                } catch (error: any) {
+                } catch (error) {
                     set({
-                        error: error?.message || "Failed to submit assignment",
+                        error: getErrorMessage(error) || "Failed to submit assignment",
                         isSubmitting: false
                     });
                     throw error;
@@ -459,9 +448,9 @@ export const useAssignmentSessionStore = create<AssignmentSessionState>()(
                         },
                         isAIGrading: false
                     });
-                } catch (error: any) {
+                } catch (error) {
                     set({
-                        error: error?.message || "Failed to grade with AI",
+                        error: getErrorMessage(error) || "Failed to grade with AI",
                         isAIGrading: false
                     });
                 }
@@ -492,7 +481,7 @@ export const useAssignmentSessionStore = create<AssignmentSessionState>()(
                             teacherRegradeRequested: response.data.teacherRegradeRequested
                         });
                     }
-                } catch (error: any) {
+                } catch (error) {
                     console.error("Failed to fetch AI grading:", error);
                 }
             },
@@ -503,9 +492,9 @@ export const useAssignmentSessionStore = create<AssignmentSessionState>()(
                         method: "POST"
                     });
                     set({ teacherRegradeRequested: true });
-                } catch (error: any) {
+                } catch (error) {
                     set({
-                        error: error?.message || "Failed to request teacher regrade"
+                        error: getErrorMessage(error) || "Failed to request teacher regrade"
                     });
                 }
             }

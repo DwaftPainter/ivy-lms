@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { apiFetch } from "@/lib/api-fetch";
+import type { ApiResponse } from "@/types/common";
 
 export type Notification = {
     id: string;
@@ -31,7 +32,7 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
     fetchNotifications: async () => {
         set({ isLoading: true, error: null });
         try {
-            const response = await apiFetch("/api/notifications");
+            const response = await apiFetch<ApiResponse<Notification[]>>("/api/notifications");
             const notifications = response.data || [];
             const unreadCount = notifications.filter((n: Notification) => !n.isRead).length;
             set({ notifications, unreadCount, isLoading: false });

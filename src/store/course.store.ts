@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { apiFetch } from "@/lib/api-fetch";
+import { apiFetch, getErrorMessage } from "@/lib/api-fetch";
 import { CourseLevel, IeltsSkill } from "@/generated/prisma/enums";
 
 export interface Course {
@@ -114,9 +114,9 @@ export const useCourseStore = create<CourseState>((set) => ({
                 pagination: response.pagination,
                 isLoading: false
             });
-        } catch (error: any) {
+        } catch (error) {
             set({
-                error: error?.message || "Failed to fetch courses",
+                error: getErrorMessage(error) || "Failed to fetch courses",
                 isLoading: false
             });
         }
@@ -127,9 +127,9 @@ export const useCourseStore = create<CourseState>((set) => ({
         try {
             const response = await apiFetch<{ success: boolean; data: Course }>(`/api/courses/${id}`);
             set({ currentCourse: response.data, isLoading: false });
-        } catch (error: any) {
+        } catch (error) {
             set({
-                error: error?.message || "Failed to fetch course",
+                error: getErrorMessage(error) || "Failed to fetch course",
                 isLoading: false
             });
         }
@@ -147,9 +147,9 @@ export const useCourseStore = create<CourseState>((set) => ({
                 isLoading: false
             }));
             return response.data;
-        } catch (error: any) {
+        } catch (error) {
             set({
-                error: error?.message || "Failed to create course",
+                error: getErrorMessage(error) || "Failed to create course",
                 isLoading: false
             });
             throw error;
@@ -169,9 +169,9 @@ export const useCourseStore = create<CourseState>((set) => ({
                 isLoading: false
             }));
             return response.data;
-        } catch (error: any) {
+        } catch (error) {
             set({
-                error: error?.message || "Failed to update course",
+                error: getErrorMessage(error) || "Failed to update course",
                 isLoading: false
             });
             throw error;
@@ -189,9 +189,9 @@ export const useCourseStore = create<CourseState>((set) => ({
                 currentCourse: state.currentCourse?.id === id ? null : state.currentCourse,
                 isLoading: false
             }));
-        } catch (error: any) {
+        } catch (error) {
             set({
-                error: error?.message || "Failed to delete course",
+                error: getErrorMessage(error) || "Failed to delete course",
                 isLoading: false
             });
             throw error;

@@ -8,14 +8,14 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { Course, CreateCourseInput, UpdateCourseInput } from "@/store/course.store";
+import type { Course, CreateCourseInput } from "@/store/course.store";
 import { IeltsSkill, CourseLevel } from "@/generated/prisma/enums";
 
 interface CourseDialogProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
     course?: Course | null;
-    onSubmit: (data: CreateCourseInput | UpdateCourseInput) => Promise<void>;
+    onSubmit: (data: CreateCourseInput) => Promise<void>;
     isLoading?: boolean;
 }
 
@@ -85,7 +85,7 @@ export function CourseDialog({ open, onOpenChange, course, onSubmit, isLoading }
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        const data: CreateCourseInput | UpdateCourseInput = {
+        const data: CreateCourseInput = {
             ...formData,
             targetBand: formData.targetBand ? parseFloat(formData.targetBand) : undefined
         };

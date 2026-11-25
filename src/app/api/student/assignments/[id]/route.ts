@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { Prisma } from "@/generated/prisma/client";
 import { StatusCodes } from "http-status-codes";
 import { MESSAGES } from "@/config/message";
 import jwt from "jsonwebtoken";
+import type { AuthTokenPayload } from "@/types/common";
 import { SubmissionStatus, IeltsSkill } from "@/generated/prisma/enums";
 import { gradeWithOllama, AIGradingResult } from "@/lib/ai-grading";
 
@@ -19,7 +21,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
             );
         }
 
-        const payload = jwt.verify(token.value, process.env.JWT_SECRET_KEY!) as any;
+        const payload = jwt.verify(token.value, process.env.JWT_SECRET_KEY!) as AuthTokenPayload;
         const userId = payload.userId;
 
         // Get student profile
@@ -195,7 +197,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
             );
         }
 
-        const payload = jwt.verify(token.value, process.env.JWT_SECRET_KEY!) as any;
+        const payload = jwt.verify(token.value, process.env.JWT_SECRET_KEY!) as AuthTokenPayload;
         const userId = payload.userId;
 
         // Get student profile
@@ -272,11 +274,11 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
         }
 
         // For speaking assignments, parse audio URLs from content JSON
-        let audioUrls: any = null;
+        let audioUrls: Prisma.InputJsonArray | typeof Prisma.JsonNull = Prisma.JsonNull;
         const submissionContent = content;
         if (assignment.skill === IeltsSkill.SPEAKING && content) {
             try {
-                const parsedContent = JSON.parse(content);
+                const parsedContent = JSON.parse(content) as Record<string, Prisma.JsonValue>;
                 // Convert answers object to array of audio recordings
                 audioUrls = Object.entries(parsedContent).map(([questionId, url]) => ({
                     questionId,
@@ -346,7 +348,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
                         aiScore: aiGradingResult.score,
                         aiFeedback: aiGradingResult.feedback,
                         aiGradedAt: new Date(),
-                        aiCorrections: aiGradingResult.corrections as any,
+                        aiCorrections: aiGradingResult.corrections,
                         teacherRegradeRequested: false
                     }
                 });

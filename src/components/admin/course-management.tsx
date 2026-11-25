@@ -30,7 +30,7 @@ import {
     AlertDialogHeader,
     AlertDialogTitle
 } from "@/components/ui/alert-dialog";
-import { useCourseStore, Course } from "@/store/course.store";
+import { useCourseStore, type Course, type CreateCourseInput, type UpdateCourseInput } from "@/store/course.store";
 import { CourseDialog } from "./course-dialog";
 import { ClassSessionsDialog } from "./class-sessions-dialog";
 import { toast } from "sonner";
@@ -63,7 +63,7 @@ export function CourseManagement() {
             course.teacher?.id.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
-    const handleCreate = async (data: any) => {
+    const handleCreate = async (data: CreateCourseInput) => {
         try {
             await createCourse(data);
             setDialogOpen(false);
@@ -73,7 +73,7 @@ export function CourseManagement() {
         }
     };
 
-    const handleUpdate = async (data: any) => {
+    const handleUpdate = async (data: UpdateCourseInput) => {
         if (!editingCourse) return;
         try {
             await updateCourse(editingCourse.id, data);
