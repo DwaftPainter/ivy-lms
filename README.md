@@ -52,18 +52,18 @@ git clone https://github.com/DwaftPainter/IVY-LMS.git
 cd IVY-LMS
 
 # Install dependencies
-npm install
+pnpm install
 
 # Set up environment variables
 cp .env.example .env
 # Edit .env with your configuration
 
 # Set up database
-npx prisma migrate dev
-npx prisma db seed  # Optional
+pnpm dlx prisma migrate dev
+pnpm dlx prisma db seed  # Optional
 
 # Start development server
-npm run dev
+pnpm dev
 ```
 
 Visit `http://localhost:3000` in your browser.
@@ -129,19 +129,19 @@ ivy-lms/
 
 ```bash
 # Development
-npm run dev              # Start dev server with Turbopack
+pnpm dev                 # Start dev server with Turbopack
 
 # Production
-npm run build           # Build for production
-npm run start           # Start production server
+pnpm build               # Build for production
+pnpm start               # Start production server
 
 # Database
-npx prisma migrate dev  # Run migrations
-npx prisma db seed      # Seed database
-npx prisma studio       # Open database GUI
+pnpm dlx prisma migrate dev   # Run migrations
+pnpm dlx prisma db seed       # Seed database
+pnpm dlx prisma studio        # Open database GUI
 
 # Linting
-npm run lint            # Run ESLint
+pnpm lint                # Run ESLint
 ```
 
 ---

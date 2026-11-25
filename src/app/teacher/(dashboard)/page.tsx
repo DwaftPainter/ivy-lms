@@ -99,9 +99,6 @@ const Dashboard = () => {
             deadline: item.deadline || ""
         })) || [];
 
-    // Feedback tasks - dashboard endpoint doesn't return this yet, so pass empty array
-    const feedbackTasks: any[] = [];
-
     if (isLoading) {
         return (
             <div className="p-4 w-full">

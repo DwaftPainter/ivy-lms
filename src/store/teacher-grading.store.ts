@@ -407,7 +407,7 @@ export const useTeacherGradingStore = create<TeacherGradingState>((set, get) => 
             const newDraftGrades = new Map(draftGrades);
             newDraftGrades.delete(currentSubmissionId);
             set({ draftGrades: newDraftGrades });
-        } catch (error: any) {
+        } catch {
             // Even if API fails, clear local state
             const newDraftGrades = new Map(draftGrades);
             newDraftGrades.delete(currentSubmissionId);

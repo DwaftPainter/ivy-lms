@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Progress } from "@/components/ui/progress";
 import {
     BookOpen,
     Plus,
@@ -12,7 +11,8 @@ import {
     Search,
     Edit,
     Trash2,
-    MoreHorizontal
+    MoreHorizontal,
+    Calendar
 } from "lucide-react";
 import {
     DropdownMenu,
@@ -32,6 +32,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useCourseStore, Course } from "@/store/course.store";
 import { CourseDialog } from "./course-dialog";
+import { ClassSessionsDialog } from "./class-sessions-dialog";
 import { toast } from "sonner";
 
 export function CourseManagement() {
@@ -49,6 +50,8 @@ export function CourseManagement() {
     const [editingCourse, setEditingCourse] = useState<Course | null>(null);
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
     const [deletingCourse, setDeletingCourse] = useState<Course | null>(null);
+    const [sessionsDialogOpen, setSessionsDialogOpen] = useState(false);
+    const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
 
     useEffect(() => {
         fetchCourses();
@@ -65,7 +68,7 @@ export function CourseManagement() {
             await createCourse(data);
             setDialogOpen(false);
             toast.success("Course created successfully");
-        } catch (error) {
+        } catch {
             toast.error("Failed to create course");
         }
     };
@@ -77,7 +80,7 @@ export function CourseManagement() {
             setDialogOpen(false);
             setEditingCourse(null);
             toast.success("Course updated successfully");
-        } catch (error) {
+        } catch {
             toast.error("Failed to update course");
         }
     };
@@ -89,7 +92,7 @@ export function CourseManagement() {
             setDeleteDialogOpen(false);
             setDeletingCourse(null);
             toast.success("Course deleted successfully");
-        } catch (error) {
+        } catch {
             toast.error("Failed to delete course");
         }
     };
@@ -107,6 +110,11 @@ export function CourseManagement() {
     const confirmDelete = (course: Course) => {
         setDeletingCourse(course);
         setDeleteDialogOpen(true);
+    };
+
+    const openSessionsDialog = (course: Course) => {
+        setSelectedCourse(course);
+        setSessionsDialogOpen(true);
     };
 
     return (
@@ -202,6 +210,14 @@ export function CourseManagement() {
                                                     Edit
                                                 </DropdownMenuItem>
                                                 <DropdownMenuItem
+                                                    onClick={() =>
+                                                        openSessionsDialog(course)
+                                                    }
+                                                >
+                                                    <Calendar className="w-4 h-4 mr-2" />
+                                                    Manage Lessons
+                                                </DropdownMenuItem>
+                                                <DropdownMenuItem
                                                     className="text-destructive"
                                                     onClick={() =>
                                                         confirmDelete(course)
@@ -251,13 +267,19 @@ export function CourseManagement() {
                 isLoading={isLoading}
             />
 
+            <ClassSessionsDialog
+                open={sessionsDialogOpen}
+                onOpenChange={setSessionsDialogOpen}
+                course={selectedCourse}
+            />
+
             <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
                 <AlertDialogContent>
                     <AlertDialogHeader>
                         <AlertDialogTitle>Are you sure?</AlertDialogTitle>
                         <AlertDialogDescription>
-                            This will permanently delete the course "
-                            {deletingCourse?.title}". This action cannot be
+                            This will permanently delete the course &quot;
+                            {deletingCourse?.title}&quot;. This action cannot be
                             undone.
                         </AlertDialogDescription>
                     </AlertDialogHeader>

@@ -3,23 +3,21 @@ FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-# tránh lỗi OpenSSL (Prisma)
-RUN apk add --no-cache openssl
+# Cài đặt pnpm và OpenSSL (cho Prisma)
+RUN apk add --no-cache openssl && npm install -g pnpm
 
-COPY package*.json ./
-
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml* ./
 COPY prisma ./prisma
 
-# tránh conflict deps React 19
-RUN npm install --legacy-peer-deps
+RUN pnpm install --frozen-lockfile
 
 COPY . .
 
 # Prisma generate (important)
-RUN npx prisma generate
+RUN pnpm prisma generate
 
 # Build Next
-RUN npm run build
+RUN pnpm run build
 
 
 # ---------- 2. Run stage ----------
@@ -29,10 +27,10 @@ WORKDIR /app
 
 ENV NODE_ENV=production
 
-RUN apk add --no-cache openssl
+RUN apk add --no-cache openssl && npm install -g pnpm
 
 # copy minimal files
-COPY --from=builder /app/package*.json ./
+COPY --from=builder /app/package.json ./
 COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/node_modules ./node_modules
@@ -40,4 +38,4 @@ COPY --from=builder /app/prisma ./prisma
 
 EXPOSE 3000
 
-CMD ["npm", "start"]
+CMD ["pnpm", "start"]

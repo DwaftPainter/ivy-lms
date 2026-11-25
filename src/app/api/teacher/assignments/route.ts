@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { StatusCodes } from "http-status-codes";
 import { MESSAGES } from "@/config/message";
 import jwt from "jsonwebtoken";
-import { Role, IeltsSkill, AssignmentType } from "@/generated/prisma/enums";
+import { Role, IeltsSkill } from "@/generated/prisma/enums";
 
 /**
  * @swagger

@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Question } from "@/store/assignment-session.store";
-import { Mic, Square, Play, Pause, RotateCcw, Loader2 } from "lucide-react";
+import { Mic, Square, Play, Pause, RotateCcw } from "lucide-react";
 import { useAssignmentSessionStore } from "@/store/assignment-session.store";
 import { uploadAudio } from "@/lib/upload";
 import { toast } from "sonner";
@@ -34,12 +34,12 @@ export function SpeakingQuestion({
     const [recordingTime, setRecordingTime] = useState(0);
     const [audioUrl, setAudioUrl] = useState<string | null>(answer || null);
     const [isUploading, setIsUploading] = useState(false);
-    const [uploadProgress, setUploadProgress] = useState(0);
+    const [_uploadProgress, setUploadProgress] = useState(0);
     const mediaRecorderRef = useRef<MediaRecorder | null>(null);
     const audioChunksRef = useRef<Blob[]>([]);
     const audioRef = useRef<HTMLAudioElement | null>(null);
     const timerRef = useRef<NodeJS.Timeout | null>(null);
-    const { isTimerRunning, timeRemaining, startTimer, pauseTimer, tickTimer } = useAssignmentSessionStore();
+    const { startTimer, pauseTimer, tickTimer } = useAssignmentSessionStore();
 
     useEffect(() => {
         if (isRecording) {

@@ -23,7 +23,7 @@ import {
     CheckCircle2,
     BarChart3
 } from "lucide-react";
-import { IeltsSkill, SubmissionStatus } from "@/generated/prisma/enums";
+import { IeltsSkill } from "@/generated/prisma/enums";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 

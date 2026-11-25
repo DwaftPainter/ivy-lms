@@ -92,7 +92,6 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
             instructions: assignment.instructions,
             description: assignment.description
         });
-        console.log('🚀 ~ POST ~ aiResult:', aiResult)
 
         // Update submission with AI grading results
         await prisma.assignmentSubmission.update({
@@ -170,7 +169,6 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
                 status: true
             }
         });
-        console.log('🚀 ~ GET ~ submission:', submission)
 
         if (!submission) {
             return NextResponse.json(

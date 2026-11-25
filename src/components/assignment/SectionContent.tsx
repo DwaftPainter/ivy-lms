@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
-import { Play, Pause, Volume2, Headphones, BookOpen, ImageIcon } from "lucide-react";
+import { Play, Pause, Volume2, Headphones, BookOpen } from "lucide-react";
 
 interface SectionContentProps {
     audioUrl?: string;

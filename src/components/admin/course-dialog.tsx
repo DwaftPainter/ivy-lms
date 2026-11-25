@@ -57,6 +57,7 @@ export function CourseDialog({ open, onOpenChange, course, onSubmit, isLoading }
 
     useEffect(() => {
         if (course) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setFormData({
                 title: course.title,
                 description: course.description || "",

@@ -100,6 +100,7 @@ export function ListeningQuestion({
             audioRef.current.pause();
             audioRef.current.currentTime = 0;
         }
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setIsPlaying(false);
         setCurrentTime(0);
     }, [audioUrl]);

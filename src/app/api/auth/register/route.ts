@@ -1,4 +1,3 @@
-import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { ROLE, AUTH_PROVIDER } from "@/enums";
 import { prisma } from "@/lib/prisma";
@@ -6,7 +5,6 @@ import { NextResponse } from "next/server";
 import { StatusCodes } from "http-status-codes";
 import { MESSAGES } from "@/config/message";
 import { omit } from "lodash";
-import { redirect } from "next/dist/server/api-utils";
 import { redirectMap } from "@/config/auth/role-map";
 
 /**

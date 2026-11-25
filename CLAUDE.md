@@ -10,23 +10,23 @@ IVY LMS is a Learning Management System built with Next.js 16, React 19, TypeScr
 
 ```bash
 # Development (uses Turbopack)
-npm run dev
+pnpm dev
 
 # Production build (uses Turbopack)
-npm run build
+pnpm build
 
 # Start production server
-npm run start
+pnpm start
 
 # Lint (ESLint with strict rules)
-npm run lint
+pnpm lint
 
 # Database commands
-npx prisma migrate dev      # Run migrations in development
-npx prisma migrate deploy   # Run migrations in production
-npx prisma generate         # Generate Prisma client (runs automatically on postinstall)
-npx prisma studio           # Open database GUI
-npx prisma db seed          # Run database seed
+pnpm dlx prisma migrate dev      # Run migrations in development
+pnpm dlx prisma migrate deploy   # Run migrations in production
+pnpm dlx prisma generate         # Generate Prisma client (runs automatically on postinstall)
+pnpm dlx prisma studio           # Open database GUI
+pnpm dlx prisma db seed          # Run database seed
 ```
 
 ## Architecture

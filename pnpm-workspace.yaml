@@ -1,0 +1,16 @@
+allowBuilds:
+  '@parcel/watcher': true
+  '@prisma/engines': true
+  '@scarf/scarf': true
+  '@swc/core': true
+  '@tree-sitter-grammars/tree-sitter-yaml': true
+  bcrypt: true
+  browser-tabs-lock: true
+  core-js-pure: true
+  esbuild: true
+  msw: true
+  prisma: true
+  sharp: true
+  tree-sitter: true
+  tree-sitter-json: true
+  unrs-resolver: true

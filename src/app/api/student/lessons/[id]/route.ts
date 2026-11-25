@@ -48,8 +48,6 @@ function getSessionStatus(scheduledDate: Date, startTime: string, endTime: strin
     const sessionEnd = new Date(sessionDate);
     sessionEnd.setHours(endHour, endMinute, 0, 0);
 
-    console.log('🚀 ~ getSessionStatus ~ now:', now)
-    console.log('🚀 ~ getSessionStatus ~ sessionStart:', sessionStart)
     if (now < sessionStart) {
         return "UPCOMING";
     } else if (now >= sessionStart && now <= sessionEnd) {
@@ -94,7 +92,6 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
         }
 
         const enrolledCourseIds = studentProfile.enrollments.map((e) => e.courseId);
-        const enrollmentMap = new Map(studentProfile.enrollments.map((e) => [e.courseId, e.id]));
 
         // Get the class session with all details
         const classSession = await prisma.classSession.findUnique({

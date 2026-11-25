@@ -2,7 +2,6 @@
 
 import dynamic from "next/dynamic";
 import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import scrollGridPlugin from "@fullcalendar/scrollgrid";
@@ -10,8 +9,8 @@ import interactionPlugin from "@fullcalendar/interaction";
 import { ScheduleLesson } from "@/store/schedule.store";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Clock, GraduationCap } from "lucide-react";
-import { format, addMonths, subMonths, addWeeks, subWeeks, addDays, subDays, startOfWeek, endOfWeek } from "date-fns";
+import { Calendar as CalendarIcon } from "lucide-react";
+import { format } from "date-fns";
 
 // Dynamic import FullCalendar to avoid SSR issues
 const FullCalendar = dynamic(() => import("@fullcalendar/react").then((mod) => mod.default), {
@@ -53,17 +52,10 @@ function getEventColor(type: string) {
     }
 }
 
-const lessonTypeConfig: Record<string, { icon: React.ReactNode; color: string }> = {
-    speaking: { icon: <GraduationCap className="w-4 h-4" />, color: "text-blue-600" },
-    writing: { icon: <GraduationCap className="w-4 h-4" />, color: "text-emerald-600" },
-    reading: { icon: <GraduationCap className="w-4 h-4" />, color: "text-amber-600" },
-    listening: { icon: <GraduationCap className="w-4 h-4" />, color: "text-purple-600" }
-};
-
 export function ScheduleTab({ lessons }: ScheduleTabProps) {
     const router = useRouter();
     const [isClient, setIsClient] = useState(false);
-    const [currentDate, setCurrentDate] = useState(new Date());
+    const [currentDate] = useState(new Date());
     const [viewType, setViewType] = useState<"month" | "week" | "day">("month");
 
     useEffect(() => {
@@ -86,25 +78,6 @@ export function ScheduleTab({ lessons }: ScheduleTabProps) {
 
     const handleEventClick = (info: EventClickArg) => {
         router.push(`/lessons/${info.event.id}`);
-    };
-
-    // Get upcoming lessons (next 5)
-    const upcomingLessons = [...lessons]
-        .filter((l) => new Date(`${l.date}T${l.startTime}`) >= new Date())
-        .sort(
-            (a, b) =>
-                new Date(`${a.date}T${a.startTime}`).getTime() -
-                new Date(`${b.date}T${b.startTime}`).getTime()
-        )
-        .slice(0, 5);
-
-    const getLessonTypeIcon = (type: string) => {
-        return (
-            lessonTypeConfig[type.toLowerCase()] || {
-                icon: <GraduationCap className="w-4 h-4" />,
-                color: "text-primary"
-            }
-        );
     };
 
     return (
