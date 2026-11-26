@@ -189,9 +189,9 @@ export default function AssignmentLayout({ children }: { children: React.ReactNo
 
                 {/* Toast */}
                 {showSubmittedToast && (
-                    <div className="fixed bottom-20 left-1/2 -translate-x-1/2 z-50">
-                        <div className="bg-green-500 text-white px-4 py-3 rounded-lg shadow-lg flex items-center gap-2 animate-in fade-in slide-in-from-bottom-4">
-                            <CheckCircle2 className="size-5" />
+                    <div className="fixed bottom-20 left-1/2 -translate-x-1/2 z-50" role="status" aria-live="polite">
+                        <div className="bg-green-700 text-white px-4 py-3 rounded-lg shadow-lg flex items-center gap-2 animate-in fade-in slide-in-from-bottom-4 motion-reduce:animate-none">
+                            <CheckCircle2 className="size-5" aria-hidden="true" />
                             <span className="font-medium">Assignment submitted successfully!</span>
                             <Button
                                 variant="ghost"

@@ -80,8 +80,8 @@ export function SectionContent({ audioUrl, passage, imageUrl, title }: SectionCo
         <Card className="border-border mb-6">
             <CardHeader className="pb-3">
                 <CardTitle className="text-base font-medium flex items-center gap-2">
-                    {audioUrl && <Headphones className="h-4 w-4" />}
-                    {passage && !audioUrl && <BookOpen className="h-4 w-4" />}
+                    {audioUrl && <Headphones className="h-4 w-4" aria-hidden="true" />}
+                    {passage && !audioUrl && <BookOpen className="h-4 w-4" aria-hidden="true" />}
                     {title || (audioUrl ? "Listening Audio" : "Reading Passage")}
                 </CardTitle>
             </CardHeader>
@@ -94,12 +94,13 @@ export function SectionContent({ audioUrl, passage, imageUrl, title }: SectionCo
                                 variant="outline"
                                 size="icon"
                                 onClick={togglePlay}
+                                aria-label={isPlaying ? "Pause section audio" : "Play section audio"}
                                 className="h-10 w-10 shrink-0"
                             >
                                 {isPlaying ? (
-                                    <Pause className="h-4 w-4" />
+                                    <Pause className="h-4 w-4" aria-hidden="true" />
                                 ) : (
-                                    <Play className="h-4 w-4 ml-0.5" />
+                                    <Play className="h-4 w-4 ml-0.5" aria-hidden="true" />
                                 )}
                             </Button>
                             <div className="flex-1">
@@ -107,6 +108,7 @@ export function SectionContent({ audioUrl, passage, imageUrl, title }: SectionCo
                                     value={[currentTime]}
                                     max={duration || 100}
                                     step={1}
+                                    aria-label="Section audio progress"
                                     onValueChange={handleSeek}
                                     className="w-full"
                                 />
@@ -116,11 +118,12 @@ export function SectionContent({ audioUrl, passage, imageUrl, title }: SectionCo
                             </span>
                         </div>
                         <div className="flex items-center gap-2">
-                            <Volume2 className="h-4 w-4 text-muted-foreground" />
+                            <Volume2 className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
                             <Slider
                                 value={[volume]}
                                 max={100}
                                 step={1}
+                                aria-label="Section audio volume"
                                 onValueChange={handleVolumeChange}
                                 className="w-24"
                             />
