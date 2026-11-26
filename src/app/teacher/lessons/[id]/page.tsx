@@ -408,7 +408,7 @@ export default function TeacherLessonDetailPage() {
                                             handleFieldChange("skill", value as IeltsSkill)
                                         }
                                     >
-                                        <SelectTrigger>
+                                        <SelectTrigger id="skill">
                                             <SelectValue placeholder="Select skill type" />
                                         </SelectTrigger>
                                         <SelectContent>
@@ -428,7 +428,7 @@ export default function TeacherLessonDetailPage() {
                                         value={session.sessionType}
                                         onValueChange={(value) => handleFieldChange("sessionType", value)}
                                     >
-                                        <SelectTrigger>
+                                        <SelectTrigger id="sessionType">
                                             <SelectValue placeholder="Select session type" />
                                         </SelectTrigger>
                                         <SelectContent>
