@@ -55,22 +55,25 @@ interface Pagination {
     totalPages: number;
 }
 
+interface FetchCoursesParams {
+    page?: number;
+    limit?: number;
+    search?: string;
+    level?: CourseLevel;
+    skill?: IeltsSkill;
+    isPublished?: boolean;
+}
+
 interface CourseState {
     courses: Course[];
     currentCourse: Course | null;
     isLoading: boolean;
     error: string | null;
     pagination: Pagination;
+    lastFetchParams: FetchCoursesParams;
 
     // Actions
-    fetchCourses: (params?: {
-        page?: number;
-        limit?: number;
-        search?: string;
-        level?: CourseLevel;
-        skill?: IeltsSkill;
-        isPublished?: boolean;
-    }) => Promise<void>;
+    fetchCourses: (params?: FetchCoursesParams) => Promise<void>;
     fetchCourse: (id: string) => Promise<void>;
     createCourse: (data: CreateCourseInput) => Promise<Course>;
     updateCourse: (id: string, data: UpdateCourseInput) => Promise<Course>;
@@ -79,7 +82,20 @@ interface CourseState {
     clearError: () => void;
 }
 
-export const useCourseStore = create<CourseState>((set) => ({
+function adjustPagination(pagination: Pagination, delta: number, fallbackLength: number): Pagination {
+    const limit = pagination.limit || 10;
+    const baseTotal = pagination.total > 0 || delta < 0 ? pagination.total : fallbackLength;
+    const total = Math.max(0, baseTotal + delta);
+    const totalPages = total > 0 ? Math.max(1, Math.ceil(total / limit)) : 0;
+    return {
+        ...pagination,
+        total,
+        totalPages,
+        page: totalPages > 0 ? Math.min(pagination.page || 1, totalPages) : 1
+    };
+}
+
+export const useCourseStore = create<CourseState>((set, get) => ({
     courses: [],
     currentCourse: null,
     isLoading: false,
@@ -90,9 +106,10 @@ export const useCourseStore = create<CourseState>((set) => ({
         total: 0,
         totalPages: 0
     },
+    lastFetchParams: {},
 
     fetchCourses: async (params = {}) => {
-        set({ isLoading: true, error: null });
+        set({ isLoading: true, error: null, lastFetchParams: params });
         try {
             const queryParams = new URLSearchParams();
             if (params.page) queryParams.set("page", params.page.toString());
@@ -144,8 +161,10 @@ export const useCourseStore = create<CourseState>((set) => ({
             });
             set((state) => ({
                 courses: [response.data, ...state.courses],
+                pagination: adjustPagination(state.pagination, 1, state.courses.length),
                 isLoading: false
             }));
+            await get().fetchCourses(get().lastFetchParams);
             return response.data;
         } catch (error) {
             set({
@@ -168,6 +187,7 @@ export const useCourseStore = create<CourseState>((set) => ({
                 currentCourse: state.currentCourse?.id === id ? response.data : state.currentCourse,
                 isLoading: false
             }));
+            await get().fetchCourses(get().lastFetchParams);
             return response.data;
         } catch (error) {
             set({
@@ -186,9 +206,12 @@ export const useCourseStore = create<CourseState>((set) => ({
             });
             set((state) => ({
                 courses: state.courses.filter((c) => c.id !== id),
+                pagination: adjustPagination(state.pagination, -1, state.courses.length),
                 currentCourse: state.currentCourse?.id === id ? null : state.currentCourse,
                 isLoading: false
             }));
+            const { fetchCourses, lastFetchParams, pagination } = get();
+            await fetchCourses({ ...lastFetchParams, page: pagination.page });
         } catch (error) {
             set({
                 error: getErrorMessage(error) || "Failed to delete course",
