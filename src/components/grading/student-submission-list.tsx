@@ -2,6 +2,7 @@
 
 import { useTeacherGradingStore, Submission } from "@/store/teacher-grading.store";
 import { SubmissionStatus } from "@/generated/prisma/enums";
+import { getTeacherSubmissionStatusBadge } from "@/lib/ielts-badges";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -28,27 +29,8 @@ function getStatusIcon(status: SubmissionStatus) {
 }
 
 function getStatusBadge(status: SubmissionStatus) {
-    switch (status) {
-        case SubmissionStatus.GRADED:
-        case SubmissionStatus.RETURNED:
-            return (
-                <Badge variant="default" className="bg-green-500/10 text-green-600 hover:bg-green-500/20">
-                    Graded
-                </Badge>
-            );
-        case SubmissionStatus.SUBMITTED:
-            return (
-                <Badge variant="default" className="bg-amber-500/10 text-amber-600 hover:bg-amber-500/20">
-                    Pending
-                </Badge>
-            );
-        default:
-            return (
-                <Badge variant="secondary">
-                    Draft
-                </Badge>
-            );
-    }
+    const { label, variant } = getTeacherSubmissionStatusBadge(status);
+    return <Badge variant={variant}>{label}</Badge>;
 }
 
 function StudentItem({
@@ -67,7 +49,9 @@ function StudentItem({
 
     return (
         <button
+            type="button"
             onClick={onClick}
+            aria-current={isSelected ? "true" : undefined}
             className={cn(
                 "w-full flex items-start gap-3 p-3 rounded-lg text-left transition-colors",
                 isSelected
@@ -90,19 +74,19 @@ function StudentItem({
 
                 <p className="text-xs text-muted-foreground truncate">{student.email}</p>
 
-                <div className="flex items-center gap-2 mt-1.5">
+                <div className="flex flex-wrap items-center gap-2 mt-1.5">
                     {getStatusBadge(submission.status)}
 
                     {submission.commentCount > 0 && (
                         <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                            <MessageCircle className="w-3 h-3" />
+                            <MessageCircle className="w-3 h-3" aria-hidden="true" />
                             {submission.commentCount}
                         </div>
                     )}
 
                     {hasDraft && (
-                        <Badge variant="outline" className="text-[10px] px-1 py-0 h-4 border-amber-500 text-amber-600">
-                            Draft
+                        <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-5">
+                            Unsaved draft
                         </Badge>
                     )}
                 </div>

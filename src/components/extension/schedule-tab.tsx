@@ -63,18 +63,26 @@ export function ScheduleTab({ lessons }: ScheduleTabProps) {
         setIsClient(true);
     }, []);
 
-    const calendarEvents = lessons.map((lesson) => ({
-        id: lesson.id,
-        title: `${lesson.course} - ${lesson.title}`,
-        start: `${lesson.date}T${lesson.startTime}`,
-        end: `${lesson.date}T${lesson.endTime}`,
-        extendedProps: {
-            type: lesson.type,
-            instructor: lesson.instructor
-        },
-        backgroundColor: getEventColor(lesson.type).bg,
-        borderColor: getEventColor(lesson.type).border
-    }));
+    const calendarEvents = lessons.map((lesson) => {
+        const skillLabel = lesson.type
+            ? lesson.type.charAt(0).toUpperCase() + lesson.type.slice(1).toLowerCase()
+            : "";
+        return {
+            id: lesson.id,
+            title: skillLabel
+                ? `${skillLabel}: ${lesson.course} - ${lesson.title}`
+                : `${lesson.course} - ${lesson.title}`,
+            start: `${lesson.date}T${lesson.startTime}`,
+            end: `${lesson.date}T${lesson.endTime}`,
+            extendedProps: {
+                type: lesson.type,
+                skillLabel,
+                instructor: lesson.instructor
+            },
+            backgroundColor: getEventColor(lesson.type).bg,
+            borderColor: getEventColor(lesson.type).border
+        };
+    });
 
     const handleEventClick = (info: EventClickArg) => {
         router.push(`/lessons/${info.event.id}`);

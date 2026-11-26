@@ -93,7 +93,6 @@ const Login = () => {
                                     className="py-3 h-fit"
                                     placeholder="placeholder@example.com"
                                     {...field}
-                                    tabIndex={1}
                                 />
                             </FormControl>
                             <FormMessage />
@@ -116,7 +115,6 @@ const Login = () => {
                                     autoComplete="off"
                                     type="password"
                                     className="py-3 h-fit"
-                                    tabIndex={2}
                                     {...field}
                                 />
                             </FormControl>

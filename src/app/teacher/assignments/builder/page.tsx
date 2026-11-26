@@ -34,7 +34,6 @@ export default function AssignmentBuilderPage() {
   const classSessionId = searchParams.get("classSessionId");
   const assignmentId = searchParams.get("assignmentId");
   const returnTo = searchParams.get("returnTo");
-  const [isPreview, setIsPreview] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   const [isFetching, setIsFetching] = useState(false);
   const [narrowPanel, setNarrowPanel] = useState<NarrowPanel>("canvas");
@@ -161,8 +160,9 @@ export default function AssignmentBuilderPage() {
     }
   };
 
+  const isPreview = viewMode === "preview";
+
   const togglePreview = () => {
-    setIsPreview(!isPreview);
     setViewMode(isPreview ? "edit" : "preview");
   };
 

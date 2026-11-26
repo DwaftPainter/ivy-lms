@@ -29,6 +29,11 @@ import {
 } from "lucide-react";
 import { IeltsSkill, SubmissionStatus } from "@/generated/prisma/enums";
 import { format } from "date-fns";
+import {
+    IELTS_SKILL_LABELS,
+    getSkillLabel,
+    getStudentSubmissionStatusBadge
+} from "@/lib/ielts-badges";
 
 interface AssignmentSummary {
     id: string;
@@ -68,26 +73,7 @@ interface AssignmentsData {
     };
 }
 
-const skillLabels: Record<IeltsSkill, string> = {
-    [IeltsSkill.LISTENING]: "Listening",
-    [IeltsSkill.READING]: "Reading",
-    [IeltsSkill.WRITING]: "Writing",
-    [IeltsSkill.SPEAKING]: "Speaking"
-};
-
-const skillColors: Record<IeltsSkill, string> = {
-    [IeltsSkill.LISTENING]: "bg-blue-100 text-blue-700 border-blue-200",
-    [IeltsSkill.READING]: "bg-green-100 text-green-700 border-green-200",
-    [IeltsSkill.WRITING]: "bg-amber-100 text-amber-700 border-amber-200",
-    [IeltsSkill.SPEAKING]: "bg-purple-100 text-purple-700 border-purple-200"
-};
-
-const statusConfig: Record<SubmissionStatus, { label: string; color: string }> = {
-    [SubmissionStatus.PENDING]: { label: "Not Started", color: "bg-slate-100 text-slate-700" },
-    [SubmissionStatus.SUBMITTED]: { label: "Submitted", color: "bg-blue-100 text-blue-700" },
-    [SubmissionStatus.GRADED]: { label: "Graded", color: "bg-green-100 text-green-700" },
-    [SubmissionStatus.RETURNED]: { label: "Returned", color: "bg-purple-100 text-purple-700" }
-};
+const skillLabels = IELTS_SKILL_LABELS;
 
 export default function StudentAssignmentsPage() {
     const router = useRouter();
@@ -317,22 +303,20 @@ export default function StudentAssignmentsPage() {
                             ) : (
                                 <div className="space-y-3">
                                     {filteredAssignments.map((assignment) => {
-                                        const status =
-                                            statusConfig[assignment.submissionStatus];
+                                        const status = getStudentSubmissionStatusBadge(
+                                            assignment.submissionStatus
+                                        );
                                         return (
                                             <div
                                                 key={assignment.id}
                                                 className="flex flex-col sm:flex-row sm:items-center gap-4 p-4 rounded-lg border hover:bg-accent/50 transition-colors"
                                             >
                                                 <div className="flex-1 min-w-0">
-                                                    <div className="flex items-center gap-3 mb-2">
-                                                        <Badge
-                                                            variant="outline"
-                                                            className={`${skillColors[assignment.skill]} font-medium`}
-                                                        >
-                                                            {skillLabels[assignment.skill]}
+                                                    <div className="flex flex-wrap items-center gap-2 mb-2">
+                                                        <Badge variant="secondary" className="font-medium">
+                                                            {getSkillLabel(assignment.skill)}
                                                         </Badge>
-                                                        <Badge className={`${status.color} border-0`}>
+                                                        <Badge variant={status.variant}>
                                                             {status.label}
                                                         </Badge>
                                                         {assignment.isOverdue && (

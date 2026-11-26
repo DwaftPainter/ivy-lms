@@ -32,13 +32,29 @@ These criteria define the evidence expected as the [roadmap](roadmap.md) proceed
 ### Phase 2 execution record
 
 - **Resolved findings:** `BLD-01` (`D-04` builder narrow-panel task view switch approved), `BLD-03`, `SHELL-01`, `SHELL-02`, `AUTH-01`.
-- **Deferred / remaining blockers:** `STU-01` deferred due to dev schedule fixture gap (only `2026-04` `ClassSession` rows exist while `ScheduleTab` renders `2026-11` with `headerToolbar={false}`, so populated calendar events do not render). Reopened Student AI Writing feedback mismatch (`grading-ai-feedback.md`) remains tracked separately outside Phase 2. `D-04` grader submission rail (`GRD-01`) remains pending for its own phase.
+- **Deferred at Phase 2 exit:** `STU-01` was deferred due to a dev schedule fixture gap (the available `ClassSession` rows were dated `2026-04` while `ScheduleTab` rendered `2026-11` with `headerToolbar={false}`). Reopened Student AI Writing feedback remains tracked in the [grading audit](audit/grading-ai-feedback.md). The `GRD-01` implementation belongs to Phase 6 under the approved grader direction in [D-04](design-decisions.md#d-04).
 - **Browser verification summary (localhost dev server, isolated Playwright Chromium, disposable non-production fixtures):**
   - `BLD-01`: `Save`, `Update`, and `Save & Link` enabled after edits, visible, focusable, pointer-hittable, and `document.documentElement.scrollWidth === window.innerWidth` at 320, 390, 768, 1024, and 1440px. `Update` and `Save & Link` persistence verified against disposable fixtures.
   - `BLD-03`: Invalid-target explanation verified (`role="alert"` + status text); keyboard (`Enter`), click/tap (Canvas `Add Question`), and drag-and-drop insertion verified with matching question structure and focus landing on the newly inserted question card.
   - `SHELL-01` & `SHELL-02`: Verified separately on Student (including unread badge state `Notifications (1 unread)` and mobile route navigation to `/courses`), Teacher, and Admin at 390px: distinct non-empty header names, visible `Close` control in mobile `Sheet`, and focus restoration to `"Toggle sidebar"` after both `Close` click and `Escape`.
   - `AUTH-01`: `"or"` separator text on `/login` and `/register` computed `rgb(113, 113, 123)` on `rgb(255, 255, 255)` (`4.83:1` >= 4.5:1).
 - **Note on screen-reader check:** Accessibility names, roles, expanded states, and focus restoration were verified via the browser accessibility tree and keyboard navigation; an external OS screen reader (VoiceOver/NVDA) was not run in this headless pass.
+
+### Phases 3–6 execution record
+
+- **Resolved findings & approved decisions:** `STU-01`, `D-06`, `D-05`, `TCH-01`, `AUTH-02`, `AUTH-03`, `STU-02`, `D-03`, `ADM-01`, `BLD-02`, `EXM-01`, `EXM-02`, `GRD-01` (`D-04`), `GRD-02`.
+- **Browser verification summary (`localhost:3000`, isolated Playwright Chromium, `@ivy-mock.test` fixtures from `prisma/mock-data.sql`, evidence under `docs/ui-ux/audit/evidence/phase3-6/`):**
+  - `STU-01`: Populated (`student@ivy-mock.test`, 2026-11) and empty (`empty@ivy-mock.test`) calendars fit cleanly at 390px (`scrollWidth === 390`), resolve semantic `colHeaderBg`/`dayBorder`/`todayBg`/`todayNumBg`, display untruncated start times (`09:00`), and include skill labels (`Reading:`, etc.).
+  - `D-06` & `TCH-01`: Header exposes `Toggle sidebar` and `Notifications` only; Teacher sidebar highlights only the active destination (`Dashboard` on `/teacher`, `Grading` with `aria-current="page"` on `/teacher/grading`, none on `/teacher/assignments/builder` with header `"Assignment Builder"`).
+  - `AUTH-02` & `AUTH-03` (`D-05`): `/login` Tab order follows visual order and empty submit focuses `"Email address"` (`aria-invalid="true"`); `/callback` under `prefers-reduced-motion: reduce` exposes `role="status"` `"Signing you in…"` with `animationName === "none"` across `.three-body` and all three `.three-body__dot::after` rings.
+  - `STU-02` & `D-03`: 768px lesson detail (`ivy-mock-session-reading-month`, `ivy-mock-session-writing-past`) fits within `768px` (`scrollWidth === 768`); neutral `secondary` skill badges and `outline`/`secondary` status badges verified on `/courses`, `/assignments`, `/lessons/[id]`, `/teacher/grading`, and grading workspaces.
+  - `ADM-01`: `Create New Course` dialog in `admin@ivy-mock.test` exposes `combobox "Skill *"` and `combobox "Level *"` in the AX tree.
+  - `BLD-02`, `EXM-01`, `EXM-02`: Builder `Preview`/`Edit` button and Tabs stay synchronized; Listening (active `Submit`), Writing (Submitted), and Reading (multi-question) exams fit `320px` and `390px` (`scrollWidth === innerWidth`) with accessible names on all icon controls.
+  - `GRD-01` (`D-04`) & `GRD-02`: Grading workspace fits `320`, `390`, `768`, `1024`, and `1440px` (`>=1280px` inline rail; `<1280px` `Submissions` Sheet with Escape focus return to trigger, selection focus transfer to selected student `h2`, per-student draft preservation across switching, `Reset` button, and working `Previous`/`Next` navigation); Criterion and IELTS Band sliders/spinbuttons expose paired names and sync on `ArrowRight`.
+  - Grading follow-up with mocked requests in Chrome and isolated store and API checks. Failed saves and grade submissions retain edits and allow retry. In-flight saves preserve newer edits. Reopened partial drafts show the full rubric with its original limits. The Sheet closes and focuses the inline selection at the desktop breakpoint and respects reduced motion. Save Draft persists changes before publication. Regrade edits stay in the workspace until submission. Lesson details distinguish existing drafts from assignments that have never been started.
+- **Tracked separately / unverified items:**
+  - Reopened Student AI Writing feedback display after assignment reopen remains tracked separately in [grading audit](audit/grading-ai-feedback.md).
+  - Headless Playwright checks verified browser AX names, roles, focus, and keyboard navigation; no external OS screen reader (VoiceOver/NVDA) was attached.
 
 ## Verification for future changes
 

@@ -140,7 +140,7 @@ export function CourseDialog({ open, onOpenChange, course, onSubmit, isLoading }
                                     })
                                 }
                             >
-                                <SelectTrigger>
+                                <SelectTrigger id="skill">
                                     <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -164,7 +164,7 @@ export function CourseDialog({ open, onOpenChange, course, onSubmit, isLoading }
                                     })
                                 }
                             >
-                                <SelectTrigger>
+                                <SelectTrigger id="level">
                                     <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent>

@@ -28,34 +28,38 @@ Complete a small, reviewable slice at a time. Keep the application on its existi
 
 ## Phase 3 — Shared components and application shell
 
+- **Status.** Implemented for approved scope (`D-06`, `D-05`, `TCH-01`, `AUTH-02`, `AUTH-03`) alongside `STU-01` after `prisma/mock-data.sql` populated the dev schedule fixtures.
 - **Scope and prerequisites.** Build from the accepted foundation and actual shared consumers. Verify sidebar navigation, header, notifications, buttons, cards, forms, overlays and feedback states across roles.
-- **Deliverables.** A focused shell and primitive change set with representative loading, empty, error, focus, disabled and destructive states. Define the ownership of active route and header labels.
+- **Deliverables.** [Phase 3–6 plan](../../design-plans/phase-3-to-6-implementation.md), removal of the inactive `Messages` header button (`D-06`), route active matching and task header titles (`TCH-01`), natural DOM login Tab order (`AUTH-02`), announced reduced-motion callback loading state (`AUTH-03` / `D-05`), and FullCalendar token overrides + skill labels (`STU-01`).
 - **Non-goals.** A new component library, permission changes, a notifications redesign or new messages features.
-- **Acceptance and done.** The three role shells retain their destinations and visible navigation. Mobile sheet opens and dismisses with keyboard/pointer, returns focus, and leaves the active view reachable. Builder, grading and exam layout exceptions retain intended space and behavior.
+- **Acceptance and done.** The three role shells retain their destinations and visible navigation. Header shows only `Toggle sidebar` and `Notifications`; Teacher routes highlight their true section (`Dashboard`, `Grading`, task routes); Auth callback announces `"Signing you in…"` with static dots under reduced motion; both populated (`student@ivy-mock.test`) and empty (`empty@ivy-mock.test`) calendar schedules pass.
 - **Regression risks.** Radix slot/portal contracts, sidebar keyboard shortcut, route highlighting, sticky header offsets, popover sizing and feedback timing.
 
 ## Phase 4 — Student experience
 
+- **Status.** Implemented for approved scope (`STU-02`, `D-03`, plus `STU-01` calendar verification).
 - **Scope and prerequisites.** Use passing shell checks and fixtures through enrollment, upcoming work, assigned sessions and submissions. Focus on dashboard, courses, extension, lesson detail and assignment discovery.
-- **Deliverables.** A consistent route-to-task hierarchy, including calendar/list, filtering, assignment entry and recoverable empty/error/loading states.
+- **Deliverables.** `min-w-0` flex containment fixing 768px lesson detail overflow (`STU-02`) and shared neutral `secondary` IELTS skill badges + status variant helpers in `src/lib/ielts-badges.ts` (`D-03`) applied across lessons, assignments, extension tabs, and course cards.
 - **Non-goals.** Enrollment policy, new schedule route, Settings implementation and changes to the assessment engine.
-- **Acceptance and done.** A student can find their next session or assignment, read deadline/status, switch extension tabs and reach lesson/assessment details at the five widths. Fixtures cover enrolled, empty and failed-data states. Existing URLs and filters remain compatible.
+- **Acceptance and done.** Verified `scrollWidth === 768` at 768px on populated and empty lesson states, plus clean `D-03` badges on `/courses`, `/assignments`, `/extension`, and `/lessons/[id]`.
 - **Regression risks.** Calendar date/time boundaries, grouping of enrollment and assignment statuses, matching lesson IDs, and long titles on narrow screens.
 
 ## Phase 5 — Teacher and Admin experience
 
+- **Status.** Implemented for approved scope (`ADM-01`, `D-03` Teacher grading queue, plus 768px queue reflow).
 - **Scope and prerequisites.** Use verified Teacher/Admin fixtures and stable shell primitives. Cover dashboard, session detail, course dialogs, teacher creation, materials and attendance.
-- **Deliverables.** Portable patterns for management cards, filters, lists, forms and confirmations, plus role-specific regression evidence.
+- **Deliverables.** Explicit `id`/`htmlFor` label associations on `Skill *` and `Level *` Select triggers in `CourseDialog` (`ADM-01`), neutral `secondary` skill badges and responsive card wrapping on `/teacher/grading` (`D-03`).
 - **Non-goals.** Changes to roles, attendance semantics, account creation policy, table data models and WIP routes.
-- **Acceptance and done.** Users can locate and inspect records, complete existing allowed actions in the dev fixture, cancel destructive actions and recover from validation/API failures. Verify scrolling, focus return and dense row access.
+- **Acceptance and done.** Verified `combobox "Skill *"` and `combobox "Level *"` in `CourseDialog` and zero horizontal overflow (`scrollWidth === 768`) on `/teacher/grading`.
 - **Regression risks.** Wrong record selected after filtering, action buttons clipped in narrow layouts, and dialog state carried into create/edit flows.
 
 ## Phase 6 — Assessment and grading experience
 
+- **Status.** Implemented for approved scope (`BLD-02`, `EXM-01`, `EXM-02`, `GRD-01` with `D-04`, `GRD-02`, `D-03`). Track the reopened Student AI Writing feedback mismatch separately ([Grading audit](audit/grading-ai-feedback.md)).
 - **Scope and prerequisites.** Establish seeded drafts and submissions, per-skill assignments, media, and AI/regrade states. Stabilize earlier portal entry points. Work in separate builder, exam and grading slices.
-- **Deliverables.** Verified builder selection/preview/drag and save flows, responsive exam navigation and media/answer states, and grading queue-to-submission presentation with AI feedback.
+- **Deliverables.** Unified `viewMode` state in Builder (`BLD-02`), responsive wrapping exam header (`EXM-01`) + persistent accessible names across exam header and footer navigation (`EXM-02`), narrow `Submissions` `Sheet` with focus return/heading transfer and wrapping action bar (`GRD-01` / `D-04`), Zustand grading-store selector fix, accessible rubric/band slider & spinbutton names (`GRD-02`), and `D-03` badge consistency.
 - **Non-goals.** Scoring, AI prompts, storage format, timing rules, drag library replacement and data model changes.
-- **Acceptance and done.** Verify create/edit/preview and persistence, answer recovery, timers, media permissions, submission confirmation, rubric drafts, comments, publication and regrade. Test write actions only against approved disposable fixtures. Compare narrow/wide and failure cases with Phase 1 evidence.
+- **Acceptance and done.** Verified across 320, 390, 768, 1024, and 1440px in Playwright against `@ivy-mock.test` fixtures, including bidirectional Preview/Builder sync, multi-question & active/submitted exams, Sheet Escape focus restoration, per-student draft isolation across switching, Previous/Next queue navigation, and ArrowRight slider/spinbutton sync.
 - **Regression risks.** Draft/answer loss, cross-submission state, invalid reorder, duplicate submission, timer or recording drift, and overwritten scoring or feedback.
 
 ## Phase 7 — Accessibility and responsiveness

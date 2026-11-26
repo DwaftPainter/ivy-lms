@@ -1,6 +1,7 @@
 "use client";
 
 import { useTeacherGradingStore } from "@/store/teacher-grading.store";
+import { getSkillLabel } from "@/lib/ielts-badges";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, BookOpen, Calendar, Users } from "lucide-react";
@@ -18,24 +19,10 @@ export function GradingHeader({ className }: GradingHeaderProps) {
 
     if (!assignment) return null;
 
-    const skillLabels: Record<string, string> = {
-        READING: "Reading",
-        LISTENING: "Listening",
-        WRITING: "Writing",
-        SPEAKING: "Speaking"
-    };
-
-    const skillColors: Record<string, string> = {
-        READING: "bg-blue-500/10 text-blue-600",
-        LISTENING: "bg-purple-500/10 text-purple-600",
-        WRITING: "bg-amber-500/10 text-amber-600",
-        SPEAKING: "bg-emerald-500/10 text-emerald-600"
-    };
-
     return (
         <div className={className}>
-            <div className="flex items-start justify-between gap-4">
-                <div className="space-y-2">
+            <div className="flex items-start justify-between gap-4 min-w-0">
+                <div className="space-y-2 min-w-0 flex-1">
                     <div className="flex items-center gap-2">
                         <Button
                             variant="ghost"
@@ -43,16 +30,16 @@ export function GradingHeader({ className }: GradingHeaderProps) {
                             onClick={() => router.back()}
                             className="h-8 px-2"
                         >
-                            <ArrowLeft className="w-4 h-4 mr-1" />
+                            <ArrowLeft className="w-4 h-4 mr-1" aria-hidden="true" />
                             Back
                         </Button>
                     </div>
 
-                    <div className="flex items-center gap-3">
-                        <h1 className="text-2xl font-bold">{assignment.title}</h1>
-                        <Badge className={skillColors[assignment.skill] || "bg-gray-500/10"}>
-                            {skillLabels[assignment.skill] || assignment.skill}
-                        </Badge>
+                    <div className="flex flex-wrap items-center gap-2 sm:gap-3 min-w-0">
+                        <h1 className="text-xl sm:text-2xl font-bold break-words">
+                            {assignment.title}
+                        </h1>
+                        <Badge variant="secondary">{getSkillLabel(assignment.skill)}</Badge>
                     </div>
 
                     <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">

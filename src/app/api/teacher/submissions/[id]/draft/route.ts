@@ -4,7 +4,10 @@ import { StatusCodes } from "http-status-codes";
 import { MESSAGES } from "@/config/message";
 import jwt from "jsonwebtoken";
 import type { AuthTokenPayload } from "@/types/common";
-import { Role } from "@/generated/prisma/enums";
+import { Role, SubmissionStatus } from "@/generated/prisma/enums";
+
+const unpublishedGrade = { notIn: [SubmissionStatus.GRADED, SubmissionStatus.RETURNED] };
+const publishedGradeMessage = "Submit changes to update a published grade.";
 
 /**
  * @swagger
@@ -57,6 +60,8 @@ import { Role } from "@/generated/prisma/enums";
  *         description: Forbidden
  *       404:
  *         description: Submission not found
+ *       409:
+ *         description: The grade is already published
  *       500:
  *         description: Internal server error
  *   delete:
@@ -82,6 +87,8 @@ import { Role } from "@/generated/prisma/enums";
  *         description: Forbidden
  *       404:
  *         description: Submission not found
+ *       409:
+ *         description: The grade is already published
  *       500:
  *         description: Internal server error
  */
@@ -135,13 +142,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
                     }
                 }
             },
-            include: {
-                assignment: {
-                    include: {
-                        rubric: { include: { criteria: true } }
-                    }
-                }
-            }
+            select: { id: true }
         });
 
         if (!submission) {
@@ -151,8 +152,14 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
             );
         }
 
-        // Use transaction to update criteria scores only (preserve status)
-        await prisma.$transaction(async (tx) => {
+        const saved = await prisma.$transaction(async (tx) => {
+            // Guard and lock the submission before touching criterion scores.
+            const result = await tx.assignmentSubmission.updateMany({
+                where: { id: submissionId, status: unpublishedGrade },
+                data: { score, bandScore, feedback, updatedAt: new Date() }
+            });
+            if (result.count === 0) return false;
+
             if (criteriaScores && criteriaScores.length > 0) {
                 for (const criteriaScore of criteriaScores) {
                     const existingScore = await tx.criterionScore.findFirst({
@@ -176,33 +183,15 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
                 }
             }
 
-            // Update score fields WITHOUT changing status (draft save)
-            return tx.assignmentSubmission.update({
-                where: { id: submissionId },
-                data: {
-                    score: score ?? null,
-                    bandScore: bandScore ?? null,
-                    feedback: feedback ?? null
-                    // Note: status, gradedById, gradedAt are NOT updated
-                },
-                include: {
-                    criteriaScores: {
-                        include: { criterion: true }
-                    },
-                    student: {
-                        include: {
-                            user: {
-                                select: {
-                                    firstName: true,
-                                    lastName: true,
-                                    email: true
-                                }
-                            }
-                        }
-                    }
-                }
-            });
+            return true;
         });
+
+        if (!saved) {
+            return NextResponse.json(
+                { success: false, message: publishedGradeMessage },
+                { status: StatusCodes.CONFLICT }
+            );
+        }
 
         return NextResponse.json(
             {
@@ -273,7 +262,8 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
                         course: { teacherId: teacherProfileId }
                     }
                 }
-            }
+            },
+            select: { id: true }
         });
 
         if (!submission) {
@@ -283,24 +273,21 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
             );
         }
 
-        // Only clear draft if submission is not already graded
-        if (submission.status !== "GRADED" && submission.status !== "RETURNED") {
-            await prisma.$transaction(async (tx) => {
-                // Delete criteria scores
-                await tx.criterionScore.deleteMany({
-                    where: { submissionId }
-                });
-
-                // Clear score fields but keep status
-                return tx.assignmentSubmission.update({
-                    where: { id: submissionId },
-                    data: {
-                        score: null,
-                        bandScore: null,
-                        feedback: null
-                    }
-                });
+        const cleared = await prisma.$transaction(async (tx) => {
+            const result = await tx.assignmentSubmission.updateMany({
+                where: { id: submissionId, status: unpublishedGrade },
+                data: { score: null, bandScore: null, feedback: null }
             });
+            if (result.count === 0) return false;
+            await tx.criterionScore.deleteMany({ where: { submissionId } });
+            return true;
+        });
+
+        if (!cleared) {
+            return NextResponse.json(
+                { success: false, message: publishedGradeMessage },
+                { status: StatusCodes.CONFLICT }
+            );
         }
 
         return NextResponse.json(

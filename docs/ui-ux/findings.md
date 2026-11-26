@@ -51,66 +51,66 @@ Evidence is from the tracked application at `089565ab1bab615d8b6e9669394544ffa2d
 
 ### STU-02
 
-**Student lesson widens the page at the sidebar breakpoint** · Student lesson detail · M
+**Student lesson widens the page at the sidebar breakpoint** · Student lesson detail · M · **Resolved (Phase 4)**
 
 - **Impact and evidence.** The sampled enrolled lesson reached 994px document width in a 768px viewport. The sidebar was 240px and the inset was 754px, beyond the available 528px. Desktop and narrower mobile samples fit in Phase 0. [Responsive audit](responsive-audit.md#measured-failures).
-- **Cause and correction.** The sidebar flex inset retains the lesson content's intrinsic minimum. Let the inset and the overflowing lesson content shrink within the sidebar allocation. [Sidebar inset](../../src/components/ui/sidebar.tsx#L281), [Student layout](../../src/app/%28student%29/layout.tsx), [lesson view](../../src/app/%28student%29/lessons/%5Bid%5D/page.tsx).
+- **Cause and correction.** The sidebar flex inset retains the lesson content's intrinsic minimum. Added `min-w-0` on `SidebarInset`, student `<main>`, and lesson grids/cards alongside `D-03` badges. [Sidebar inset](../../src/components/ui/sidebar.tsx#L306), [Student layout](../../src/app/%28student%29/layout.tsx), [lesson view](../../src/app/%28student%29/lessons/%5Bid%5D/page.tsx).
 - **Dependencies and risk.** Shared inset, lesson content, resource rows and CTA. Check other role shells and long content before changing shell defaults.
-- **Acceptance.** With the sidebar expanded at 768px, the title, lesson controls and resource actions remain reachable with no document-level horizontal scroll. Verify long text and populated and empty lesson sections.
+- **Acceptance.** Verified in Phase 4 at 768px against `ivy-mock-session-reading-month` and `ivy-mock-session-writing-past`: `scrollWidth === 768 === innerWidth`, lesson controls and assignments remain reachable with zero horizontal scroll. [After 768px](audit/evidence/phase3-6/student-lesson-768.png).
 
 ### ADM-01
 
-**Course Skill and Level selectors have empty accessible names** · Admin course dialog · S
+**Course Skill and Level selectors have empty accessible names** · Admin course dialog · S · **Resolved (Phase 5)**
 
 - **Impact and evidence.** Chrome exposed a named Create New Course dialog. Title, Description, Target Band and other input names appeared, while the Skill and Level comboboxes had empty names. [Admin audit](audit/admin.md).
-- **Cause and correction.** The Select labels and button-like triggers are separate and lack an explicit association. Associate each visible label with its actual Select trigger. [Course dialog](../../src/components/admin/course-dialog.tsx#L133).
+- **Cause and correction.** Added matching `id="skill"` and `id="level"` attributes to the Radix `SelectTrigger` controls so `<Label htmlFor>` binds directly. [Course dialog](../../src/components/admin/course-dialog.tsx#L143).
 - **Dependencies and risk.** Radix Select and create/edit mode. Preserve enum values, validation and visible field labels.
-- **Acceptance.** The AX tree and one screen reader announce Skill and Level on their own controls, including current option and navigation, in create and edit dialogs.
+- **Acceptance.** Verified in Phase 5 via Playwright AX snapshot in `admin@ivy-mock.test`: `combobox "Skill *"` and `combobox "Level *"` expose accessible names in `CourseDialog`. [Course dialog capture](audit/evidence/phase3-6/admin-course-dialog.png).
 
 ### BLD-02
 
-**Preview tab and displayed mode disagree** · Assignment Builder · S
+**Preview tab and displayed mode disagree** · Assignment Builder · S · **Resolved (Phase 6)**
 
 - **Impact and evidence.** At 1440px Preview became the selected tab, while the editing panels stayed visible. The separate Preview button hid the panels and changed its label to Edit. [Builder audit](audit/assignment-builder.md).
-- **Cause and correction.** Tabs update store `viewMode`, while rendered panels use page-local `isPreview`. Make the mode selector and displayed view read the same edit/preview state. [Mode owner and tab](../../src/app/teacher/assignments/builder/page.tsx#L159), [render branch](../../src/app/teacher/assignments/builder/page.tsx#L247).
+- **Cause and correction.** Removed local `isPreview` state and derived `const isPreview = viewMode === "preview"` from `useAssignmentBuilderStore`. [Mode owner and tab](../../src/app/teacher/assignments/builder/page.tsx#L160).
 - **Dependencies and risk.** Existing builder state and inspector behavior. Preserve draft contents and selection when switching modes.
-- **Acceptance.** Selecting Preview via keyboard or pointer shows the existing preview presentation. Selecting Builder restores editing panels and state. Any retained duplicate control reflects the same state.
+- **Acceptance.** Verified in Phase 6 on `/teacher/assignments/builder?assignmentId=ivy-mock-assignment-reading`: clicking header `Preview` activates the `Preview` tab and toggles the button to `Edit`; selecting the `Builder` tab restores `Preview` and builder panels.
 
 ### EXM-01
 
-**Exam header exceeds narrow viewport** · IELTS Examination · M
+**Exam header exceeds narrow viewport** · IELTS Examination · M · **Resolved (Phase 6)**
 
 - **Impact and evidence.** Both sampled Writing exams reached 458px document width at 320px and 390px. The right-hand controls and Submitted badge reached x=458. Users opening an attempt can miss its submission state or header controls. [Responsive audit](responsive-audit.md#measured-failures).
-- **Cause and correction.** The title group and action group share a single row with intrinsic widths that exceed the available space. Constrain title and action layout within the dedicated exam header. [Exam layout](../../src/app/assignments/%5Bid%5D/layout.tsx#L73).
+- **Cause and correction.** Constrained the exam header with `flex-wrap`, `min-w-0` title container, and `shrink-0` control wrapping. [Exam layout](../../src/app/assignments/%5Bid%5D/layout.tsx#L72).
 - **Dependencies and risk.** Exam-specific shell. Preserve timer, submitted state and confirmation, including long titles and sticky header behavior.
-- **Acceptance.** Both Submitted and active Submit presentations fit at 320px and 390px with long titles. Confirm title remains available to assistive technology and header controls are reachable.
+- **Acceptance.** Verified in Phase 6 at 320px and 390px for both submitted (`ivy-mock-assignment-writing-2`, `Submitted` badge) and active (`ivy-mock-assignment-listening`, `Submit` button): `scrollWidth === innerWidth` (`320` and `390`) with `56px` header fit and reachable controls. [Active 320px](audit/evidence/phase3-6/student-exam-listening-320.png), [Submitted 320px](audit/evidence/phase3-6/student-exam-submitted-320.png).
 
 ### EXM-02
 
-**Exam icon buttons lack names, including labels hidden on mobile** · IELTS Examination · S
+**Exam icon buttons lack names, including labels hidden on mobile** · IELTS Examination · S · **Resolved (Phase 6)**
 
 - **Impact and evidence.** At 320px and 390px, exam Back, fullscreen and Help had empty names. Previous and Next were also unnamed in the sampled single-question footer. Help, Previous and Next had text names at 1440px. [Exam audit](audit/ielts-examination.md).
-- **Cause and correction.** Icon-only buttons have no accessible labels, and the narrow layout removes text spans from the AX tree. Give these controls persistent accessible names independent of the visible label breakpoint. [Header buttons](../../src/app/assignments/%5Bid%5D/layout.tsx#L74), [question navigation](../../src/components/assignment/BottomNavigation.tsx#L36).
+- **Cause and correction.** Added persistent `aria-label` names on Back (`Go back`), Fullscreen (`Enter fullscreen` / `Exit fullscreen`), Help (`Assignment help`), toast dismiss (`Dismiss notification`), `Previous question`, `Next question`, and Part buttons (`{title} ({n} question(s))`) with `aria-current="step"`. [Header buttons](../../src/app/assignments/%5Bid%5D/layout.tsx#L76), [question navigation](../../src/components/assignment/BottomNavigation.tsx#L40).
 - **Dependencies and risk.** Current fullscreen state and directional controls. Preserve disabled boundaries and button behavior.
-- **Acceptance.** Names persist across widths, including when visible labels are hidden. Fullscreen announces enter or exit as appropriate. A multi-question test verifies usable previous/next controls as well as disabled edges.
+- **Acceptance.** Verified in Phase 6 at 320px on multi-question (`ivy-mock-assignment-reading`) and listening (`ivy-mock-assignment-listening`) fixtures: all icon-only controls expose explicit accessible names and disabled boundaries are preserved.
 
 ### GRD-01
 
-**Submission workspace clips grading controls on narrow screens** · Grading and AI Feedback · M
+**Submission workspace clips grading controls on narrow screens** · Grading and AI Feedback · M · **Resolved (Phase 6)**
 
 - **Impact and evidence.** In the loaded submission state at 390px, Save Draft occupied x=544–661 and the document reported only 390px of width. At 768px and 1024px the document reached 1008px and 1062px. Grade actions can fall outside the reachable content area. [Grading audit](audit/grading-ai-feedback.md), [responsive audit](responsive-audit.md#measured-failures).
-- **Cause and correction.** A fixed submission rail and nonwrapping action bar compete inside the clipped workspace. Give the selected submission and its actions a usable narrow presentation while preserving a clear selection context. [Workspace](../../src/app/teacher/assignments/%5Bid%5D/grade/page.tsx#L108), [action bar](../../src/components/grading/grading-action-bar.tsx).
+- **Cause and correction.** Implemented approved `D-04` grader layout: below `1280px` (`xl`), `Submissions ({n})` opens a `Sheet` while keeping the selected student heading, queue position, and wrapping `Previous`/`Next` + `Save Draft`/`Submit Grade`/`Reset` actions inside normal scroll flow; `>= 1280px` keeps the inline rail. Also fixed frozen Zustand getters (`currentSubmission`/`currentIndex`) in `useTeacherGradingStore` so `Previous`/`Next` and draft actions resolve live state. [Workspace](../../src/app/teacher/assignments/%5Bid%5D/grade/page.tsx), [action bar](../../src/components/grading/grading-action-bar.tsx), [grading store](../../src/store/teacher-grading.store.ts).
 - **Dependencies and risk.** Teacher inset width, selection and draft state, Save Draft and final grading actions. Preserve desktop task density and keep destructive confirmation in scope.
-- **Acceptance.** At every target width with a selected submission, the teacher can view content, reach Save Draft and the final grade action, and identify the current student. Verify focus order and retained scores when changing presentation.
+- **Acceptance.** Verified in Phase 6 at 320, 390, 768, 1024, and 1440px on `ivy-mock-assignment-reading`: `scrollWidth === innerWidth` at all widths, `Escape` returns focus to `Submissions (2)`, selecting a student closes the `Sheet` and focuses the selected `h2`, per-student drafts remain isolated and preserved across switches (`Unsaved draft` badge + `Reset`), and `Previous`/`Next` navigate `1 / 2` ↔ `2 / 2`. [Sheet 768px](audit/evidence/phase3-6/teacher-grade-sheet-768.png), [Workspace 320px](audit/evidence/phase3-6/teacher-grade-320.png), [Desktop 1440px](audit/evidence/phase3-6/teacher-grade-1440.png).
 
 ### GRD-02
 
-**Rubric score widgets have empty accessible names** · Grading and AI Feedback · S
+**Rubric score widgets have empty accessible names** · Grading and AI Feedback · S · **Resolved (Phase 6)**
 
 - **Impact and evidence.** At 390px, 768px and 1440px, two rendered sliders and their two numeric inputs had empty names. The adjacent Feedback field was named. [Grading audit](audit/grading-ai-feedback.md).
-- **Cause and correction.** Visible score labels sit apart from the Slider thumb and number input without accessible associations. Name both controls from their score or criterion label. [Rubric score](../../src/components/grading/rubric-scoring.tsx#L150), [IELTS band score](../../src/components/grading/rubric-scoring.tsx#L183).
+- **Cause and correction.** Forwarded `aria-label`/`aria-labelledby` to `SliderPrimitive.Thumb` (`role="slider"`) in `Slider` and added associated labels/accessible names for criterion, generic `maxScore`, and IELTS Band Score sliders and numeric inputs. [Slider](../../src/components/ui/slider.tsx#L8), [Rubric scoring](../../src/components/grading/rubric-scoring.tsx#L98).
 - **Dependencies and risk.** Existing Slider, input and grade store. Preserve limits and synchronization between slider and numeric input.
-- **Acceptance.** A screen reader and AX inspection can identify each control's score category and value. Keyboard changes keep the paired score in sync across generic, criterion and band-score variants.
+- **Acceptance.** Verified in Phase 6 on `ivy-mock-assignment-writing-review`: AX tree exposes `slider "Task Response slider"`, `spinbutton "Task Response score"`, `slider "Grammatical Range and Accuracy slider"`, `spinbutton "Grammatical Range and Accuracy score"`, `slider "IELTS Band Score slider"`, and `spinbutton "IELTS Band Score"`, and `ArrowRight` increments update both slider value and numeric spinbutton synchronously. [Rubric 1280px](audit/evidence/phase3-6/teacher-grade-rubric-1280.png).
 
 ## P2 — Moderate
 
@@ -125,37 +125,36 @@ Evidence is from the tracked application at `089565ab1bab615d8b6e9669394544ffa2d
 
 ### AUTH-02
 
-**Login tab order separates the credential fields from their submit action** · Login · S
+**Login tab order separates the credential fields from their submit action** · Login · S · **Resolved (Phase 3)**
 
 - **Impact and evidence.** Tab walked Email, Password, Sign up, Google, then Log in. A keyboard user entering credentials must traverse the earlier alternative actions to reach the form button. [Phase 0 keyboard result](baseline.md#browser-evidence).
-- **Cause and correction.** Login pins the fields to positive tab indexes. Follow the rendered order so either sign-in path can be completed predictably. [Login fields](../../src/app/%28auth%29/login/page.tsx#L85).
+- **Cause and correction.** Removed positive `tabIndex={1}` and `tabIndex={2}` from the email and password inputs so focus follows DOM/visual order. [Login fields](../../src/app/%28auth%29/login/page.tsx#L85).
 - **Dependencies and risk.** React Hook Form validation focus. Preserve the first-invalid-field focus and field descriptions.
-- **Acceptance.** With ordinary Tab navigation, order matches the displayed links, fields and buttons. After an empty submission, the first invalid field still receives focus and its message is available.
+- **Acceptance.** Verified in Phase 3: Tab sequence walks `"Sign up" → "Continue With Google" → "Email address" → "Password" → "Log in"`, and empty Enter submission focuses `"Email address"` (`aria-invalid="true"`).
 
 ### AUTH-03
 
-**Callback loading has no visible status and keeps spinning under reduced motion** · Auth callback · S
+**Callback loading has no visible status and keeps spinning under reduced motion** · Auth callback · S · **Resolved (Phase 3)**
 
 - **Impact and evidence.** A direct callback rendered no visible text. Chrome computed the same loader animation with and without reduced motion. The global live region did not contain a callback message. [Authentication audit](audit/authentication.md).
-- **Cause and correction.** Callback renders only a decorative loader. Provide one meaningful callback status presentation with static feedback when reduced motion is requested. [Callback](../../src/app/%28auth%29/callback/page.tsx), [loader](../../src/components/custom-ui/loader.tsx).
-- **Dependencies and risk.** Auth layout and the shared loader. Preserve authentication progress and redirect logic. A provider failure screen needs separate evidence.
-- **Acceptance.** The callback exposes readable status without relying on animation, and assistive technology can identify the progress message. Reduced motion suppresses the decorative loop. A permitted successful OAuth handoff still works.
+- **Cause and correction.** Added live status announcement (`"Signing you in…"` with `role="status"` and `aria-live="polite"`), accessible error alert + `/login` recovery link, and higher-specificity `:nth-child(...)` reduced-motion CSS overrides suppressing `spin78236`, `wobble1`, and `wobble2` in `Loader`. [Callback](../../src/app/%28auth%29/callback/page.tsx), [loader](../../src/components/custom-ui/loader.tsx#L120).
+- **Dependencies and risk.** Auth layout and the shared loader. Preserve authentication progress and redirect logic.
+- **Acceptance.** Verified in Phase 3 under Playwright `prefers-reduced-motion: reduce`: `/callback` renders `role="status"` (`Signing you in…`) and computed `animationName === "none"` across `.three-body` and all three `.three-body__dot::after` rings. [Callback reduced motion](audit/evidence/phase3-6/callback-reduced-motion.png).
 
 ### STU-01
 
-**Calendar overrides fail to resolve semantic colors** · Student schedule · S · **Deferred (Fixture gap in Phase 2)**
+**Calendar overrides fail to resolve semantic colors** · Student schedule · S · **Resolved (Populated + Empty QA Fixtures)**
 
 - **Impact and evidence.** At 390px the calendar stylesheet was loaded. Chrome rejected the resolved foreground token wrapped in `hsl()` and computed the header and border from other rules. [Student audit](audit/student.md).
-- **Cause and correction.** The FullCalendar layer wraps complete OKLCH-derived semantic colors in HSL syntax. Consume the existing semantic roles as valid CSS colors in the calendar overrides. [Calendar overrides](../../src/app/globals.css#L206).
-- **Dependencies and risk.** FullCalendar cascade and local scrolling. Preserve event mapping and inspect a calendar with events before declaring theme coverage.
-- **Phase 2 fixture gap.** Verified in Phase 2 against the dev DB and `/extension?tab=schedule`: all 3 published `ClassSession` records are dated `2026-04-22` to `2026-04-24`, while `ScheduleTab` mounts on the current month (`2026-11`) with `headerToolbar={false}` and no month navigation controls. Only empty-month rendering (`0` events) is currently reachable, so `STU-01` was left untouched per Phase 2 scope until a populated + empty schedule fixture is available.
-- **Acceptance.** The intended color role resolves for headers, cell borders, today and focus states. Confirm populated and empty layouts and any supported theme.
+- **Cause and correction.** Replaced `hsl(var(--...))` declarations in `.fc-custom` with `var(--...)` and `color-mix(in oklab, ...)`, added `:focus-visible` focus rings (`var(--ring)`), fixed `.fc-event-main-frame` / `.fc-event-time` clipping, and prefixed event titles with written IELTS skill names (`D-03`). [Calendar overrides](../../src/app/globals.css#L206), [schedule tab](../../src/components/extension/schedule-tab.tsx).
+- **Dependencies and risk.** FullCalendar cascade and local scrolling. Preserve event mapping across populated and empty states.
+- **Acceptance.** Verified against `student@ivy-mock.test` (populated `2026-11`) and `empty@ivy-mock.test` (0 events) at 390px: semantic `colHeaderBg`, `dayBorder`, `todayBg`, and `todayNumBg` compute cleanly, times display in full (`09:00`), and `scrollWidth === 390`. [Populated 390px](audit/evidence/phase3-6/student-calendar-390.png), [Empty 390px](audit/evidence/phase3-6/student-calendar-empty-390.png).
 
 ### TCH-01
 
-**Teacher navigation highlights Dashboard on Grading and mislabels the builder** · Teacher shell, Grading, Builder · M
+**Teacher navigation highlights Dashboard on Grading and mislabels the builder** · Teacher shell, Grading, Builder · M · **Resolved (Phase 3)**
 
 - **Impact and evidence.** At 1440px, Dashboard and Grading both highlighted for `/teacher/grading`. The builder header said Dashboard while the task heading said Assignment Builder. [Teacher audit](audit/teacher.md), [builder at 1024px](screenshots/builder-1024.png).
-- **Cause and correction.** Dashboard's base path matches descendants in `NavMain` and the header falls back to its first prefix match. Resolve one current navigation destination and an accurate task title for each supported route. [Active matching](../../src/components/layout/nav-main.tsx#L18), [header title matching](../../src/components/layout/main-header.tsx#L22).
+- **Cause and correction.** Fixed `isLinkActive` in `NavMain` to exact-match role roots and match descendants on segment boundaries with `aria-current="page"`, and added task-route title matching in `MainHeader`. [Active matching](../../src/components/layout/nav-main.tsx), [header title matching](../../src/components/layout/main-header.tsx).
 - **Dependencies and risk.** Existing role nav configs and shell consumers. Preserve destinations, exact home match and WIP settings links.
-- **Acceptance.** On the grading queue, only Grading is current and announced as such. Builder and detail routes expose their task identity without making Dashboard current. Role roots continue to identify Dashboard.
+- **Acceptance.** Verified in Phase 3: `/teacher` marks only `Dashboard` active; `/teacher/grading` marks only `Grading` (`aria-current="page"`) with header `"Grading"`; `/teacher/assignments/builder` clears `Dashboard` and shows header `"Assignment Builder"`. [Grading queue 768px](audit/evidence/phase3-6/teacher-grading-queue-768.png).

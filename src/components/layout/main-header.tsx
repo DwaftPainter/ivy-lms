@@ -2,7 +2,6 @@
 
 import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
-import { MessageSquareIcon } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { useMemo } from "react";
 import { NotificationBell } from "@/components/notifications/notification-bell";
@@ -16,6 +15,24 @@ interface MainHeaderProps {
     navMain?: NavItem[];
 }
 
+const ROOT_PORTAL_PATHS = new Set(["/", "/teacher", "/dashboard"]);
+
+function resolveTaskRouteTitle(pathname: string): string {
+    if (pathname.startsWith("/teacher/assignments/builder")) {
+        return "Assignment Builder";
+    }
+    if (pathname.startsWith("/teacher/assignments/") && pathname.includes("/grade")) {
+        return "Grading";
+    }
+    if (pathname.startsWith("/teacher/lessons/") || pathname.startsWith("/lessons/")) {
+        return "Lesson Details";
+    }
+    if (pathname.startsWith("/assignments")) {
+        return "Assignments";
+    }
+    return "";
+}
+
 const MainHeader = ({ navMain = [] }: MainHeaderProps) => {
     const pathname = usePathname();
 
@@ -24,13 +41,16 @@ const MainHeader = ({ navMain = [] }: MainHeaderProps) => {
         const exactMatch = navMain.find((item) => item.url === pathname);
         if (exactMatch) return exactMatch.title;
 
-        // Find parent route match (e.g., /courses/123 matches /courses)
-        const parentMatch = navMain.find((item) =>
-            pathname.startsWith(item.url) && item.url !== "#"
+        // Find section parent route match (excluding root portal dashboards)
+        const parentMatch = navMain.find(
+            (item) =>
+                item.url !== "#" &&
+                !ROOT_PORTAL_PATHS.has(item.url) &&
+                pathname.startsWith(`${item.url}/`)
         );
         if (parentMatch) return parentMatch.title;
 
-        return "";
+        return resolveTaskRouteTitle(pathname);
     }, [pathname, navMain]);
 
     return (
@@ -48,17 +68,6 @@ const MainHeader = ({ navMain = [] }: MainHeaderProps) => {
             </div>
             <div className="flex gap-2">
                 <NotificationBell />
-                <div className="border-gradient size-9 flex items-center justify-center cursor-pointer">
-                    <button
-                        type="button"
-                        aria-label="Messages"
-                        className="p-1.5 flex items-center h-9 w-9 cursor-pointer"
-                    >
-                        <span className="flex items-center justify-center size-full">
-                            <MessageSquareIcon className="text-text-secondary size-4" aria-hidden="true" />
-                        </span>
-                    </button>
-                </div>
             </div>
         </header>
     );
