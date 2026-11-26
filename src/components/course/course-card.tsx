@@ -1,7 +1,9 @@
 "use client";
 
 import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { EnrolledCourse } from "@/store/enrollment.store";
+import { getSkillLabel } from "@/lib/ielts-badges";
 import { BookOpen, Calendar, CheckCircle2, ArrowRight } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -44,18 +46,18 @@ export function CourseCard({ course }: CourseCardProps) {
 
                     {/* Skill Badge */}
                     <div className="absolute top-4 left-4">
-                        <span className="bg-white/95 backdrop-blur-sm text-primary text-xs font-semibold px-3 py-1.5 rounded-full shadow-sm border border-primary/10">
-                            {course.skill}
-                        </span>
+                        <Badge variant="secondary" className="shadow-sm">
+                            {getSkillLabel(course.skill)}
+                        </Badge>
                     </div>
 
                     {/* Completion Badge */}
                     {course?.progress?.completionPercentage === 100 && (
                         <div className="absolute top-4 right-4">
-                            <span className="bg-emerald-500 text-white text-xs font-semibold px-3 py-1.5 rounded-full shadow-sm flex items-center gap-1">
-                                <CheckCircle2 className="w-3.5 h-3.5" />
+                            <Badge variant="secondary" className="shadow-sm flex items-center gap-1">
+                                <CheckCircle2 className="w-3.5 h-3.5" aria-hidden="true" />
                                 Completed
-                            </span>
+                            </Badge>
                         </div>
                     )}
                 </div>
