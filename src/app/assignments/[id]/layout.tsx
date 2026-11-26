@@ -69,24 +69,25 @@ export default function AssignmentLayout({ children }: { children: React.ReactNo
     return (
         <AuthGuard>
             <>
-                <div className="min-h-screen bg-background flex flex-col">
+                <div className="min-h-screen min-w-0 bg-background flex flex-col">
                     {/* Sticky Header */}
-                    <header className="sticky top-0 z-50 bg-primary h-14 flex items-center justify-between px-4 shadow-md">
-                        <div className="flex items-center gap-3">
+                    <header className="sticky top-0 z-50 bg-primary min-h-14 flex flex-wrap items-center justify-between gap-2 px-3 py-2 sm:px-4 shadow-md">
+                        <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
                             <Button
                                 variant="ghost"
                                 size="icon"
                                 onClick={() => router.back()}
-                                className="text-text-secondary hover:text-text-secondary hover:bg-white/10"
+                                aria-label="Go back"
+                                className="shrink-0 text-text-secondary hover:text-text-secondary hover:bg-white/10"
                             >
-                                <ArrowLeft className="size-5" />
+                                <ArrowLeft className="size-5" aria-hidden="true" />
                             </Button>
-                            <h1 className="text-text-secondary font-semibold text-lg truncate max-w-[200px] sm:max-w-md">
+                            <h1 className="text-text-secondary font-semibold text-base sm:text-lg truncate min-w-0">
                                 {currentAssignment?.title || "Assignment"}
                             </h1>
                         </div>
 
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0 flex-wrap">
                             {/* Zoom Controls */}
                             {/* <div className="hidden sm:flex items-center gap-1 mr-2">
                                 <Button
@@ -111,12 +112,13 @@ export default function AssignmentLayout({ children }: { children: React.ReactNo
                                 variant="ghost"
                                 size="icon"
                                 onClick={toggleFullscreen}
+                                aria-label={isFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
                                 className="text-text-secondary hover:text-text-secondary hover:bg-white/10 size-8"
                             >
                                 {isFullscreen ? (
-                                    <Minimize2 className="size-4" />
+                                    <Minimize2 className="size-4" aria-hidden="true" />
                                 ) : (
-                                    <Maximize2 className="size-4" />
+                                    <Maximize2 className="size-4" aria-hidden="true" />
                                 )}
                             </Button>
 
@@ -125,9 +127,10 @@ export default function AssignmentLayout({ children }: { children: React.ReactNo
                                 <DropdownMenuTrigger asChild>
                                     <Button
                                         variant="ghost"
-                                        className="text-text-secondary hover:text-text-secondary hover:bg-white/10 gap-1"
+                                        aria-label="Assignment help"
+                                        className="text-text-secondary hover:text-text-secondary hover:bg-white/10 gap-1 px-2 sm:px-3"
                                     >
-                                        <HelpCircle className="size-4" />
+                                        <HelpCircle className="size-4" aria-hidden="true" />
                                         <span className="hidden sm:inline">Help</span>
                                     </Button>
                                 </DropdownMenuTrigger>
@@ -160,7 +163,7 @@ export default function AssignmentLayout({ children }: { children: React.ReactNo
                     </header>
 
                     {/* Content */}
-                    <main className="flex-1 overflow-auto">{children}</main>
+                    <main className="flex-1 min-w-0 overflow-auto">{children}</main>
 
                     {/* Confirmation Dialog */}
                     <Dialog open={finishDialogOpen} onOpenChange={setFinishDialogOpen}>
@@ -193,10 +196,11 @@ export default function AssignmentLayout({ children }: { children: React.ReactNo
                             <Button
                                 variant="ghost"
                                 size="icon"
+                                aria-label="Dismiss notification"
                                 className="size-6 text-white hover:bg-white/20"
                                 onClick={() => setShowSubmittedToast(false)}
                             >
-                                <X className="size-4" />
+                                <X className="size-4" aria-hidden="true" />
                             </Button>
                         </div>
                     </div>
