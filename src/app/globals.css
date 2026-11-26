@@ -144,6 +144,12 @@
         @apply border-border outline-ring/50;
         @apply border-border outline-ring/50;
     }
+    html {
+        scroll-padding-top: 4rem;
+    }
+    html:has(nav[aria-label="Question navigation"]) {
+        scroll-padding-bottom: 6.5rem;
+    }
     body {
         @apply bg-background text-foreground;
         @apply bg-background text-foreground;
