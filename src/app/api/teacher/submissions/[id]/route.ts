@@ -66,7 +66,7 @@ import { SubmissionStatus, Role } from "@/generated/prisma/enums";
  *                 description: Teacher feedback (optional for drafts)
  *               isDraft:
  *                 type: boolean
- *                 description: If true, saves as draft without changing status
+ *                 description: If true, saves a draft for a submission whose grade has not been published
  *               criteriaScores:
  *                 type: array
  *                 items:
@@ -85,6 +85,8 @@ import { SubmissionStatus, Role } from "@/generated/prisma/enums";
  *         description: Forbidden
  *       404:
  *         description: Submission not found
+ *       409:
+ *         description: A draft cannot replace a published grade
  *       500:
  *         description: Internal server error
  */
@@ -305,12 +307,10 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
                     }
                 }
             },
-            include: {
-                assignment: {
-                    include: {
-                        rubric: { include: { criteria: true } }
-                    }
-                }
+            select: {
+                assignmentId: true,
+                studentId: true,
+                assignment: { select: { title: true } }
             }
         });
 
@@ -329,6 +329,24 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 
         // Use transaction to update submission and criteria scores atomically
         const updatedSubmission = await prisma.$transaction(async (tx) => {
+            const isDraftWrite = isDraft === true;
+            const result = await tx.assignmentSubmission.updateMany({
+                where: {
+                    id: submissionId,
+                    status: isDraftWrite ? { notIn: [SubmissionStatus.GRADED, SubmissionStatus.RETURNED] } : undefined
+                },
+                data: {
+                    score,
+                    bandScore,
+                    feedback,
+                    status: isDraftWrite ? undefined : SubmissionStatus.GRADED,
+                    gradedById: isDraftWrite ? undefined : teacherProfileId,
+                    gradedAt: isDraftWrite ? undefined : new Date(),
+                    updatedAt: new Date()
+                }
+            });
+            if (result.count === 0) return null;
+
             if (criteriaScores && criteriaScores.length > 0) {
                 for (const criteriaScore of criteriaScores) {
                     const existingScore = await tx.criterionScore.findFirst({
@@ -352,16 +370,8 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
                 }
             }
 
-            return tx.assignmentSubmission.update({
+            const updated = await tx.assignmentSubmission.findUniqueOrThrow({
                 where: { id: submissionId },
-                data: {
-                    score: score ?? null,
-                    bandScore: bandScore ?? null,
-                    feedback: feedback ?? null,
-                    status: isDraft === true ? undefined : SubmissionStatus.GRADED,
-                    gradedById: isDraft === true ? undefined : teacherProfileId,
-                    gradedAt: isDraft === true ? undefined : new Date()
-                },
                 include: {
                     criteriaScores: {
                         include: { criterion: true }
@@ -379,18 +389,26 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
                     }
                 }
             });
+
+            if (!isDraftWrite && studentUser) {
+                await tx.notification.create({
+                    data: {
+                        userId: studentUser.userId,
+                        title: `Assignment graded: ${submission.assignment.title}`,
+                        body: `Your submission for "${submission.assignment.title}" has been graded.${updated.bandScore !== null ? ` Band score: ${updated.bandScore}` : ""}`,
+                        link: `/assignments/${submission.assignmentId}`
+                    }
+                });
+            }
+
+            return updated;
         });
 
-        // Create notification for student if not a draft
-        if (isDraft !== true && studentUser) {
-            await prisma.notification.create({
-                data: {
-                    userId: studentUser.userId,
-                    title: `Assignment graded: ${submission.assignment.title}`,
-                    body: `Your submission for "${submission.assignment.title}" has been graded.${bandScore ? ` Band score: ${bandScore}` : ""}`,
-                    link: `/assignments/${submission.assignmentId}`
-                }
-            });
+        if (!updatedSubmission) {
+            return NextResponse.json(
+                { success: false, message: "Submit changes to update a published grade." },
+                { status: StatusCodes.CONFLICT }
+            );
         }
 
         return NextResponse.json(
@@ -414,6 +432,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
                     criteriaScores: updatedSubmission.criteriaScores.map((cs) => ({
                         criterionId: cs.criterionId,
                         criterionName: cs.criterion.name,
+                        maxScore: cs.criterion.maxScore,
                         score: cs.score
                     }))
                 }

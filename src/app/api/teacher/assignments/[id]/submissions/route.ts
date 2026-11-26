@@ -162,6 +162,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
             criteriaScores: submission.criteriaScores.map((cs) => ({
                 criterionId: cs.criterionId,
                 criterionName: cs.criterion.name,
+                maxScore: cs.criterion.maxScore,
                 score: cs.score
             })),
             commentCount: submission._count.comments
