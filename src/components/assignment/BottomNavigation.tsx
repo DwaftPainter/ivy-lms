@@ -31,21 +31,25 @@ export function BottomNavigation() {
     };
 
     return (
-        <div className="fixed bottom-0 left-0 right-0 bg-card border-t border-border p-4 z-40">
-            <div className="max-w-7xl mx-auto flex items-center justify-between">
+        <nav
+            aria-label="Question navigation"
+            className="fixed bottom-0 left-0 right-0 bg-card border-t border-border p-3 sm:p-4 z-40"
+        >
+            <div className="max-w-7xl mx-auto flex items-center justify-between gap-2">
                 {/* Previous Button */}
                 <Button
                     variant="outline"
                     onClick={previousQuestion}
                     disabled={isFirstQuestion}
-                    className="gap-1"
+                    aria-label="Previous question"
+                    className="gap-1 shrink-0"
                 >
-                    <ChevronLeft className="size-4" />
+                    <ChevronLeft className="size-4" aria-hidden="true" />
                     <span className="hidden sm:inline">Previous</span>
                 </Button>
 
                 {/* Part Navigation */}
-                <div className="flex items-center gap-1 sm:gap-2">
+                <div className="flex items-center gap-1 sm:gap-2 min-w-0 overflow-x-auto">
                     {parts.map((part, partIdx) => {
                         const isActive = currentPartIndex === partIdx;
 
@@ -53,9 +57,12 @@ export function BottomNavigation() {
                             <div key={part.id} className="flex items-center">
                                 {/* Part Indicator */}
                                 <button
+                                    type="button"
                                     onClick={() => goToQuestion(partIdx, 0)}
+                                    aria-label={`${part.title} (${part.questions.length} ${part.questions.length === 1 ? "question" : "questions"})`}
+                                    aria-current={isActive ? "step" : undefined}
                                     className={cn(
-                                        "flex flex-col items-center gap-1 px-2 sm:px-3 py-1 rounded-lg transition-colors",
+                                        "flex flex-col items-center gap-1 px-2 sm:px-3 py-1 rounded-lg transition-colors shrink-0",
                                         isActive
                                             ? "bg-primary/10 text-primary"
                                             : "text-muted-foreground hover:bg-muted"
@@ -111,12 +118,13 @@ export function BottomNavigation() {
                     variant={isLastQuestion ? "default" : "outline"}
                     onClick={nextQuestion}
                     disabled={isLastQuestion}
-                    className="gap-1"
+                    aria-label="Next question"
+                    className="gap-1 shrink-0"
                 >
                     <span className="hidden sm:inline">Next</span>
-                    <ChevronRight className="size-4" />
+                    <ChevronRight className="size-4" aria-hidden="true" />
                 </Button>
             </div>
-        </div>
+        </nav>
     );
 }

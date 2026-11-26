@@ -144,6 +144,12 @@
         @apply border-border outline-ring/50;
         @apply border-border outline-ring/50;
     }
+    html {
+        scroll-padding-top: 4rem;
+    }
+    html:has(nav[aria-label="Question navigation"]) {
+        scroll-padding-bottom: 6.5rem;
+    }
     body {
         @apply bg-background text-foreground;
         @apply bg-background text-foreground;
@@ -205,80 +211,80 @@
 
 /* Day Cells - Table Borders */
 .fc-custom .fc-scrollgrid {
-    border-color: hsl(var(--border)) !important;
+    border-color: var(--border) !important;
     border-collapse: collapse !important;
 }
 
 .fc-custom .fc-scrollgrid td,
 .fc-custom .fc-scrollgrid th {
-    border-color: hsl(var(--border)) !important;
+    border-color: var(--border) !important;
 }
 
 /* Force borders on all daygrid cells */
 .fc-custom .fc-daygrid-day {
-    border: 1px solid hsl(var(--border)) !important;
+    border: 1px solid var(--border) !important;
 }
 
 /* FullCalendar strips last-col/last-row borders — restore them */
 .fc-custom .fc-scrollgrid-section > td {
-    border: 1px solid hsl(var(--border)) !important;
+    border: 1px solid var(--border) !important;
 }
 
 .fc-custom table.fc-scrollgrid {
-    border-right: 1px solid hsl(var(--border)) !important;
-    border-bottom: 1px solid hsl(var(--border)) !important;
+    border-right: 1px solid var(--border) !important;
+    border-bottom: 1px solid var(--border) !important;
 }
 
 /* Prevent FullCalendar zeroing out borders on sync-inner tables */
 .fc-custom .fc-scrollgrid-sync-inner {
-    border-right: 1px solid hsl(var(--border)) !important;
+    border-right: 1px solid var(--border) !important;
 }
 
 .fc-custom .fc-daygrid-body tr {
-    border-bottom: 1px solid hsl(var(--border)) !important;
+    border-bottom: 1px solid var(--border) !important;
 }
 
 /* FullCalendar Custom Styles */
 .fc-custom .fc {
-    --fc-border-color: hsl(var(--border));
+    --fc-border-color: var(--border);
     --fc-page-bg-color: transparent;
-    --fc-neutral-bg-color: hsl(var(--muted));
+    --fc-neutral-bg-color: var(--muted);
     font-family: inherit;
 }
 
 /* Calendar Header */
 .fc-custom .fc-col-header-cell {
     padding: 12px 4px;
-    background: hsl(var(--muted) / 0.5);
-    border-bottom: 2px solid hsl(var(--border));
+    background: color-mix(in oklab, var(--muted) 50%, transparent);
+    border-bottom: 2px solid var(--border);
 }
 
 .fc-custom .fc-col-header-cell-cushion {
     font-weight: 600;
     font-size: 0.875rem;
-    color: hsl(var(--foreground));
+    color: var(--foreground);
     text-transform: uppercase;
     letter-spacing: 0.05em;
 }
 
 /* Day Cells - Table Borders */
 .fc-custom .fc-scrollgrid {
-    border-color: hsl(var(--border)) !important;
+    border-color: var(--border) !important;
 }
 
 .fc-custom .fc-scrollgrid td,
 .fc-custom .fc-scrollgrid th {
-    border-color: hsl(var(--border)) !important;
+    border-color: var(--border) !important;
 }
 
 .fc-custom .fc-daygrid-day {
-    background: hsl(var(--background));
+    background: var(--background);
     transition: background-color 0.2s ease;
-    border-color: hsl(var(--border)) !important;
+    border-color: var(--border) !important;
 }
 
 .fc-custom .fc-daygrid-day:hover {
-    background: hsl(var(--muted) / 0.3);
+    background: color-mix(in oklab, var(--muted) 30%, transparent);
 }
 
 .fc-custom .fc-daygrid-day-frame {
@@ -290,12 +296,12 @@
 }
 
 .fc-custom .fc-day-today {
-    background: hsl(var(--primary) / 0.08) !important;
+    background: color-mix(in oklab, var(--primary) 8%, transparent) !important;
 }
 
 .fc-custom .fc-day-today .fc-daygrid-day-number {
-    background: hsl(var(--primary));
-    color: hsl(var(--primary-foreground));
+    background: var(--primary);
+    color: var(--primary-foreground);
     font-weight: 700;
     width: 28px;
     height: 28px;
@@ -308,12 +314,12 @@
 
 .fc-custom .fc-daygrid-day-number {
     font-size: 0.875rem;
-    color: hsl(var(--foreground));
+    color: var(--foreground);
     padding: 6px;
 }
 
 .fc-custom .fc-day-other .fc-daygrid-day-number {
-    color: hsl(var(--muted-foreground) / 0.6);
+    color: color-mix(in oklab, var(--muted-foreground) 60%, transparent);
 }
 
 /* Events */
@@ -329,6 +335,13 @@
     margin: 2px 4px;
 }
 
+.fc-custom .fc-event:focus-visible,
+.fc-custom .fc-daygrid-more-link:focus-visible,
+.fc-custom a:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+}
+
 .fc-custom .fc-event:hover {
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
@@ -340,6 +353,7 @@
 
 .fc-custom .fc-event-main-frame {
     padding: 2px 0;
+    display: block;
 }
 
 .fc-custom .fc-event-time {
@@ -347,6 +361,7 @@
     margin-right: 4px;
     font-size: 0.7rem;
     opacity: 0.9;
+    flex-shrink: 0;
 }
 
 .fc-custom .fc-event-title {
@@ -374,7 +389,7 @@
 
 /* More Events Link */
 .fc-custom .fc-daygrid-more-link {
-    color: hsl(var(--primary));
+    color: var(--primary);
     font-weight: 600;
     font-size: 0.75rem;
     padding: 2px 6px;
@@ -383,7 +398,7 @@
 }
 
 .fc-custom .fc-daygrid-more-link:hover {
-    background: hsl(var(--primary) / 0.1);
+    background: color-mix(in oklab, var(--primary) 10%, transparent);
 }
 
 /* Time Grid View */
@@ -393,17 +408,17 @@
 
 .fc-custom .fc-timegrid-slot-label {
     font-size: 0.75rem;
-    color: hsl(var(--muted-foreground));
+    color: var(--muted-foreground);
     font-weight: 500;
 }
 
 .fc-custom .fc-timegrid-divider {
-    border-color: hsl(var(--border));
+    border-color: var(--border);
 }
 
 /* Week/Day View Headers */
 .fc-custom .fc-timegrid-axis {
-    background: hsl(var(--muted) / 0.3);
+    background: color-mix(in oklab, var(--muted) 30%, transparent);
 }
 
 .fc-custom .fc-timegrid-col-frame {
@@ -417,26 +432,26 @@
 /* Popover (for more events) */
 .fc-custom .fc-popover {
     border-radius: 12px;
-    border: 1px solid hsl(var(--border));
+    border: 1px solid var(--border);
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
-    background: hsl(var(--card));
+    background: var(--card);
 }
 
 .fc-custom .fc-popover-header {
-    background: hsl(var(--muted) / 0.5);
+    background: color-mix(in oklab, var(--muted) 50%, transparent);
     padding: 12px 16px;
-    border-bottom: 1px solid hsl(var(--border));
+    border-bottom: 1px solid var(--border);
     border-radius: 12px 12px 0 0;
 }
 
 .fc-custom .fc-popover-title {
     font-weight: 600;
     font-size: 0.875rem;
-    color: hsl(var(--foreground));
+    color: var(--foreground);
 }
 
 .fc-custom .fc-popover-close {
-    color: hsl(var(--muted-foreground));
+    color: var(--muted-foreground);
     opacity: 0.7;
     transition: opacity 0.2s ease;
 }
@@ -447,18 +462,18 @@
 
 /* Now Indicator */
 .fc-custom .fc-now-indicator-line {
-    border-color: hsl(var(--destructive));
+    border-color: var(--destructive);
     border-width: 2px;
 }
 
 .fc-custom .fc-now-indicator-arrow {
-    border-color: hsl(var(--destructive));
+    border-color: var(--destructive);
     border-width: 5px;
 }
 
 /* Selection */
 .fc-custom .fc-highlight {
-    background: hsl(var(--primary) / 0.1) !important;
+    background: color-mix(in oklab, var(--primary) 10%, transparent) !important;
 }
 
 /* Responsive */

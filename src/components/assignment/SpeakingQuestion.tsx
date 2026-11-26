@@ -195,9 +195,10 @@ export function SpeakingQuestion({
                             onClick={isRecording ? stopRecording : startRecording}
                             variant={isRecording ? "destructive" : "default"}
                             disabled={isSubmitted}
-                            className={cn("h-16 w-16 rounded-full", isRecording && "animate-pulse")}
+                            aria-label={isRecording ? "Stop recording" : "Start recording"}
+                            className={cn("h-16 w-16 rounded-full", isRecording && "animate-pulse motion-reduce:animate-none")}
                         >
-                            {isRecording ? <Square className="h-6 w-6" /> : <Mic className="h-6 w-6" />}
+                            {isRecording ? <Square className="h-6 w-6" aria-hidden="true" /> : <Mic className="h-6 w-6" aria-hidden="true" />}
                         </Button>
                     ) : (
                         !isUploading && (
@@ -206,12 +207,13 @@ export function SpeakingQuestion({
                                     size="lg"
                                     onClick={togglePlayback}
                                     variant="outline"
+                                    aria-label={isPlaying ? "Pause recording" : "Play recording"}
                                     className="h-14 w-14 rounded-full"
                                 >
                                     {isPlaying ? (
-                                        <Pause className="h-5 w-5" />
+                                        <Pause className="h-5 w-5" aria-hidden="true" />
                                     ) : (
-                                        <Play className="h-5 w-5 ml-0.5" />
+                                        <Play className="h-5 w-5 ml-0.5" aria-hidden="true" />
                                     )}
                                 </Button>
                                 {!isSubmitted && (
@@ -219,9 +221,10 @@ export function SpeakingQuestion({
                                         size="lg"
                                         onClick={rerecord}
                                         variant="outline"
+                                        aria-label="Re-record answer"
                                         className="h-14 w-14 rounded-full"
                                     >
-                                        <RotateCcw className="h-5 w-5" />
+                                        <RotateCcw className="h-5 w-5" aria-hidden="true" />
                                     </Button>
                                 )}
                             </div>

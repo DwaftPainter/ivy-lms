@@ -79,7 +79,7 @@ const Login = () => {
                 </Button>
                 <div className="flex items-center overflow-hidden gap-[4%]">
                     <Separator className="data-[orientation=horizontal]:w-[45%]"></Separator>
-                    <p className="opacity-40 text-sm">or</p>
+                    <p className="text-muted-foreground text-sm">or</p>
                     <Separator className="data-[orientation=horizontal]:w-[45%]"></Separator>
                 </div>
                 <FormField
@@ -93,7 +93,6 @@ const Login = () => {
                                     className="py-3 h-fit"
                                     placeholder="placeholder@example.com"
                                     {...field}
-                                    tabIndex={1}
                                 />
                             </FormControl>
                             <FormMessage />
@@ -116,7 +115,6 @@ const Login = () => {
                                     autoComplete="off"
                                     type="password"
                                     className="py-3 h-fit"
-                                    tabIndex={2}
                                     {...field}
                                 />
                             </FormControl>

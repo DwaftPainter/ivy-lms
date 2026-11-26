@@ -19,46 +19,29 @@ import {
     ExternalLink,
     BookOpen
 } from "lucide-react";
-import { IeltsSkill } from "@/generated/prisma/enums";
+import { SubmissionStatus } from "@/generated/prisma/enums";
+import {
+    getSkillLabel,
+    getStudentSubmissionStatusBadge,
+    type BadgeVariant
+} from "@/lib/ielts-badges";
 
-const skillLabels: Record<IeltsSkill, string> = {
-    [IeltsSkill.LISTENING]: "Listening",
-    [IeltsSkill.READING]: "Reading",
-    [IeltsSkill.WRITING]: "Writing",
-    [IeltsSkill.SPEAKING]: "Speaking"
-};
-
-const skillColors: Record<IeltsSkill, string> = {
-    [IeltsSkill.LISTENING]: "bg-blue-100 text-blue-700 border-blue-200",
-    [IeltsSkill.READING]: "bg-green-100 text-green-700 border-green-200",
-    [IeltsSkill.WRITING]: "bg-amber-100 text-amber-700 border-amber-200",
-    [IeltsSkill.SPEAKING]: "bg-purple-100 text-purple-700 border-purple-200"
-};
-
-const statusConfig: Record<string, { label: string; color: string; icon: React.ReactNode }> = {
+const statusConfig: Record<string, { label: string; variant: BadgeVariant; icon: React.ReactNode }> = {
     UPCOMING: {
         label: "Upcoming",
-        color: "bg-slate-100 text-slate-700 border-slate-200",
-        icon: <Calendar className="w-4 h-4" />
+        variant: "outline",
+        icon: <Calendar className="w-3.5 h-3.5" aria-hidden="true" />
     },
     ONGOING: {
         label: "Ongoing",
-        color: "bg-emerald-100 text-emerald-700 border-emerald-200",
-        icon: <PlayCircle className="w-4 h-4" />
+        variant: "secondary",
+        icon: <PlayCircle className="w-3.5 h-3.5" aria-hidden="true" />
     },
     COMPLETED: {
         label: "Completed",
-        color: "bg-gray-100 text-gray-700 border-gray-200",
-        icon: <CheckCircle2 className="w-4 h-4" />
+        variant: "secondary",
+        icon: <CheckCircle2 className="w-3.5 h-3.5" aria-hidden="true" />
     }
-};
-
-const assignmentStatusConfig: Record<string, { label: string; color: string }> = {
-    NOT_STARTED: { label: "Not Started", color: "bg-slate-100 text-slate-700" },
-    PENDING: { label: "In Progress", color: "bg-amber-100 text-amber-700" },
-    SUBMITTED: { label: "Submitted", color: "bg-blue-100 text-blue-700" },
-    GRADED: { label: "Graded", color: "bg-green-100 text-green-700" },
-    RETURNED: { label: "Returned", color: "bg-purple-100 text-purple-700" }
 };
 
 const formatDueDate = (dateString: string | null) => {
@@ -150,62 +133,61 @@ export default function LessonDetailPage() {
     const statusInfo = statusConfig[lesson.status] || statusConfig.UPCOMING;
 
     return (
-        <div className="p-4 sm:p-6 max-w-5xl mx-auto">
+        <div className="p-4 sm:p-6 max-w-5xl mx-auto min-w-0">
             {/* Back Button */}
             <Button variant="ghost" onClick={handleBack} className="mb-4 -ml-2">
-                <ArrowLeft className="w-4 h-4 mr-2" />
+                <ArrowLeft className="w-4 h-4 mr-2" aria-hidden="true" />
                 Back
             </Button>
 
             {/* Header Section */}
-            <Card className="mb-6 shadow-none border">
-                <CardHeader className="pb-4">
-                    <div className="flex flex-wrap items-start gap-3 mb-3">
-                        <Badge
-                            variant="outline"
-                            className={`${skillColors[lesson.skill]} font-medium border`}
-                        >
-                            {skillLabels[lesson.skill]}
+            <Card className="mb-6 shadow-none border min-w-0">
+                <CardHeader className="pb-4 min-w-0">
+                    <div className="flex flex-wrap items-start gap-2 mb-3">
+                        <Badge variant="secondary" className="font-medium">
+                            {getSkillLabel(lesson.skill)}
                         </Badge>
                         <Badge
-                            variant="outline"
-                            className={`${statusInfo.color} font-medium border flex items-center gap-1`}
+                            variant={statusInfo.variant}
+                            className="font-medium flex items-center gap-1"
                         >
                             {statusInfo.icon}
                             {statusInfo.label}
                         </Badge>
                     </div>
-                    <h1 className="text-2xl font-bold text-foreground">{lesson.title}</h1>
-                    {lesson.course && <p className="text-muted-foreground mt-1">{lesson.course.title}</p>}
+                    <h1 className="text-2xl font-bold text-foreground break-words">{lesson.title}</h1>
+                    {lesson.course && (
+                        <p className="text-muted-foreground mt-1 break-words">{lesson.course.title}</p>
+                    )}
                 </CardHeader>
-                <CardContent className="pt-0">
+                <CardContent className="pt-0 min-w-0">
                     {/* Session Info Grid */}
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 p-4 bg-muted/50 rounded-lg">
-                        <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-full bg-background flex items-center justify-center border">
-                                <Calendar className="w-5 h-5 text-muted-foreground" />
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-muted/50 rounded-lg">
+                        <div className="flex items-center gap-3 min-w-0">
+                            <div className="w-10 h-10 rounded-full bg-background flex items-center justify-center border shrink-0">
+                                <Calendar className="w-5 h-5 text-muted-foreground" aria-hidden="true" />
                             </div>
-                            <div>
+                            <div className="min-w-0">
                                 <p className="text-sm text-muted-foreground">Date</p>
-                                <p className="font-medium">{lesson.date}</p>
+                                <p className="font-medium break-words">{lesson.date}</p>
                             </div>
                         </div>
-                        <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-full bg-background flex items-center justify-center border">
-                                <Clock className="w-5 h-5 text-muted-foreground" />
+                        <div className="flex items-center gap-3 min-w-0">
+                            <div className="w-10 h-10 rounded-full bg-background flex items-center justify-center border shrink-0">
+                                <Clock className="w-5 h-5 text-muted-foreground" aria-hidden="true" />
                             </div>
-                            <div>
+                            <div className="min-w-0">
                                 <p className="text-sm text-muted-foreground">Time</p>
-                                <p className="font-medium">{lesson.time}</p>
+                                <p className="font-medium break-words">{lesson.time}</p>
                             </div>
                         </div>
-                        <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-full bg-background flex items-center justify-center border">
-                                <BookOpen className="w-5 h-5 text-muted-foreground" />
+                        <div className="flex items-center gap-3 min-w-0">
+                            <div className="w-10 h-10 rounded-full bg-background flex items-center justify-center border shrink-0">
+                                <BookOpen className="w-5 h-5 text-muted-foreground" aria-hidden="true" />
                             </div>
-                            <div>
+                            <div className="min-w-0">
                                 <p className="text-sm text-muted-foreground">Duration</p>
-                                <p className="font-medium">{lesson.duration} minutes</p>
+                                <p className="font-medium break-words">{lesson.duration} minutes</p>
                             </div>
                         </div>
                     </div>
@@ -214,7 +196,7 @@ export default function LessonDetailPage() {
                     {lesson.status === "ONGOING" && lesson.meetingUrl && (
                         <div className="mt-4">
                             <Button onClick={handleJoinMeeting} className="w-full sm:w-auto">
-                                <ExternalLink className="w-4 h-4 mr-2" />
+                                <ExternalLink className="w-4 h-4 mr-2" aria-hidden="true" />
                                 Join Session
                             </Button>
                         </div>
@@ -301,16 +283,16 @@ export default function LessonDetailPage() {
                     ) : (
                         <div className="space-y-4">
                             {lesson.assignments.map((assignment) => {
-                                const status =
-                                    assignmentStatusConfig[assignment.status] ||
-                                    assignmentStatusConfig.NOT_STARTED;
+                                const status = assignment.status === SubmissionStatus.PENDING
+                                    ? { label: "In Progress", variant: "secondary" as const }
+                                    : getStudentSubmissionStatusBadge(assignment.status as SubmissionStatus);
                                 return (
                                     <div
                                         key={assignment.id}
-                                        className="flex flex-col sm:flex-row sm:items-center gap-4 p-4 rounded-lg border"
+                                        className="flex flex-col md:flex-row md:items-center gap-4 p-4 rounded-lg border min-w-0"
                                     >
                                         <div className="flex-1 min-w-0">
-                                            <h3 className="font-medium truncate">{assignment.title}</h3>
+                                            <h3 className="font-medium break-words">{assignment.title}</h3>
                                             {assignment.description && (
                                                 <p className="text-sm text-muted-foreground line-clamp-1 mt-1">
                                                     {assignment.description}
@@ -322,14 +304,14 @@ export default function LessonDetailPage() {
                                                 </Badge>
                                                 {assignment.dueDate && (
                                                     <span className="text-xs text-muted-foreground flex items-center gap-1">
-                                                        <AlertCircle className="w-3 h-3" />
+                                                        <AlertCircle className="w-3 h-3" aria-hidden="true" />
                                                         Due {formatDueDate(assignment.dueDate)}
                                                     </span>
                                                 )}
                                             </div>
                                         </div>
-                                        <div className="flex items-center gap-3">
-                                            <Badge className={`${status.color} border-0`}>
+                                        <div className="flex flex-wrap items-center gap-3 shrink-0">
+                                            <Badge variant={status.variant}>
                                                 {status.label}
                                             </Badge>
                                             <Button

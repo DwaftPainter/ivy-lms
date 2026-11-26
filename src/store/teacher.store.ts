@@ -32,6 +32,7 @@ interface CreateTeacherResponse {
 interface TeacherState {
     teachers: Teacher[];
     isLoading: boolean;
+    isCreating: boolean;
     error: string | null;
 
     fetchTeachers: () => Promise<void>;
@@ -41,6 +42,7 @@ interface TeacherState {
 export const useTeacherStore = create<TeacherState>((set, get) => ({
     teachers: [],
     isLoading: false,
+    isCreating: false,
     error: null,
 
     fetchTeachers: async () => {
@@ -59,7 +61,7 @@ export const useTeacherStore = create<TeacherState>((set, get) => ({
     },
 
     createTeacher: async (data: CreateTeacherInput) => {
-        set({ isLoading: true, error: null });
+        set({ isCreating: true });
         try {
             const response = await apiFetch<{
                 success: boolean;
@@ -72,12 +74,11 @@ export const useTeacherStore = create<TeacherState>((set, get) => ({
 
             // Refresh the teacher list
             await get().fetchTeachers();
-            set({ isLoading: false });
+            set({ isCreating: false });
 
             return response.data;
         } catch (error) {
-            const errorMessage = getErrorMessage(error) || "Failed to create teacher";
-            set({ error: errorMessage, isLoading: false });
+            set({ isCreating: false });
             throw error;
         }
     }

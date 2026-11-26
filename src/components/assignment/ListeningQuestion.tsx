@@ -142,6 +142,7 @@ export function ListeningQuestion({
                     <Input
                         value={answer || ""}
                         onChange={(e) => onAnswerChange(e.target.value)}
+                        aria-label={`Answer for question ${questionNumber}`}
                         placeholder="Type your answer here"
                         className="max-w-md"
                     />
@@ -188,12 +189,13 @@ export function ListeningQuestion({
                                 variant="outline"
                                 size="icon"
                                 onClick={togglePlay}
+                                aria-label={isPlaying ? "Pause audio" : "Play audio"}
                                 className="h-10 w-10"
                             >
                                 {isPlaying ? (
-                                    <Pause className="h-4 w-4" />
+                                    <Pause className="h-4 w-4" aria-hidden="true" />
                                 ) : (
-                                    <Play className="h-4 w-4 ml-0.5" />
+                                    <Play className="h-4 w-4 ml-0.5" aria-hidden="true" />
                                 )}
                             </Button>
 
@@ -202,6 +204,7 @@ export function ListeningQuestion({
                                     value={[currentTime]}
                                     max={duration || 100}
                                     step={1}
+                                    aria-label="Audio progress"
                                     onValueChange={handleSeek}
                                     className="w-full"
                                 />
@@ -213,11 +216,12 @@ export function ListeningQuestion({
                         </div>
 
                         <div className="flex items-center gap-2">
-                            <Volume2 className="h-4 w-4 text-muted-foreground" />
+                            <Volume2 className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
                             <Slider
                                 value={[volume]}
                                 max={100}
                                 step={1}
+                                aria-label="Audio volume"
                                 onValueChange={handleVolumeChange}
                                 className="w-24"
                             />

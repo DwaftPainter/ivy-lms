@@ -13,6 +13,7 @@ export interface ClassItem {
     title: string;
     course: string;
     date: string;
+    fullDate?: string;
     day: string;
     time: string;
     instructor: string;

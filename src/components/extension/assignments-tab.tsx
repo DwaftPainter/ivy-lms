@@ -2,10 +2,12 @@
 
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { CheckCircle, AlertCircle } from "lucide-react";
 import { SubmissionStatus } from "@/generated/prisma/enums";
 import { Assignment } from "@/store/assignment.store";
 import { EnrolledCourse } from "@/store/enrollment.store";
+import { getSkillLabel, getStudentSubmissionStatusBadge } from "@/lib/ielts-badges";
 
 interface AssignmentsTabProps {
     assignments: Assignment[];
@@ -15,25 +17,11 @@ interface AssignmentsTabProps {
 function getStatusIcon(status: SubmissionStatus) {
     switch (status) {
         case SubmissionStatus.SUBMITTED:
-            return <CheckCircle className="w-4 h-4 text-emerald-500" />;
         case SubmissionStatus.GRADED:
         case SubmissionStatus.RETURNED:
-            return <CheckCircle className="w-4 h-4 text-blue-500" />;
+            return <CheckCircle className="w-3.5 h-3.5" aria-hidden="true" />;
         default:
-            return <AlertCircle className="w-4 h-4 text-amber-500" />;
-    }
-}
-
-function getStatusText(status: SubmissionStatus) {
-    switch (status) {
-        case SubmissionStatus.SUBMITTED:
-            return { text: "Submitted", class: "bg-emerald-100 text-emerald-700" };
-        case SubmissionStatus.GRADED:
-            return { text: "Graded", class: "bg-blue-100 text-blue-700" };
-        case SubmissionStatus.RETURNED:
-            return { text: "Returned", class: "bg-purple-100 text-purple-700" };
-        default:
-            return { text: "Pending", class: "bg-amber-100 text-amber-700" };
+            return <AlertCircle className="w-3.5 h-3.5" aria-hidden="true" />;
     }
 }
 
@@ -87,45 +75,45 @@ export function AssignmentsTab({ assignments, enrolledCourses }: AssignmentsTabP
                                     </div>
                                 ) : (
                                     course.assignments.map((assignment) => {
-                                        const statusStyle = getStatusText(assignment.submissionStatus);
+                                        const statusBadge = getStudentSubmissionStatusBadge(
+                                            assignment.submissionStatus
+                                        );
                                         return (
                                             <div
                                                 key={assignment.id}
-                                                className="p-4 flex items-center justify-between hover:bg-muted/30 transition-colors"
+                                                className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-muted/30 transition-colors"
                                             >
-                                                <div className="flex-1">
-                                                    <div className="flex items-center gap-2">
+                                                <div className="flex-1 min-w-0">
+                                                    <div className="flex flex-wrap items-center gap-2">
                                                         <h4 className="font-medium text-foreground">
                                                             {assignment.title}
                                                         </h4>
                                                         {assignment.isOverdue &&
                                                             assignment.submissionStatus ===
                                                                 SubmissionStatus.PENDING && (
-                                                                <span className="text-xs bg-red-100 text-red-700 px-2 py-0.5 rounded">
+                                                                <Badge variant="destructive">
                                                                     Overdue
-                                                                </span>
+                                                                </Badge>
                                                             )}
                                                     </div>
-                                                    <div className="mt-2 flex items-center gap-2">
-                                                        <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded">
-                                                            {assignment.skill}
-                                                        </span>
-                                                        <span className="text-xs bg-secondary text-muted-foreground px-2 py-1 rounded">
+                                                    <div className="mt-2 flex flex-wrap items-center gap-2">
+                                                        <Badge variant="secondary">
+                                                            {getSkillLabel(assignment.skill)}
+                                                        </Badge>
+                                                        <Badge variant="outline">
                                                             {assignment.type}
-                                                        </span>
+                                                        </Badge>
                                                     </div>
                                                     <p className="text-sm text-muted-foreground mt-1">
                                                         Due: {formatDueDate(assignment.dueDate)}
                                                     </p>
                                                 </div>
 
-                                                <div className="text-right flex items-center justify-center gap-2">
-                                                    <span
-                                                        className={`inline-flex items-center gap-1 text-xs px-2 py-1 rounded ${statusStyle.class}`}
-                                                    >
+                                                <div className="flex flex-wrap items-center gap-2 shrink-0">
+                                                    <Badge variant={statusBadge.variant} className="gap-1">
                                                         {getStatusIcon(assignment.submissionStatus)}
-                                                        {statusStyle.text}
-                                                    </span>
+                                                        {statusBadge.label}
+                                                    </Badge>
 
                                                     {assignment.submission?.score && (
                                                         <p className="text-sm font-medium">

@@ -5,12 +5,20 @@
 
 "use client";
 
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
   useAssignmentBuilderStore,
 } from "@/store/assignment-builder.store";
@@ -26,13 +34,14 @@ import {
   MoreHorizontal,
 } from "lucide-react";
 import { QuestionType } from "@/types/assignment-builder";
-import { getQuestionConfig } from "@/lib/assignment-builder/question-config";
+import { getQuestionConfig, questionTypeConfig } from "@/lib/assignment-builder/question-config";
 
 interface BuilderCanvasProps {
   isPreview?: boolean;
+  onOpenInspector?: () => void;
 }
 
-export function BuilderCanvas({ isPreview }: BuilderCanvasProps) {
+export function BuilderCanvas({ isPreview, onOpenInspector }: BuilderCanvasProps) {
   const {
     assignment,
     selectedId,
@@ -48,6 +57,43 @@ export function BuilderCanvas({ isPreview }: BuilderCanvasProps) {
   } = useAssignmentBuilderStore();
 
   const canvasRef = useRef<HTMLDivElement>(null);
+  const prevAssignmentIdRef = useRef<string | null>(null);
+  const prevQuestionIdsRef = useRef<Set<string>>(new Set());
+
+  // Move focus meaningfully to newly inserted question regardless of insertion path
+  useEffect(() => {
+    if (!assignment) return;
+
+    const currentIds = new Set<string>();
+    for (const section of assignment.sections) {
+      for (const question of section.questions) {
+        currentIds.add(question.id);
+      }
+    }
+
+    if (prevAssignmentIdRef.current !== assignment.id) {
+      prevAssignmentIdRef.current = assignment.id;
+      prevQuestionIdsRef.current = currentIds;
+      return;
+    }
+
+    const newlyAddedId = Array.from(currentIds).find(
+      (id) => !prevQuestionIdsRef.current.has(id)
+    );
+    prevQuestionIdsRef.current = currentIds;
+
+    if (newlyAddedId && !isPreview) {
+      const frame = requestAnimationFrame(() => {
+        const target = canvasRef.current?.querySelector<HTMLButtonElement>(
+          `[data-question-id="${newlyAddedId}"]`
+        );
+        if (target && target.offsetParent !== null) {
+          target.focus();
+        }
+      });
+      return () => cancelAnimationFrame(frame);
+    }
+  }, [assignment, isPreview]);
 
   if (!assignment) return null;
 
@@ -62,7 +108,7 @@ export function BuilderCanvas({ isPreview }: BuilderCanvasProps) {
       addSection();
     } else if (item.type === "question_type" && sectionId) {
       addQuestion(sectionId, item.questionType as QuestionType);
-    } else if (item.type === "passage" && sectionId) {
+    } else if ((item.type === "passage" || item.type === "audio") && sectionId) {
       addPassage(sectionId);
     }
   };
@@ -73,29 +119,29 @@ export function BuilderCanvas({ isPreview }: BuilderCanvasProps) {
   };
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full min-h-0">
       {/* Canvas Header */}
-      <div className="h-14 border-b bg-card px-4 flex items-center justify-between shrink-0">
-        <div className="flex items-center gap-4">
-          <h2 className="font-semibold text-sm">{assignment.title}</h2>
-          <Badge variant="secondary" className="text-xs">
+      <div className="min-h-14 border-b bg-card px-3 sm:px-4 py-2 flex flex-wrap items-center justify-between gap-2 shrink-0">
+        <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+          <h2 className="font-semibold text-sm truncate">{assignment.title}</h2>
+          <Badge variant="secondary" className="text-xs shrink-0">
             {getTotalQuestions()} questions
           </Badge>
         </div>
         {!isPreview && (
-          <Button variant="outline" size="sm" onClick={addSection}>
-            <Plus className="h-4 w-4 mr-1" />
+          <Button variant="outline" size="sm" onClick={addSection} className="shrink-0">
+            <Plus className="h-4 w-4 mr-1" aria-hidden="true" />
             Add Section
           </Button>
         )}
       </div>
 
       {/* Canvas Content */}
-      <div className="flex-1 overflow-hidden">
-        <ScrollArea className="h-full overflow-y-auto">
+      <div className="flex-1 min-h-0 min-w-0 overflow-hidden">
+        <ScrollArea className="h-full w-full overflow-y-auto [&_[data-slot=scroll-area-viewport]>div]:block!">
           <div
             ref={canvasRef}
-            className="p-6 space-y-4 min-h-full"
+            className="p-3 sm:p-6 space-y-4 min-h-full min-w-0"
             onDragOver={handleDragOver}
             onDrop={(e) => handleCanvasDrop(e)}
           >
@@ -110,12 +156,15 @@ export function BuilderCanvas({ isPreview }: BuilderCanvasProps) {
                   isSelected={selectedId === section.id}
                   isPreview={isPreview}
                   onToggleExpand={() => toggleSectionExpanded(section.id)}
-                  onSelect={() => selectItem(section.id)}
+                  onSelect={() => {
+                    selectItem(section.id);
+                    onOpenInspector?.();
+                  }}
                   onDelete={() => deleteSection(section.id)}
                   onDrop={(e) => handleCanvasDrop(e, section.id)}
                   onDragOver={handleDragOver}
-                  _onAddQuestion={(type) => addQuestion(section.id, type)}
-                  _onAddPassage={() => addPassage(section.id)}
+                  onAddQuestion={(type) => addQuestion(section.id, type)}
+                  onAddPassage={() => addPassage(section.id)}
                   _onUpdate={(updates) => updateSection(section.id, updates)}
                 />
               ))
@@ -165,9 +214,8 @@ interface SectionCardProps {
   onDelete: () => void;
   onDrop: (e: React.DragEvent) => void;
   onDragOver: (e: React.DragEvent) => void;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  _onAddQuestion: (type: any) => void;
-  _onAddPassage: () => void;
+  onAddQuestion: (type: QuestionType) => void;
+  onAddPassage: () => void;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   _onUpdate: (updates: any) => void;
 }
@@ -182,10 +230,12 @@ function SectionCard({
   onDelete,
   onDrop,
   onDragOver,
-  _onAddQuestion,
-  _onAddPassage,
+  onAddQuestion,
+  onAddPassage,
   _onUpdate,
 }: SectionCardProps) {
+  const insertedFromMenuRef = useRef(false);
+
   return (
     <Card
       className={cn(
@@ -193,48 +243,48 @@ function SectionCard({
         isSelected && "ring-2 ring-primary ring-offset-2"
       )}
     >
-      <CardHeader
-        className="py-3 px-4 cursor-pointer hover:bg-muted/50"
-        onClick={onToggleExpand}
-      >
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <GripVertical className="h-4 w-4 text-muted-foreground" />
+      <CardHeader className="py-3 px-4">
+        <div className="flex items-center justify-between gap-2">
+          <button
+            type="button"
+            onClick={onToggleExpand}
+            aria-expanded={isExpanded}
+            className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1 text-left rounded-md py-1 px-1 hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            <GripVertical className="h-4 w-4 text-muted-foreground shrink-0" aria-hidden="true" />
             {isExpanded ? (
-              <ChevronDown className="h-4 w-4" />
+              <ChevronDown className="h-4 w-4 shrink-0" aria-hidden="true" />
             ) : (
-              <ChevronRight className="h-4 w-4" />
+              <ChevronRight className="h-4 w-4 shrink-0" aria-hidden="true" />
             )}
-            <CardTitle className="text-base font-medium">
+            <CardTitle className="text-base font-medium truncate">
               {section.title}
             </CardTitle>
-            <Badge variant="secondary" className="text-xs">
+            <Badge variant="secondary" className="text-xs shrink-0">
               {section.questions.length} questions
             </Badge>
-          </div>
+          </button>
           {!isPreview && (
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-1 shrink-0">
               <Button
+                type="button"
                 variant="ghost"
                 size="icon"
                 className="h-8 w-8"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onSelect();
-                }}
+                aria-label={`Edit ${section.title} properties`}
+                onClick={onSelect}
               >
-                <MoreHorizontal className="h-4 w-4" />
+                <MoreHorizontal className="h-4 w-4" aria-hidden="true" />
               </Button>
               <Button
+                type="button"
                 variant="ghost"
                 size="icon"
                 className="h-8 w-8 text-destructive"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onDelete();
-                }}
+                aria-label={`Delete ${section.title}`}
+                onClick={onDelete}
               >
-                <Trash2 className="h-4 w-4" />
+                <Trash2 className="h-4 w-4" aria-hidden="true" />
               </Button>
             </div>
           )}
@@ -250,15 +300,16 @@ function SectionCard({
               isPreview={isPreview}
             />
           ) : !isPreview ? (
-            <div
-              className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-4 mb-4 text-center cursor-pointer hover:border-primary/50 transition-colors"
-              onClick={_onAddPassage}
+            <button
+              type="button"
+              className="w-full border-2 border-dashed border-muted-foreground/25 rounded-lg p-4 mb-4 text-center cursor-pointer hover:border-primary/50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              onClick={onAddPassage}
             >
-              <FileText className="h-5 w-5 mx-auto mb-2 text-muted-foreground" />
-              <p className="text-sm text-muted-foreground">
-                Click to add passage
-              </p>
-            </div>
+              <FileText className="h-5 w-5 mx-auto mb-2 text-muted-foreground" aria-hidden="true" />
+              <span className="text-sm text-muted-foreground">
+                Add passage
+              </span>
+            </button>
           ) : null}
 
           {/* Questions */}
@@ -272,17 +323,61 @@ function SectionCard({
               />
             ))}
 
-            {/* Add Question Drop Zone */}
+            {/* Add Question Drop Zone + Keyboard/Click Insertion */}
             {!isPreview && (
               <div
-                className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-4 text-center hover:border-primary/50 transition-colors"
+                className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-4 text-center hover:border-primary/50 transition-colors space-y-2"
                 onDragOver={onDragOver}
                 onDrop={onDrop}
               >
-                <HelpCircle className="h-5 w-5 mx-auto mb-2 text-muted-foreground" />
+                <HelpCircle className="h-5 w-5 mx-auto text-muted-foreground" aria-hidden="true" />
                 <p className="text-sm text-muted-foreground">
-                  Drop question type here
+                  Drop question type here or choose a type
                 </p>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button type="button" variant="outline" size="sm">
+                      <Plus className="h-4 w-4 mr-1.5" aria-hidden="true" />
+                      Add Question
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent
+                    align="center"
+                    className="w-64 max-h-72 overflow-y-auto"
+                    onCloseAutoFocus={(e) => {
+                      if (insertedFromMenuRef.current) {
+                        e.preventDefault();
+                        insertedFromMenuRef.current = false;
+                        const latestQuestion = section.questions[section.questions.length - 1];
+                        if (latestQuestion) {
+                          requestAnimationFrame(() => {
+                            document
+                              .querySelector<HTMLButtonElement>(`[data-question-id="${latestQuestion.id}"]`)
+                              ?.focus();
+                          });
+                        }
+                      }
+                    }}
+                  >
+                    <DropdownMenuLabel>
+                      Insert into {section.title}
+                    </DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    {questionTypeConfig.map((qt) => (
+                      <DropdownMenuItem
+                        key={qt.id}
+                        onSelect={() => {
+                          if (qt.questionType) {
+                            insertedFromMenuRef.current = true;
+                            onAddQuestion(qt.questionType);
+                          }
+                        }}
+                      >
+                        {qt.label}
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
             )}
           </div>
@@ -332,27 +427,39 @@ function QuestionCard({ question, isPreview }: QuestionCardProps) {
 
   return (
     <div
-      onClick={() => selectItem(question.id)}
       className={cn(
-        "flex items-center gap-3 p-3 rounded-lg border bg-card",
-        "hover:border-primary/50 transition-colors cursor-pointer",
+        "flex items-center gap-2 p-2 rounded-lg border bg-card",
+        "hover:border-primary/50 transition-colors",
         isSelected && "ring-2 ring-primary ring-offset-2"
       )}
     >
-      <GripVertical className="h-4 w-4 text-muted-foreground" />
-      <div className="w-8 h-8 rounded-md bg-muted flex items-center justify-center shrink-0">
-        <span className="text-sm font-medium">{question.questionNumber}</span>
-      </div>
-      <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium truncate">
-          {question.questionText || config?.label || "Untitled Question"}
-        </p>
-        <p className="text-xs text-muted-foreground">{config?.description}</p>
-      </div>
+      <button
+        type="button"
+        data-question-id={question.id}
+        onClick={() => selectItem(question.id)}
+        className="flex flex-1 min-w-0 items-center gap-3 p-1 text-left rounded-md cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      >
+        <GripVertical className="h-4 w-4 text-muted-foreground shrink-0" aria-hidden="true" />
+        <div className="w-8 h-8 rounded-md bg-muted flex items-center justify-center shrink-0">
+          <span className="text-sm font-medium">{question.questionNumber}</span>
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-medium truncate">
+            {question.questionText || config?.label || "Untitled Question"}
+          </p>
+          <p className="text-xs text-muted-foreground truncate">{config?.description}</p>
+        </div>
+      </button>
       {!isPreview && (
-        <div className="flex items-center gap-1">
-          <Button variant="ghost" size="icon" className="h-7 w-7">
-            <Trash2 className="h-3.5 w-3.5 text-destructive" />
+        <div className="flex items-center gap-1 shrink-0">
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            className="h-7 w-7"
+            aria-label={`Delete question ${question.questionNumber}`}
+          >
+            <Trash2 className="h-3.5 w-3.5 text-destructive" aria-hidden="true" />
           </Button>
         </div>
       )}

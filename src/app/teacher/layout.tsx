@@ -12,8 +12,9 @@ import { cn } from "@/lib/utils";
 export default function Layout({ children }: { children: React.ReactNode }) {
     const pathname = usePathname();
 
-    // Full-width pages that should not have the top margin
+    // Full-width or hero-padded pages that manage their own top spacing
     const isFullWidthPage =
+        pathname === "/teacher" ||
         pathname === "/teacher/grading" ||
         pathname?.includes("/teacher/grading/") ||
         pathname?.includes("/teacher/assignments/builder") ||
@@ -23,12 +24,12 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         <AuthGuard>
             <SidebarProvider>
                 <AppSidebar navMain={teacherSidebarNavConfig} />
-                <SidebarInset>
+                <SidebarInset className="min-w-0">
                     <MainHeader navMain={teacherSidebarNavConfig} />
                     <WorkInProgressWrapper>
                         <main
                             className={cn(
-                                "flex-1 overflow-auto bg-[rgb(241,241,241)]",
+                                "flex-1 min-w-0 overflow-auto bg-[rgb(241,241,241)]",
                                 !isFullWidthPage && "sm:mt-12 mt-16"
                             )}
                         >

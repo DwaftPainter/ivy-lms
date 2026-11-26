@@ -3,7 +3,7 @@ import styled from 'styled-components';
 
 const Loader = () => {
   return (
-    <StyledWrapper>
+    <StyledWrapper aria-hidden="true">
       <div className="three-body">
         <div className="three-body__dot" />
         <div className="three-body__dot" />
@@ -114,6 +114,20 @@ const StyledWrapper = styled.div`
    50% {
     transform: translateY(66%) scale(0.65);
     opacity: 0.8;
+   }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+   .three-body {
+    animation: none;
+    transform: none;
+   }
+   .three-body__dot:nth-child(1)::after,
+   .three-body__dot:nth-child(2)::after,
+   .three-body__dot:nth-child(3)::after {
+    animation: none;
+    transform: none;
+    opacity: 1;
    }
   }`;
 

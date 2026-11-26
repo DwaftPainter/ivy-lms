@@ -24,7 +24,7 @@ import {
     BarChart3
 } from "lucide-react";
 import { IeltsSkill } from "@/generated/prisma/enums";
-import { cn } from "@/lib/utils";
+import { getSkillLabel } from "@/lib/ielts-badges";
 import { format } from "date-fns";
 
 interface GradingAssignment {
@@ -50,20 +50,6 @@ interface DashboardData {
     pendingGrading: GradingAssignment[];
     summary: GradingStats;
 }
-
-const skillLabels: Record<string, string> = {
-    READING: "Reading",
-    LISTENING: "Listening",
-    WRITING: "Writing",
-    SPEAKING: "Speaking"
-};
-
-const skillColors: Record<string, string> = {
-    READING: "bg-blue-500/10 text-blue-600 border-blue-500/20",
-    LISTENING: "bg-purple-500/10 text-purple-600 border-purple-500/20",
-    WRITING: "bg-amber-500/10 text-amber-600 border-amber-500/20",
-    SPEAKING: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20"
-};
 
 const skillIcons: Record<string, React.ReactNode> = {
     READING: <BookOpen className="w-4 h-4" />,
@@ -225,10 +211,10 @@ export default function TeacherGradingOverviewPage() {
                     {/* Assignments Awaiting Grading */}
                     <Card className="border shadow-sm">
                         <CardHeader className="pb-4">
-                            <div className="flex items-center justify-between">
+                            <div className="flex flex-wrap items-center justify-between gap-4">
                                 <div>
                                     <CardTitle className="text-lg flex items-center gap-2">
-                                        <ClipboardCheck className="w-5 h-5" />
+                                        <ClipboardCheck className="w-5 h-5" aria-hidden="true" />
                                         Assignments Awaiting Grading
                                     </CardTitle>
                                     <p className="text-sm text-muted-foreground mt-1">
@@ -236,24 +222,25 @@ export default function TeacherGradingOverviewPage() {
                                         {filteredAssignments.length !== 1 ? "s" : ""} need attention
                                     </p>
                                 </div>
-                                <div className="flex items-center gap-2">
-                                    <div className="relative">
-                                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                                <div className="flex items-center gap-2 w-full sm:w-auto">
+                                    <div className="relative w-full sm:w-64">
+                                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" aria-hidden="true" />
                                         <Input
                                             placeholder="Search assignments..."
+                                            aria-label="Search assignments"
                                             value={searchQuery}
                                             onChange={(e) => setSearchQuery(e.target.value)}
-                                            className="pl-9 w-64"
+                                            className="pl-9 w-full"
                                         />
                                     </div>
                                 </div>
                             </div>
 
                             {/* Skill Filter */}
-                            <div className="flex items-center gap-2 mt-4">
-                                <Filter className="w-4 h-4 text-muted-foreground" />
+                            <div className="flex flex-wrap items-center gap-2 mt-4">
+                                <Filter className="w-4 h-4 text-muted-foreground" aria-hidden="true" />
                                 <span className="text-sm text-muted-foreground">Filter by skill:</span>
-                                <div className="flex gap-2">
+                                <div className="flex flex-wrap gap-2">
                                     <Button
                                         variant={selectedSkill === null ? "default" : "outline"}
                                         size="sm"
@@ -267,12 +254,9 @@ export default function TeacherGradingOverviewPage() {
                                             variant={selectedSkill === skill ? "default" : "outline"}
                                             size="sm"
                                             onClick={() => setSelectedSkill(skill)}
-                                            className={cn(
-                                                selectedSkill === skill && skillColors[skill]
-                                            )}
                                         >
                                             {skillIcons[skill]}
-                                            <span className="ml-1">{skillLabels[skill]}</span>
+                                            <span className="ml-1">{getSkillLabel(skill)}</span>
                                         </Button>
                                     ))}
                                 </div>
@@ -282,7 +266,7 @@ export default function TeacherGradingOverviewPage() {
                         <CardContent>
                             {filteredAssignments.length === 0 ? (
                                 <div className="text-center py-12">
-                                    <CheckCircle2 className="w-12 h-12 text-green-500 mx-auto mb-4" />
+                                    <CheckCircle2 className="w-12 h-12 text-green-500 mx-auto mb-4" aria-hidden="true" />
                                     <h3 className="text-lg font-medium">All caught up!</h3>
                                     <p className="text-sm text-muted-foreground mt-1">
                                         {searchQuery || selectedSkill
@@ -295,20 +279,14 @@ export default function TeacherGradingOverviewPage() {
                                     {filteredAssignments.map((assignment) => (
                                         <div
                                             key={assignment.assignmentId}
-                                            className="flex items-center justify-between p-4 rounded-lg border bg-card hover:bg-accent/50 transition-colors"
+                                            className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-lg border bg-card hover:bg-accent/50 transition-colors"
                                         >
                                             <div className="flex-1 min-w-0">
-                                                <div className="flex items-center gap-3 mb-2">
-                                                    <Badge
-                                                        variant="outline"
-                                                        className={cn(
-                                                            "font-medium",
-                                                            skillColors[assignment.skill]
-                                                        )}
-                                                    >
+                                                <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-2">
+                                                    <Badge variant="secondary" className="font-medium">
                                                         {skillIcons[assignment.skill]}
                                                         <span className="ml-1">
-                                                            {skillLabels[assignment.skill]}
+                                                            {getSkillLabel(assignment.skill)}
                                                         </span>
                                                     </Badge>
                                                     <span className="text-sm text-muted-foreground">
@@ -345,7 +323,7 @@ export default function TeacherGradingOverviewPage() {
 
                                             <Button
                                                 onClick={() => handleGradeClick(assignment.assignmentId)}
-                                                className="ml-4 shrink-0"
+                                                className="sm:ml-4 shrink-0 self-start sm:self-center"
                                             >
                                                 Grade Now
                                                 <ArrowRight className="w-4 h-4 ml-2" />

@@ -11,16 +11,19 @@ import {
     SidebarMenuItem,
     SidebarMenuSub,
     SidebarMenuSubButton,
-    SidebarMenuSubItem
+    SidebarMenuSubItem,
+    useSidebar
 } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
+
+const ROOT_PORTAL_PATHS = new Set(["/", "/teacher", "/dashboard"]);
 
 function isLinkActive(pathname: string, url: string): boolean {
     if (url === "#" || !url) return false;
 
     if (pathname === url) return true;
 
-    if (url !== "/" && pathname.startsWith(url)) return true;
+    if (!ROOT_PORTAL_PATHS.has(url) && pathname.startsWith(`${url}/`)) return true;
 
     return false;
 }
@@ -40,6 +43,15 @@ export function NavMain({
     }[];
 }) {
     const pathname = usePathname();
+    const { isMobile, setOpenMobile, skipRestoreFocusRef } = useSidebar();
+
+    const handleMobileNav = () => {
+        if (isMobile) {
+            skipRestoreFocusRef.current = true;
+            setOpenMobile(false);
+        }
+    };
+
     return (
         <SidebarGroup>
             <SidebarMenu>
@@ -85,9 +97,14 @@ export function NavMain({
                                                 <SidebarMenuSubItem key={subItem.title}>
                                                     <SidebarMenuSubButton
                                                         asChild
+                                                        isActive={subItemIsActive}
                                                         className={cn(subItemIsActive && "bg-muted text-primary font-semibold")}
                                                     >
-                                                        <a href={subItem.url}>
+                                                        <a
+                                                            href={subItem.url}
+                                                            aria-current={subItemIsActive ? "page" : undefined}
+                                                            onClick={handleMobileNav}
+                                                        >
                                                             <span className="font-[550] text-[13px] text-text-primary">
                                                                 {subItem.title}
                                                             </span>
@@ -104,10 +121,15 @@ export function NavMain({
                         <SidebarMenuItem key={item.title}>
                             <SidebarMenuButton
                                 asChild
+                                isActive={itemIsActive}
                                 tooltip={item.title}
                                 className={cn("transition-colors", itemIsActive && "bg-muted text-primary font-semibold")}
                             >
-                                <a href={item.url}>
+                                <a
+                                    href={item.url}
+                                    aria-current={itemIsActive ? "page" : undefined}
+                                    onClick={handleMobileNav}
+                                >
                                     {item.icon && (
                                         <item.icon
                                             className="font-semibold size-5"

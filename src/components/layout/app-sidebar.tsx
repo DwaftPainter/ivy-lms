@@ -35,7 +35,7 @@ const AppSidebar: React.FC<AppSidebarProps> = ({ navMain, ...props }) => {
 
     return (
         <Sidebar collapsible="icon" {...props}>
-            <SidebarHeader>
+            <SidebarHeader className="pr-10 md:pr-2">
                 <TeamSwitcher />
             </SidebarHeader>
             <SidebarContent>
