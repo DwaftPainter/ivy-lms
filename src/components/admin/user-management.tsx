@@ -26,7 +26,8 @@ export function UserManagement() {
         temporaryPassword: string;
     } | null>(null);
 
-    const { teachers, isLoading, error, fetchTeachers, createTeacher } = useTeacherStore();
+    const { teachers, isLoading, isCreating, error, fetchTeachers, createTeacher } =
+        useTeacherStore();
 
     useEffect(() => {
         fetchTeachers();
@@ -215,7 +216,7 @@ export function UserManagement() {
                     event.preventDefault();
                     requestAnimationFrame(() => addTeacherBtnRef.current?.focus());
                 }}
-                isLoading={isLoading}
+                isLoading={isCreating}
             />
         </section>
     );
