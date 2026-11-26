@@ -10,12 +10,15 @@ import {
     DialogFooter
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { CreateTeacherInput } from "@/store/teacher.store";
 import { IeltsSkill } from "@/generated/prisma/enums";
+import { getErrorMessage } from "@/lib/api-fetch";
+import { AlertCircle } from "lucide-react";
 
 interface CreateTeacherDialogProps {
     open: boolean;
@@ -58,6 +61,7 @@ export function CreateTeacherDialog({
         lastName?: string;
         email?: string;
     }>({});
+    const [submitError, setSubmitError] = useState<string | null>(null);
 
     const validateForm = () => {
         const newErrors: { firstName?: string; lastName?: string; email?: string } =
@@ -83,6 +87,7 @@ export function CreateTeacherDialog({
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        setSubmitError(null);
 
         if (!validateForm()) return;
 
@@ -94,17 +99,22 @@ export function CreateTeacherDialog({
             expertise: formData.expertise
         };
 
-        await onSubmit(data);
+        try {
+            await onSubmit(data);
 
-        // Reset form after successful submission
-        setFormData({
-            firstName: "",
-            lastName: "",
-            email: "",
-            bio: "",
-            expertise: []
-        });
-        setErrors({});
+            // Reset form after successful submission
+            setFormData({
+                firstName: "",
+                lastName: "",
+                email: "",
+                bio: "",
+                expertise: []
+            });
+            setErrors({});
+            setSubmitError(null);
+        } catch (error) {
+            setSubmitError(getErrorMessage(error) || "Failed to create teacher");
+        }
     };
 
     const toggleExpertise = (skill: IeltsSkill) => {
@@ -127,6 +137,7 @@ export function CreateTeacherDialog({
                 expertise: []
             });
             setErrors({});
+            setSubmitError(null);
         }
         onOpenChange(open);
     };
@@ -145,6 +156,12 @@ export function CreateTeacherDialog({
                 </DialogHeader>
 
                 <form onSubmit={handleSubmit} className="space-y-4">
+                    {submitError && (
+                        <Alert variant="destructive" role="alert">
+                            <AlertCircle className="size-4" aria-hidden="true" />
+                            <AlertDescription>{submitError}</AlertDescription>
+                        </Alert>
+                    )}
                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                         <div className="space-y-2">
                             <Label htmlFor="firstName">

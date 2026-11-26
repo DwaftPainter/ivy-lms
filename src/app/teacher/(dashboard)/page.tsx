@@ -153,7 +153,6 @@ const TeacherDashboardPage = () => {
         );
 
     const [nextClass, ...remainingClasses] = sortedUpcomingClasses;
-    const moreClasses = remainingClasses.slice(0, 4);
 
     const pendingGradingList: TeacherGradingTask[] = dashboardData?.pendingGrading ?? [];
     const [nextGrading, ...remainingGrading] = pendingGradingList;
@@ -223,7 +222,7 @@ const TeacherDashboardPage = () => {
                     error={error}
                     onRetry={handleRetry}
                 />
-                {!isLoading && !error && <TeacherUpcomingClasses classes={moreClasses} />}
+                {!isLoading && !error && <TeacherUpcomingClasses classes={remainingClasses} />}
                 {!isLoading && !error && <PendingGrading items={moreGrading} />}
             </div>
         </div>
