@@ -1,16 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogHeader,
-    DialogTitle
-} from "@/components/ui/dialog";
+import { useEffect, useState } from "react";
 import {
     AlertDialog,
     AlertDialogAction,
@@ -21,35 +11,26 @@ import {
     AlertDialogHeader,
     AlertDialogTitle
 } from "@/components/ui/alert-dialog";
-import { Card } from "@/components/ui/card";
-import { Switch } from "@/components/ui/switch";
+import { Button } from "@/components/ui/button";
 import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue
-} from "@/components/ui/select";
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogHeader,
+    DialogTitle
+} from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import {
-    Calendar,
-    Clock,
-    Plus,
-    Trash2,
-    Edit,
-    Users,
-    FileText,
-    Video
-} from "lucide-react";
-import { toast } from "sonner";
-import { Course } from "@/store/course.store";
+import { IeltsSkill } from "@/generated/prisma/enums";
 import {
     useAdminClassSessionStore,
-    ClassSession,
-    CreateClassSessionInput
+    type ClassSession,
+    type CreateClassSessionInput
 } from "@/store/admin-class-session.store";
-import { IeltsSkill } from "@/generated/prisma/enums";
-import { cn } from "@/lib/utils";
+import type { Course } from "@/store/course.store";
+import { Plus } from "lucide-react";
+import { toast } from "sonner";
+import { SessionFormCard } from "./session-form-card";
+import { SessionListItem } from "./session-list-item";
 
 interface ClassSessionsDialogProps {
     open: boolean;
@@ -58,18 +39,21 @@ interface ClassSessionsDialogProps {
     onCloseAutoFocus?: (event: Event) => void;
 }
 
-const sessionTypes = [
-    { value: "LIVE", label: "Live Session" },
-    { value: "RECORDED", label: "Recorded" },
-    { value: "WORKSHOP", label: "Workshop" }
-];
-
-const skills = [
-    { value: IeltsSkill.LISTENING, label: "Listening" },
-    { value: IeltsSkill.READING, label: "Reading" },
-    { value: IeltsSkill.WRITING, label: "Writing" },
-    { value: IeltsSkill.SPEAKING, label: "Speaking" }
-];
+function buildEmptySessionForm(courseId: string): CreateClassSessionInput {
+    return {
+        courseId,
+        title: "",
+        description: "",
+        skill: IeltsSkill.LISTENING,
+        sessionType: "LIVE",
+        scheduledDate: "",
+        startTime: "",
+        endTime: "",
+        durationMins: 60,
+        meetingUrl: "",
+        isPublished: false
+    };
+}
 
 export function ClassSessionsDialog({
     open,
@@ -90,21 +74,9 @@ export function ClassSessionsDialog({
     const [editingSession, setEditingSession] = useState<ClassSession | null>(null);
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
     const [deletingSession, setDeletingSession] = useState<ClassSession | null>(null);
-
-    // Form state
-    const [formData, setFormData] = useState<CreateClassSessionInput>({
-        courseId: course?.id || "",
-        title: "",
-        description: "",
-        skill: IeltsSkill.LISTENING,
-        sessionType: "LIVE",
-        scheduledDate: "",
-        startTime: "",
-        endTime: "",
-        durationMins: 60,
-        meetingUrl: "",
-        isPublished: false
-    });
+    const [formData, setFormData] = useState<CreateClassSessionInput>(() =>
+        buildEmptySessionForm(course?.id || "")
+    );
 
     useEffect(() => {
         if (open && course) {
@@ -115,19 +87,7 @@ export function ClassSessionsDialog({
     }, [open, course, fetchSessionsByCourse]);
 
     const resetForm = () => {
-        setFormData({
-            courseId: course?.id || "",
-            title: "",
-            description: "",
-            skill: IeltsSkill.LISTENING,
-            sessionType: "LIVE",
-            scheduledDate: "",
-            startTime: "",
-            endTime: "",
-            durationMins: 60,
-            meetingUrl: "",
-            isPublished: false
-        });
+        setFormData(buildEmptySessionForm(course?.id || ""));
         setEditingSession(null);
         setShowCreateForm(false);
     };
@@ -137,7 +97,6 @@ export function ClassSessionsDialog({
             toast.error("Please fill in all required fields");
             return;
         }
-
         try {
             await createSession(formData);
             toast.success("Class session created successfully");
@@ -149,7 +108,6 @@ export function ClassSessionsDialog({
 
     const handleUpdate = async () => {
         if (!editingSession) return;
-
         try {
             await updateSession(editingSession.id, formData);
             toast.success("Class session updated successfully");
@@ -161,7 +119,6 @@ export function ClassSessionsDialog({
 
     const handleDelete = async () => {
         if (!deletingSession) return;
-
         try {
             await deleteSession(deletingSession.id);
             toast.success("Class session deleted successfully");
@@ -195,16 +152,6 @@ export function ClassSessionsDialog({
         setDeleteDialogOpen(true);
     };
 
-    const formatDate = (dateString: string) => {
-        const date = new Date(dateString);
-        return date.toLocaleDateString("en-US", {
-            weekday: "short",
-            year: "numeric",
-            month: "short",
-            day: "numeric"
-        });
-    };
-
     return (
         <>
             <Dialog open={open} onOpenChange={onOpenChange}>
@@ -222,179 +169,22 @@ export function ClassSessionsDialog({
                     </DialogHeader>
 
                     <div className="p-6 pt-4">
-                        {/* Create/Edit Form */}
                         {showCreateForm ? (
-                            <Card className="p-4 mb-4">
-                                <h3 className="font-semibold mb-4">
-                                    {editingSession ? "Edit Class Session" : "Create New Class Session"}
-                                </h3>
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div className="col-span-2">
-                                        <Label htmlFor="title">Title *</Label>
-                                        <Input
-                                            id="title"
-                                            value={formData.title}
-                                            onChange={(e) =>
-                                                setFormData({ ...formData, title: e.target.value })
-                                            }
-                                            placeholder="Enter session title"
-                                        />
-                                    </div>
-
-                                    <div className="col-span-2">
-                                        <Label htmlFor="description">Description</Label>
-                                        <Input
-                                            id="description"
-                                            value={formData.description}
-                                            onChange={(e) =>
-                                                setFormData({ ...formData, description: e.target.value })
-                                            }
-                                            placeholder="Enter session description"
-                                        />
-                                    </div>
-
-                                    <div>
-                                        <Label htmlFor="skill">Skill</Label>
-                                        <Select
-                                            value={formData.skill}
-                                            onValueChange={(value) =>
-                                                setFormData({ ...formData, skill: value as IeltsSkill })
-                                            }
-                                        >
-                                            <SelectTrigger id="skill">
-                                                <SelectValue />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                {skills.map((skill) => (
-                                                    <SelectItem key={skill.value} value={skill.value}>
-                                                        {skill.label}
-                                                    </SelectItem>
-                                                ))}
-                                            </SelectContent>
-                                        </Select>
-                                    </div>
-
-                                    <div>
-                                        <Label htmlFor="sessionType">Session Type</Label>
-                                        <Select
-                                            value={formData.sessionType}
-                                            onValueChange={(value) =>
-                                                setFormData({ ...formData, sessionType: value })
-                                            }
-                                        >
-                                            <SelectTrigger id="sessionType">
-                                                <SelectValue />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                {sessionTypes.map((type) => (
-                                                    <SelectItem key={type.value} value={type.value}>
-                                                        {type.label}
-                                                    </SelectItem>
-                                                ))}
-                                            </SelectContent>
-                                        </Select>
-                                    </div>
-
-                                    <div>
-                                        <Label htmlFor="scheduledDate">Date *</Label>
-                                        <Input
-                                            id="scheduledDate"
-                                            type="date"
-                                            value={formData.scheduledDate}
-                                            onChange={(e) =>
-                                                setFormData({ ...formData, scheduledDate: e.target.value })
-                                            }
-                                        />
-                                    </div>
-
-                                    <div>
-                                        <Label htmlFor="durationMins">Duration (minutes)</Label>
-                                        <Input
-                                            id="durationMins"
-                                            type="number"
-                                            value={formData.durationMins}
-                                            onChange={(e) =>
-                                                setFormData({
-                                                    ...formData,
-                                                    durationMins: parseInt(e.target.value) || 60
-                                                })
-                                            }
-                                        />
-                                    </div>
-
-                                    <div>
-                                        <Label htmlFor="startTime">Start Time *</Label>
-                                        <Input
-                                            id="startTime"
-                                            type="time"
-                                            value={formData.startTime}
-                                            onChange={(e) =>
-                                                setFormData({ ...formData, startTime: e.target.value })
-                                            }
-                                        />
-                                    </div>
-
-                                    <div>
-                                        <Label htmlFor="endTime">End Time *</Label>
-                                        <Input
-                                            id="endTime"
-                                            type="time"
-                                            value={formData.endTime}
-                                            onChange={(e) =>
-                                                setFormData({ ...formData, endTime: e.target.value })
-                                            }
-                                        />
-                                    </div>
-
-                                    <div className="col-span-2">
-                                        <Label htmlFor="meetingUrl">Meeting URL</Label>
-                                        <Input
-                                            id="meetingUrl"
-                                            value={formData.meetingUrl}
-                                            onChange={(e) =>
-                                                setFormData({ ...formData, meetingUrl: e.target.value })
-                                            }
-                                            placeholder="https://..."
-                                        />
-                                    </div>
-
-                                    <div className="col-span-2 flex items-center gap-2">
-                                        <Switch
-                                            id="isPublished"
-                                            checked={formData.isPublished}
-                                            onCheckedChange={(checked) =>
-                                                setFormData({ ...formData, isPublished: checked })
-                                            }
-                                        />
-                                        <Label htmlFor="isPublished" className="mb-0">
-                                            Publish immediately
-                                        </Label>
-                                    </div>
-
-                                    <div className="col-span-2 flex justify-end gap-2">
-                                        <Button variant="outline" onClick={resetForm}>
-                                            Cancel
-                                        </Button>
-                                        <Button
-                                            onClick={editingSession ? handleUpdate : handleCreate}
-                                            disabled={isLoading}
-                                        >
-                                            {editingSession ? "Update Session" : "Create Session"}
-                                        </Button>
-                                    </div>
-                                </div>
-                            </Card>
+                            <SessionFormCard
+                                isEditing={Boolean(editingSession)}
+                                isLoading={isLoading}
+                                formData={formData}
+                                onChange={setFormData}
+                                onCancel={resetForm}
+                                onSubmit={editingSession ? handleUpdate : handleCreate}
+                            />
                         ) : (
-                            <Button
-                                onClick={() => setShowCreateForm(true)}
-                                className="mb-4"
-                            >
+                            <Button onClick={() => setShowCreateForm(true)} className="mb-4">
                                 <Plus className="w-4 h-4 mr-2" />
                                 Add Class Session
                             </Button>
                         )}
 
-                        {/* Sessions List */}
                         <ScrollArea className="h-[400px] pr-4">
                             {isLoading ? (
                                 <div className="text-center py-8 text-muted-foreground">
@@ -407,77 +197,12 @@ export function ClassSessionsDialog({
                             ) : (
                                 <div className="space-y-3">
                                     {sessions.map((session) => (
-                                        <Card
+                                        <SessionListItem
                                             key={session.id}
-                                            className={cn(
-                                                "p-4 border-l-4",
-                                                session.isPublished
-                                                    ? "border-l-green-500"
-                                                    : "border-l-yellow-500"
-                                            )}
-                                        >
-                                            <div className="flex items-start justify-between">
-                                                <div className="flex-1">
-                                                    <div className="flex items-center gap-2 mb-1">
-                                                        <h4 className="font-medium">{session.title}</h4>
-                                                        <span
-                                                            className={cn(
-                                                                "px-2 py-0.5 rounded-full text-xs",
-                                                                session.isPublished
-                                                                    ? "bg-green-100 text-green-700"
-                                                                    : "bg-yellow-100 text-yellow-700"
-                                                            )}
-                                                        >
-                                                            {session.isPublished ? "Published" : "Draft"}
-                                                        </span>
-                                                    </div>
-                                                    <p className="text-sm text-muted-foreground mb-2">
-                                                        {session.description || "No description"}
-                                                    </p>
-                                                    <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
-                                                        <span className="flex items-center gap-1">
-                                                            <Calendar className="w-4 h-4" />
-                                                            {formatDate(session.scheduledDate)}
-                                                        </span>
-                                                        <span className="flex items-center gap-1">
-                                                            <Clock className="w-4 h-4" />
-                                                            {session.startTime} - {session.endTime}
-                                                        </span>
-                                                        <span className="flex items-center gap-1">
-                                                            <Users className="w-4 h-4" />
-                                                            {session.enrolledStudents || 0} students
-                                                        </span>
-                                                        <span className="flex items-center gap-1">
-                                                            <FileText className="w-4 h-4" />
-                                                            {session.assignmentsCount || 0} assignments
-                                                        </span>
-                                                        <span className="flex items-center gap-1">
-                                                            <Video className="w-4 h-4" />
-                                                            {session.materialsCount || 0} materials
-                                                        </span>
-                                                    </div>
-                                                </div>
-                                                <div className="flex items-center gap-1">
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="icon"
-                                                        aria-label={`Edit ${session.title}`}
-                                                        onClick={() => openEditForm(session)}
-                                                    >
-                                                        <Edit className="w-4 h-4" aria-hidden="true" />
-                                                    </Button>
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="icon"
-                                                        aria-label={`Delete ${session.title}`}
-                                                        className="text-destructive hover:text-destructive"
-                                                        onClick={() => openDeleteConfirm(session)}
-                                                    >
-                                                        <Trash2 className="w-4 h-4" aria-hidden="true" />
-                                                    </Button>
-                                                </div>
-                                            </div>
-                                        </Card>
+                                            session={session}
+                                            onEdit={openEditForm}
+                                            onDelete={openDeleteConfirm}
+                                        />
                                     ))}
                                 </div>
                             )}
@@ -486,14 +211,13 @@ export function ClassSessionsDialog({
                 </DialogContent>
             </Dialog>
 
-            {/* Delete Confirmation Dialog */}
             <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
                 <AlertDialogContent>
                     <AlertDialogHeader>
                         <AlertDialogTitle>Delete Class Session?</AlertDialogTitle>
                         <AlertDialogDescription>
-                            This will permanently delete the class session &quot;{deletingSession?.title}&quot;.
-                            This action cannot be undone.
+                            This will permanently delete the class session &quot;
+                            {deletingSession?.title}&quot;. This action cannot be undone.
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
