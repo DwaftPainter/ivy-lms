@@ -1,11 +1,6 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { Skeleton } from "@/components/ui/skeleton";
 import {
     AlertDialog,
     AlertDialogAction,
@@ -16,45 +11,22 @@ import {
     AlertDialogHeader,
     AlertDialogTitle
 } from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
+import { filterAdminCourses } from "@/lib/admin-courses";
 import {
     useCourseStore,
     type Course,
     type CreateCourseInput,
     type UpdateCourseInput
 } from "@/store/course.store";
-import { CourseLevel } from "@/generated/prisma/enums";
-import { getSkillLabel } from "@/lib/ielts-badges";
-import { CourseDialog } from "./course-dialog";
-import { ClassSessionsDialog } from "./class-sessions-dialog";
+import { AlertCircle, BookOpen, Plus, RotateCcw, Search, X } from "lucide-react";
 import { toast } from "sonner";
-import {
-    AlertCircle,
-    BookOpen,
-    Calendar,
-    Edit,
-    Plus,
-    RotateCcw,
-    Search,
-    Trash2,
-    X
-} from "lucide-react";
-
-const COURSE_LEVEL_LABELS: Record<CourseLevel, string> = {
-    [CourseLevel.BEGINNER]: "Beginner",
-    [CourseLevel.INTERMEDIATE]: "Intermediate",
-    [CourseLevel.ADVANCED]: "Advanced"
-};
-
-function formatTeacherDisplay(course: Course): { label: string; title?: string } {
-    if (course.teacher?.firstName && course.teacher?.lastName) {
-        return { label: `${course.teacher.firstName} ${course.teacher.lastName}` };
-    }
-    const id = course.teacher?.id || course.teacherId;
-    if (!id) return { label: "Unassigned" };
-    return id.length > 20
-        ? { label: `Instructor ${id.slice(0, 8)}…`, title: id }
-        : { label: `Instructor ${id}`, title: id };
-}
+import { ClassSessionsDialog } from "./class-sessions-dialog";
+import { CourseDialog } from "./course-dialog";
+import { CourseRowItem } from "./course-row-item";
 
 export function CourseManagement() {
     const {
@@ -91,30 +63,16 @@ export function CourseManagement() {
         });
     }, []);
 
-    const loadCourses = useCallback(() => {
-        return fetchCourses({ limit: 50 });
-    }, [fetchCourses]);
+    const loadCourses = useCallback(() => fetchCourses({ limit: 50 }), [fetchCourses]);
 
     useEffect(() => {
         loadCourses();
     }, [loadCourses]);
 
-    const normalizedQuery = searchQuery.trim().toLowerCase();
-
-    const filteredCourses = useMemo(() => {
-        if (!normalizedQuery) return courses;
-        return courses.filter((course) => {
-            const titleMatch = course.title.toLowerCase().includes(normalizedQuery);
-            const teacherMatch = (course.teacher?.id || course.teacherId || "")
-                .toLowerCase()
-                .includes(normalizedQuery);
-            const skillMatch = getSkillLabel(course.skill).toLowerCase().includes(normalizedQuery);
-            const levelMatch = COURSE_LEVEL_LABELS[course.level]
-                .toLowerCase()
-                .includes(normalizedQuery);
-            return titleMatch || teacherMatch || skillMatch || levelMatch;
-        });
-    }, [courses, normalizedQuery]);
+    const filteredCourses = useMemo(
+        () => filterAdminCourses(courses, searchQuery),
+        [courses, searchQuery]
+    );
 
     const handleCreate = async (data: CreateCourseInput) => {
         try {
@@ -179,11 +137,13 @@ export function CourseManagement() {
     return (
         <section aria-labelledby="admin-courses-heading" className="min-w-0">
             <Card className="gap-0 py-0 shadow-none">
-                {/* Header & search */}
                 <div className="space-y-4 border-b px-4 py-4 sm:px-6">
                     <div className="flex flex-wrap items-center justify-between gap-3">
                         <div className="flex items-center gap-2">
-                            <BookOpen className="size-4 shrink-0 text-primary" aria-hidden="true" />
+                            <BookOpen
+                                className="size-4 shrink-0 text-primary"
+                                aria-hidden="true"
+                            />
                             <h2
                                 id="admin-courses-heading"
                                 className="text-base font-semibold text-foreground"
@@ -236,7 +196,6 @@ export function CourseManagement() {
                     )}
                 </div>
 
-                {/* Body states */}
                 {isLoading && courses.length === 0 ? (
                     <div className="divide-y" aria-busy="true">
                         <p role="status" className="sr-only">
@@ -322,102 +281,15 @@ export function CourseManagement() {
                     </CardContent>
                 ) : (
                     <ul className="divide-y">
-                        {filteredCourses.map((course) => {
-                            const enrollmentCount = course._count?.enrollments ?? 0;
-                            const lessonCount = course._count?.lessons ?? 0;
-                            const teacherInfo = formatTeacherDisplay(course);
-
-                            return (
-                                <li
-                                    key={course.id}
-                                    className="px-4 py-4 transition-colors hover:bg-muted/40 sm:px-6"
-                                >
-                                    <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between lg:gap-4">
-                                        {/* Record summary */}
-                                        <div className="min-w-0 flex-1">
-                                            <h3 className="text-base font-semibold text-foreground [overflow-wrap:anywhere]">
-                                                {course.title}
-                                            </h3>
-
-                                            <p
-                                                title={teacherInfo.title}
-                                                className="mt-0.5 text-xs text-muted-foreground [overflow-wrap:anywhere]"
-                                            >
-                                                {teacherInfo.label}
-                                            </p>
-
-                                            <div className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1.5 text-xs text-muted-foreground">
-                                                <Badge
-                                                    variant={
-                                                        course.isPublished ? "secondary" : "outline"
-                                                    }
-                                                >
-                                                    {course.isPublished ? "Published" : "Draft"}
-                                                </Badge>
-                                                <Badge variant="secondary" className="font-medium">
-                                                    {getSkillLabel(course.skill)}
-                                                </Badge>
-                                                <Badge variant="outline">
-                                                    {COURSE_LEVEL_LABELS[course.level]}
-                                                </Badge>
-                                                <span className="tabular-nums">
-                                                    {enrollmentCount}{" "}
-                                                    {enrollmentCount === 1 ? "student" : "students"}
-                                                </span>
-                                                <span aria-hidden="true">/</span>
-                                                <span className="tabular-nums">
-                                                    {lessonCount}{" "}
-                                                    {lessonCount === 1 ? "lesson" : "lessons"}
-                                                </span>
-                                            </div>
-                                        </div>
-
-                                        {/* Direct record actions */}
-                                        <div className="flex flex-wrap items-center gap-2 lg:shrink-0">
-                                            <Button
-                                                type="button"
-                                                variant="outline"
-                                                size="sm"
-                                                onClick={(e) =>
-                                                    openSessionsDialog(course, e.currentTarget)
-                                                }
-                                                aria-label={`Manage sessions: ${course.title}`}
-                                                className="focus-visible:outline-solid focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
-                                            >
-                                                <Calendar className="size-3.5" aria-hidden="true" />
-                                                <span>Manage sessions</span>
-                                            </Button>
-                                            <Button
-                                                type="button"
-                                                variant="outline"
-                                                size="sm"
-                                                onClick={(e) =>
-                                                    openEditDialog(course, e.currentTarget)
-                                                }
-                                                aria-label={`Edit course: ${course.title}`}
-                                                className="focus-visible:outline-solid focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
-                                            >
-                                                <Edit className="size-3.5" aria-hidden="true" />
-                                                <span>Edit course</span>
-                                            </Button>
-                                            <Button
-                                                type="button"
-                                                variant="ghost"
-                                                size="sm"
-                                                onClick={(e) =>
-                                                    confirmDelete(course, e.currentTarget)
-                                                }
-                                                aria-label={`Delete course: ${course.title}`}
-                                                className="text-destructive hover:bg-destructive/10 hover:text-destructive focus-visible:outline-solid focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
-                                            >
-                                                <Trash2 className="size-3.5" aria-hidden="true" />
-                                                <span>Delete</span>
-                                            </Button>
-                                        </div>
-                                    </div>
-                                </li>
-                            );
-                        })}
+                        {filteredCourses.map((course) => (
+                            <CourseRowItem
+                                key={course.id}
+                                course={course}
+                                onManageSessions={openSessionsDialog}
+                                onEdit={openEditDialog}
+                                onDelete={confirmDelete}
+                            />
+                        ))}
                     </ul>
                 )}
             </Card>
