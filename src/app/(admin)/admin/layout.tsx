@@ -11,9 +11,11 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         <AdminGuard>
             <SidebarProvider>
                 <AppSidebar navMain={adminSidebarNavConfig} />
-                <SidebarInset>
+                <SidebarInset className="min-w-0">
                     <MainHeader navMain={adminSidebarNavConfig} />
-                    <main className="flex-1 overflow-auto bg-[rgb(241,241,241)] mt-16">{children}</main>
+                    <main className="flex-1 min-w-0 overflow-auto bg-[rgb(241,241,241)]">
+                        {children}
+                    </main>
                 </SidebarInset>
             </SidebarProvider>
         </AdminGuard>

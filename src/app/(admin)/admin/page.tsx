@@ -1,23 +1,49 @@
+"use client";
+
 import { UserManagement } from "@/components/admin/user-management";
 import { CourseManagement } from "@/components/admin/course-management";
-import { SystemStats } from "@/components/admin/system-stats";
+import { useCourseStore } from "@/store/course.store";
+import { useTeacherStore } from "@/store/teacher.store";
 
 export default function AdminPage() {
-    return (
-        <div className="sm:p-8 p-4 w-full">
-            {/* Header */}
-            <div className="mb-8">
-                <h2 className="text-3xl font-bold text-text-primary">Admin Dashboard</h2>
-                <p className="text-muted-foreground mt-2">Manage users, courses, and system settings</p>
-            </div>
+    const teachers = useTeacherStore((state) => state.teachers);
+    const teachersLoading = useTeacherStore((state) => state.isLoading);
+    const teachersError = useTeacherStore((state) => state.error);
+    const courses = useCourseStore((state) => state.courses);
+    const totalCourses = useCourseStore((state) => state.pagination.total);
+    const coursesLoading = useCourseStore((state) => state.isLoading);
+    const coursesError = useCourseStore((state) => state.error);
 
-            {/* Content Grid */}
-            <div className="space-y-6 w-full">
-                <SystemStats />
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <UserManagement />
-                    <CourseManagement />
-                </div>
+    const courseCount = totalCourses || courses.length;
+    const publishedCount = courses.filter((course) => course.isPublished).length;
+    const draftCount = courses.filter((course) => !course.isPublished).length;
+
+    const summaryText = (() => {
+        if (teachersLoading || coursesLoading || teachersError || coursesError) {
+            return "Manage teachers, courses, and class sessions.";
+        }
+        const teacherLabel = teachers.length === 1 ? "1 teacher" : `${teachers.length} teachers`;
+        const courseLabel = courseCount === 1 ? "1 course" : `${courseCount} courses`;
+        if (courseCount > 0 && courses.length === courseCount) {
+            return `${teacherLabel}, ${courseLabel} (${publishedCount} published, ${draftCount} draft).`;
+        }
+        return `${teacherLabel}, ${courseLabel}.`;
+    })();
+
+    return (
+        <div className="mx-auto w-full max-w-6xl px-4 pb-12 pt-6 sm:px-7 sm:pt-10 lg:px-9">
+            <header className="mb-5 sm:mb-7">
+                <h1 className="text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
+                    Admin overview
+                </h1>
+                <p className="mt-1.5 text-sm text-text-primary [overflow-wrap:anywhere] sm:text-base">
+                    {summaryText}
+                </p>
+            </header>
+
+            <div className="grid min-w-0 grid-cols-1 items-start gap-6 xl:grid-cols-[minmax(0,22rem)_minmax(0,1fr)]">
+                <UserManagement />
+                <CourseManagement />
             </div>
         </div>
     );
