@@ -2,6 +2,7 @@
 
 import { Submission, Student, AssignmentInfo } from "@/store/teacher-grading.store";
 import { SubmissionStatus, IeltsSkill } from "@/generated/prisma/enums";
+import { getTeacherSubmissionStatusBadge } from "@/lib/ielts-badges";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -197,33 +198,28 @@ function formatDate(dateString: string | null | undefined): string {
 }
 
 function getStatusBadge(status: SubmissionStatus) {
+    const { label, variant } = getTeacherSubmissionStatusBadge(status);
     switch (status) {
         case SubmissionStatus.GRADED:
-            return (
-                <Badge className="bg-green-500/10 text-green-600 border-green-500/20">
-                    <CheckCircle2 className="w-3 h-3 mr-1" />
-                    Graded
-                </Badge>
-            );
         case SubmissionStatus.RETURNED:
             return (
-                <Badge className="bg-blue-500/10 text-blue-600 border-blue-500/20">
-                    <CheckCircle2 className="w-3 h-3 mr-1" />
-                    Returned
+                <Badge variant={variant}>
+                    <CheckCircle2 className="w-3 h-3 mr-1" aria-hidden="true" />
+                    {label}
                 </Badge>
             );
         case SubmissionStatus.SUBMITTED:
             return (
-                <Badge className="bg-amber-500/10 text-amber-600 border-amber-500/20">
-                    <Clock className="w-3 h-3 mr-1" />
-                    Submitted
+                <Badge variant={variant}>
+                    <Clock className="w-3 h-3 mr-1" aria-hidden="true" />
+                    {label}
                 </Badge>
             );
         default:
             return (
-                <Badge variant="secondary">
-                    <AlertCircle className="w-3 h-3 mr-1" />
-                    Draft
+                <Badge variant={variant}>
+                    <AlertCircle className="w-3 h-3 mr-1" aria-hidden="true" />
+                    {label}
                 </Badge>
             );
     }

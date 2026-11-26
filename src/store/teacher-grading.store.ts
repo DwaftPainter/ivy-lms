@@ -75,6 +75,10 @@ export interface DraftGrade {
     isDraft: boolean;
 }
 
+export function isPublishedGrade(status: SubmissionStatus): boolean {
+    return status === SubmissionStatus.GRADED || status === SubmissionStatus.RETURNED;
+}
+
 interface TeacherGradingState {
     // Data
     assignment: AssignmentInfo | null;
@@ -90,10 +94,9 @@ interface TeacherGradingState {
     isSaving: boolean;
     error: string | null;
 
-    // Computed
-    currentSubmission: Submission | null;
-    currentIndex: number;
-    hasDraft: boolean;
+    // Computed (kept for backwards compatibility; actions resolve from submissions + currentSubmissionId)
+    getCurrentSubmission: () => Submission | null;
+    getCurrentIndex: () => number;
 
     // Actions
     fetchSubmissions: (assignmentId: string) => Promise<void>;
@@ -109,7 +112,7 @@ interface TeacherGradingState {
     // Save actions
     saveDraft: () => Promise<void>;
     submitGrade: () => Promise<void>;
-    clearDraft: () => void;
+    clearDraft: () => Promise<void>;
 
     // Comments
     addComment: (content: string) => Promise<void>;
@@ -125,23 +128,16 @@ export const useTeacherGradingStore = create<TeacherGradingState>((set, get) => 
     isSaving: false,
     error: null,
 
-    get currentSubmission() {
+    getCurrentSubmission: () => {
         const { submissions, currentSubmissionId } = get();
         if (!currentSubmissionId) return null;
         return submissions.find((s) => s.id === currentSubmissionId) || null;
     },
 
-    get currentIndex() {
+    getCurrentIndex: () => {
         const { submissions, currentSubmissionId } = get();
         if (!currentSubmissionId) return -1;
         return submissions.findIndex((s) => s.id === currentSubmissionId);
-    },
-
-    get hasDraft() {
-        const { currentSubmissionId, draftGrades } = get();
-        if (!currentSubmissionId) return false;
-        const draft = draftGrades.get(currentSubmissionId);
-        return draft?.isDraft === true;
     },
 
     fetchSubmissions: async (assignmentId: string) => {
@@ -176,9 +172,10 @@ export const useTeacherGradingStore = create<TeacherGradingState>((set, get) => 
     },
 
     navigateSubmission: (direction: "prev" | "next") => {
-        const { submissions, currentIndex } = get();
+        const { submissions, getCurrentIndex } = get();
         if (submissions.length === 0) return;
 
+        const currentIndex = getCurrentIndex();
         let newIndex: number;
         if (direction === "prev") {
             newIndex = currentIndex > 0 ? currentIndex - 1 : submissions.length - 1;
@@ -190,7 +187,8 @@ export const useTeacherGradingStore = create<TeacherGradingState>((set, get) => 
     },
 
     updateDraftScore: (criterionId: string, score: number) => {
-        const { currentSubmissionId, draftGrades, currentSubmission, assignment } = get();
+        const { currentSubmissionId, draftGrades, getCurrentSubmission, assignment } = get();
+        const currentSubmission = getCurrentSubmission();
         if (!currentSubmissionId || !currentSubmission) return;
 
         const existingDraft = draftGrades.get(currentSubmissionId);
@@ -200,22 +198,22 @@ export const useTeacherGradingStore = create<TeacherGradingState>((set, get) => 
         };
 
         // Auto-calculate band score if all criteria have scores
-        const allCriteria = currentSubmission.criteriaScores.length > 0
-            ? currentSubmission.criteriaScores
-            : assignment?.rubric?.criteria || [];
+        const allCriteria = assignment?.rubric?.criteria;
 
         let bandScore: number | undefined;
-        if (allCriteria.length > 0) {
-            const scoredCount = Object.keys(newCriteriaScores).length;
-            if (scoredCount === allCriteria.length) {
-                const scores = Object.values(newCriteriaScores);
+        if (allCriteria?.length) {
+            const savedScores = new Map(
+                currentSubmission.criteriaScores.map(({ criterionId, score }) => [criterionId, score])
+            );
+            const scores = allCriteria.map(({ id }) => newCriteriaScores[id] ?? savedScores.get(id));
+            if (scores.every((value) => value !== undefined)) {
                 const avg = scores.reduce((a, b) => a + b, 0) / scores.length;
                 bandScore = Math.round(avg * 2) / 2;
             }
         }
 
         const newDraft: DraftGrade = {
-            ...(existingDraft || { feedback: "", isDraft: true }),
+            ...existingDraft,
             criteriaScores: newCriteriaScores,
             bandScore: bandScore ?? existingDraft?.bandScore,
             isDraft: true
@@ -232,7 +230,8 @@ export const useTeacherGradingStore = create<TeacherGradingState>((set, get) => 
 
         const existingDraft = draftGrades.get(currentSubmissionId);
         const newDraft: DraftGrade = {
-            ...(existingDraft || { criteriaScores: {}, feedback: "", isDraft: true }),
+            criteriaScores: {},
+            ...existingDraft,
             bandScore,
             isDraft: true
         };
@@ -259,7 +258,8 @@ export const useTeacherGradingStore = create<TeacherGradingState>((set, get) => 
     },
 
     calculateBandScore: () => {
-        const { currentSubmission, draftGrades } = get();
+        const { getCurrentSubmission, draftGrades } = get();
+        const currentSubmission = getCurrentSubmission();
         if (!currentSubmission) return null;
 
         const draft = draftGrades.get(currentSubmission.id);
@@ -275,13 +275,17 @@ export const useTeacherGradingStore = create<TeacherGradingState>((set, get) => 
     },
 
     saveDraft: async () => {
-        const { currentSubmissionId, draftGrades, currentSubmission } = get();
-        if (!currentSubmissionId || !currentSubmission) return;
+        const { currentSubmissionId, draftGrades, getCurrentSubmission, isSaving } = get();
+        const currentSubmission = getCurrentSubmission();
+        if (!currentSubmissionId || !currentSubmission || isSaving) return;
 
         const draft = draftGrades.get(currentSubmissionId);
-        if (!draft) return;
+        if (!draft?.isDraft) return;
+        if (isPublishedGrade(currentSubmission.status)) {
+            throw new Error("Submit changes to update a published grade.");
+        }
 
-        set({ isSaving: true, error: null });
+        set({ isSaving: true });
         try {
             const criteriaScoresArray = Object.entries(draft.criteriaScores).map(
                 ([criterionId, score]) => ({
@@ -295,34 +299,31 @@ export const useTeacherGradingStore = create<TeacherGradingState>((set, get) => 
                 method: "POST",
                 body: JSON.stringify({
                     score: draft.score,
-                    bandScore: draft.bandScore ?? get().calculateBandScore(),
+                    bandScore: draft.bandScore,
                     feedback: draft.feedback,
                     criteriaScores: criteriaScoresArray
                 })
             });
 
-            // Update local state - mark as saved draft
-            const updatedDraft: DraftGrade = { ...draft, isDraft: true };
-            set({
-                draftGrades: new Map(draftGrades).set(currentSubmissionId, updatedDraft),
-                isSaving: false
+            set((state) => {
+                if (state.draftGrades.get(currentSubmissionId) !== draft) return state;
+                return {
+                    draftGrades: new Map(state.draftGrades).set(currentSubmissionId, { ...draft, isDraft: false })
+                };
             });
-        } catch (error) {
-            set({
-                error: getErrorMessage(error) || "Failed to save draft",
-                isSaving: false
-            });
-            throw error;
+        } finally {
+            set({ isSaving: false });
         }
     },
 
     submitGrade: async () => {
-        const { currentSubmissionId, draftGrades, currentSubmission, submissions } = get();
-        if (!currentSubmissionId || !currentSubmission) return;
+        const { currentSubmissionId, draftGrades, getCurrentSubmission, isSaving } = get();
+        const currentSubmission = getCurrentSubmission();
+        if (!currentSubmissionId || !currentSubmission || isSaving) return;
 
         const draft = draftGrades.get(currentSubmissionId);
 
-        set({ isSaving: true, error: null });
+        set({ isSaving: true });
         try {
             // Prepare criteria scores - use draft values or existing ones
             const criteriaScoresArray = draft
@@ -330,93 +331,78 @@ export const useTeacherGradingStore = create<TeacherGradingState>((set, get) => 
                       criterionId,
                       score
                   }))
-                : currentSubmission.criteriaScores.map((cs) => ({
-                      criterionId: cs.criterionId,
-                      score: cs.score ?? 0
-                  }));
+                : undefined;
 
             // Calculate final band score
-            const calculatedBandScore = get().calculateBandScore();
-            const bandScore = draft?.bandScore ?? calculatedBandScore ?? currentSubmission.bandScore;
+            const bandScore = draft?.bandScore ??
+                (typeof currentSubmission.bandScore === "number" ? undefined : get().calculateBandScore() ?? undefined);
 
             // Call API to finalize grade (isDraft: false marks as GRADED)
-            await apiFetch(`/api/teacher/submissions/${currentSubmissionId}`, {
+            const { data } = await apiFetch<{
+                data: {
+                    submission: Pick<Submission, "status" | "score" | "bandScore" | "feedback" | "gradedAt">;
+                    criteriaScores: CriterionScore[];
+                };
+            }>(`/api/teacher/submissions/${currentSubmissionId}`, {
                 method: "PATCH",
                 body: JSON.stringify({
-                    score: draft?.score ?? currentSubmission.score,
+                    score: draft?.score,
                     bandScore,
-                    feedback: draft?.feedback ?? currentSubmission.feedback,
+                    feedback: draft?.feedback,
                     criteriaScores: criteriaScoresArray,
                     isDraft: false
                 })
             });
 
-            // Update submission in list with new status and scores
-            const updatedSubmissions = submissions.map((s) =>
-                s.id === currentSubmissionId
-                    ? {
-                          ...s,
-                          status: SubmissionStatus.GRADED,
-                          score: draft?.score ?? currentSubmission.score,
-                          bandScore,
-                          feedback: draft?.feedback ?? currentSubmission.feedback,
-                          criteriaScores: criteriaScoresArray.map((cs) => {
-                              const existingCriterion = currentSubmission.criteriaScores.find(
-                                  (c) => c.criterionId === cs.criterionId
-                              );
-                              return {
-                                  criterionId: cs.criterionId,
-                                  criterionName: existingCriterion?.criterionName || "",
-                                  maxScore: existingCriterion?.maxScore || 0,
-                                  score: cs.score
-                              };
-                          })
-                      }
-                    : s
-            );
-
-            // Clear draft after successful submission
-            const newDraftGrades = new Map(draftGrades);
-            newDraftGrades.delete(currentSubmissionId);
-
-            set({
-                submissions: updatedSubmissions,
-                draftGrades: newDraftGrades,
-                isSaving: false
+            set((state) => {
+                const latestDrafts = new Map(state.draftGrades);
+                if (latestDrafts.get(currentSubmissionId) === draft) latestDrafts.delete(currentSubmissionId);
+                return {
+                    submissions: state.submissions.map((submission) =>
+                        submission.id === currentSubmissionId
+                            ? { ...submission, ...data.submission, criteriaScores: data.criteriaScores }
+                            : submission
+                    ),
+                    draftGrades: latestDrafts
+                };
             });
-        } catch (error) {
-            set({
-                error: getErrorMessage(error) || "Failed to submit grade",
-                isSaving: false
-            });
-            throw error;
+        } finally {
+            set({ isSaving: false });
         }
     },
 
     clearDraft: async () => {
-        const { currentSubmissionId, draftGrades } = get();
-        if (!currentSubmissionId) return;
+        const { getCurrentSubmission, draftGrades, isSaving } = get();
+        const submission = getCurrentSubmission();
+        if (!submission || isSaving) return;
 
+        const draft = draftGrades.get(submission.id);
+        const published = isPublishedGrade(submission.status);
+        set({ isSaving: true });
         try {
-            // Call API to clear draft scores
-            await apiFetch(`/api/teacher/submissions/${currentSubmissionId}/draft`, {
-                method: "DELETE"
+            if (!published) {
+                await apiFetch(`/api/teacher/submissions/${submission.id}/draft`, { method: "DELETE" });
+            }
+            set((state) => {
+                const latestDrafts = new Map(state.draftGrades);
+                if (latestDrafts.get(submission.id) === draft) latestDrafts.delete(submission.id);
+                return {
+                    submissions: published ? state.submissions : state.submissions.map((item) =>
+                        item.id === submission.id && !isPublishedGrade(item.status)
+                            ? { ...item, score: null, bandScore: null, feedback: null, criteriaScores: [] }
+                            : item
+                    ),
+                    draftGrades: latestDrafts
+                };
             });
-
-            // Clear local draft state
-            const newDraftGrades = new Map(draftGrades);
-            newDraftGrades.delete(currentSubmissionId);
-            set({ draftGrades: newDraftGrades });
-        } catch {
-            // Even if API fails, clear local state
-            const newDraftGrades = new Map(draftGrades);
-            newDraftGrades.delete(currentSubmissionId);
-            set({ draftGrades: newDraftGrades });
+        } finally {
+            set({ isSaving: false });
         }
     },
 
     addComment: async (content: string) => {
-        const { currentSubmissionId, currentSubmission } = get();
+        const { currentSubmissionId, getCurrentSubmission } = get();
+        const currentSubmission = getCurrentSubmission();
         if (!currentSubmissionId || !currentSubmission) return;
 
         set({ isSaving: true, error: null });

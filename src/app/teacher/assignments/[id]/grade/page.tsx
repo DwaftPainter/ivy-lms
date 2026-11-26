@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useParams } from "next/navigation";
 import { useTeacherGradingStore } from "@/store/teacher-grading.store";
 import { StudentSubmissionList } from "@/components/grading/student-submission-list";
@@ -9,14 +9,30 @@ import { AssignmentContentViewer } from "@/components/grading/assignment-content
 import { RubricScoring } from "@/components/grading/rubric-scoring";
 import { GradingHeader } from "@/components/grading/grading-header";
 import { GradingActionBar } from "@/components/grading/grading-action-bar";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+    Sheet,
+    SheetContent,
+    SheetDescription,
+    SheetHeader,
+    SheetTitle,
+    SheetTrigger
+} from "@/components/ui/sheet";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { AlertCircle } from "lucide-react";
+import { AlertCircle, Users } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
+const desktopRailQuery = "(min-width: 80rem)"; // Matches Tailwind's xl breakpoint.
 
 export default function TeacherGradingPage() {
     const params = useParams();
     const assignmentId = params.id as string;
+    const [submissionsSheetOpen, setSubmissionsSheetOpen] = useState(false);
+    const selectedStudentHeadingRef = useRef<HTMLHeadingElement>(null);
+    const submissionRailRef = useRef<HTMLDivElement>(null);
+    const focusWorkspaceOnCloseRef = useRef(false);
 
     const {
         assignment,
@@ -44,6 +60,15 @@ export default function TeacherGradingPage() {
             fetchSubmissions(assignmentId);
         }
     }, [assignmentId, fetchSubmissions]);
+
+    useEffect(() => {
+        const desktopRail = window.matchMedia(desktopRailQuery);
+        const closeSheetOnDesktop = (event: MediaQueryListEvent) => {
+            if (event.matches) setSubmissionsSheetOpen(false);
+        };
+        desktopRail.addEventListener("change", closeSheetOnDesktop);
+        return () => desktopRail.removeEventListener("change", closeSheetOnDesktop);
+    }, []);
 
     if (isLoading) {
         return (
@@ -87,28 +112,92 @@ export default function TeacherGradingPage() {
     }
 
     const draft = currentSubmissionId ? draftGrades.get(currentSubmissionId) : undefined;
+    const currentIndex = currentSubmissionId
+        ? submissions.findIndex((s) => s.id === currentSubmissionId)
+        : -1;
 
-    const criteria =
-        currentSubmission?.criteriaScores && currentSubmission.criteriaScores.length > 0
-            ? currentSubmission.criteriaScores
-            : assignment.rubric?.criteria.map((c) => ({
-                  criterionId: c.id,
-                  criterionName: c.name,
-                  maxScore: c.maxScore,
-                  score: undefined
-              })) || [];
+    const handleSheetSelect = (submissionId: string) => {
+        focusWorkspaceOnCloseRef.current = true;
+        setCurrentSubmission(submissionId);
+        setSubmissionsSheetOpen(false);
+    };
+
+    const savedScores = new Map(currentSubmission?.criteriaScores.map(({ criterionId, score }) => [criterionId, score]));
+    const criteria = assignment.rubric?.criteria.map(({ id, name, maxScore }) => ({
+        criterionId: id,
+        criterionName: name,
+        maxScore,
+        score: savedScores.get(id)
+    })) ?? [];
 
     return (
-        <div className="h-full flex flex-col bg-background">
+        <div className="min-h-full xl:h-full flex flex-col bg-background">
             {/* Header */}
-            <div className="shrink-0 p-6 border-b bg-card">
+            <div className="shrink-0 p-4 sm:p-6 border-b bg-card">
                 <GradingHeader />
+
+                <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t pt-3 xl:hidden">
+                    <Sheet open={submissionsSheetOpen} onOpenChange={setSubmissionsSheetOpen}>
+                        <SheetTrigger asChild>
+                            <Button variant="outline" size="sm" className="gap-2">
+                                <Users className="size-4" aria-hidden="true" />
+                                Submissions ({submissions.length})
+                            </Button>
+                        </SheetTrigger>
+                        <SheetContent
+                            side="left"
+                            className="w-80 p-0 sm:max-w-sm"
+                            onCloseAutoFocus={(event) => {
+                                const focusWorkspace = focusWorkspaceOnCloseRef.current;
+                                focusWorkspaceOnCloseRef.current = false;
+                                if (window.matchMedia(desktopRailQuery).matches) {
+                                    event.preventDefault();
+                                    submissionRailRef.current
+                                        ?.querySelector<HTMLButtonElement>('button[aria-current="true"]')
+                                        ?.focus();
+                                } else if (focusWorkspace) {
+                                    event.preventDefault();
+                                    selectedStudentHeadingRef.current?.focus();
+                                }
+                            }}
+                        >
+                            <SheetHeader className="sr-only">
+                                <SheetTitle>Student submissions</SheetTitle>
+                                <SheetDescription>
+                                    Select a student submission to review and grade.
+                                </SheetDescription>
+                            </SheetHeader>
+                            <StudentSubmissionList
+                                submissions={submissions}
+                                currentSubmissionId={currentSubmissionId}
+                                onSelect={handleSheetSelect}
+                                className="h-full border-r-0"
+                            />
+                        </SheetContent>
+                    </Sheet>
+
+                    {currentSubmission && (
+                        <div className="flex flex-wrap items-center gap-2 min-w-0">
+                            <h2
+                                ref={selectedStudentHeadingRef}
+                                tabIndex={-1}
+                                className="text-sm font-semibold focus:outline-none truncate"
+                            >
+                                {currentSubmission.student.firstName} {currentSubmission.student.lastName}
+                            </h2>
+                            <span className="text-xs text-muted-foreground tabular-nums">
+                                {currentIndex + 1} / {submissions.length}
+                            </span>
+                            {draft?.isDraft && <Badge variant="outline">Unsaved draft</Badge>}
+                        </div>
+                    )}
+                </div>
             </div>
 
             {/* Main Content */}
-            <div className="flex-1 flex overflow-hidden">
-                {/* Sidebar - Student List */}
-                <div className="w-72 shrink-0">
+            <div className="flex-1 flex flex-col xl:flex-row xl:overflow-hidden min-w-0">
+                {/* Sidebar - Student List (>= 1280px inline rail) */}
+                <div ref={submissionRailRef} className="hidden xl:block w-72 shrink-0">
                     <StudentSubmissionList
                         submissions={submissions}
                         currentSubmissionId={currentSubmissionId}
@@ -119,7 +208,7 @@ export default function TeacherGradingPage() {
 
                 {/* Main Area */}
                 <div className="flex-1 flex flex-col min-w-0">
-                    <div className="flex-1 overflow-auto p-6">
+                    <div className="flex-1 xl:overflow-auto p-4 sm:p-6">
                         {currentSubmission ? (
                             <div className="max-w-5xl mx-auto space-y-6">
                                 <Tabs defaultValue="submission" className="w-full">
@@ -145,6 +234,7 @@ export default function TeacherGradingPage() {
                                             draftScores={draft?.criteriaScores || {}}
                                             draftBandScore={draft?.bandScore}
                                             draftFeedback={draft?.feedback}
+                                            hasChanges={draft?.isDraft ?? false}
                                             onScoreChange={updateDraftScore}
                                             onBandScoreChange={updateBandScore}
                                             onFeedbackChange={updateFeedback}

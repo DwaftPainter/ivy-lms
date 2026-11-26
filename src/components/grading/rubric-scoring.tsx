@@ -12,6 +12,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { cn } from "@/lib/utils";
 
 interface RubricScoringProps {
+    hasChanges: boolean;
     criteria: CriterionScore[];
     bandScore?: number | null;
     feedback?: string | null;
@@ -51,6 +52,7 @@ export function RubricScoring({
     draftScores,
     draftBandScore,
     draftFeedback,
+    hasChanges,
     onScoreChange,
     onBandScoreChange,
     onFeedbackChange,
@@ -67,11 +69,6 @@ export function RubricScoring({
 
     const displayBandScore = draftBandScore ?? calculatedBandScore ?? bandScore;
     const displayFeedback = draftFeedback ?? feedback ?? "";
-
-    const hasChanges =
-        Object.keys(draftScores).length > 0 ||
-        draftBandScore !== undefined ||
-        draftFeedback !== undefined;
 
     return (
         <Card className={cn("border shadow-sm", className)}>
@@ -97,7 +94,10 @@ export function RubricScoring({
                             return (
                                 <div key={criterion.criterionId} className="space-y-2">
                                     <div className="flex items-center justify-between">
-                                        <Label className="text-sm font-medium">
+                                        <Label
+                                            htmlFor={`criterion-input-${criterion.criterionId}`}
+                                            className="text-sm font-medium"
+                                        >
                                             {criterion.criterionName}
                                         </Label>
                                         <TooltipProvider>
@@ -120,13 +120,16 @@ export function RubricScoring({
                                             min={0}
                                             max={criterion.maxScore}
                                             step={0.5}
+                                            aria-label={`${criterion.criterionName} slider`}
                                             onValueChange={([value]) =>
                                                 onScoreChange(criterion.criterionId, value)
                                             }
                                             className="flex-1"
                                         />
                                         <Input
+                                            id={`criterion-input-${criterion.criterionId}`}
                                             type="number"
+                                            aria-label={`${criterion.criterionName} score`}
                                             min={0}
                                             max={criterion.maxScore}
                                             step={0.5}
@@ -136,7 +139,7 @@ export function RubricScoring({
                                                 if (!isNaN(value)) {
                                                     onScoreChange(
                                                         criterion.criterionId,
-                                                        Math.min(value, criterion.maxScore)
+                                                        Math.min(Math.max(value, 0), criterion.maxScore)
                                                     );
                                                 }
                                             }}
@@ -149,26 +152,31 @@ export function RubricScoring({
                     </div>
                 ) : maxScore ? (
                     <div className="space-y-2">
-                        <Label className="text-sm font-medium">Score (0 - {maxScore})</Label>
+                        <Label htmlFor="generic-score-input" className="text-sm font-medium">
+                            Score (0 - {maxScore})
+                        </Label>
                         <div className="flex items-center gap-3">
                             <Slider
                                 value={[displayBandScore || 0]}
                                 min={0}
                                 max={maxScore}
                                 step={0.5}
+                                aria-label={`Score slider (0 to ${maxScore})`}
                                 onValueChange={([value]) => onBandScoreChange(value)}
                                 className="flex-1"
                             />
                             <Input
+                                id="generic-score-input"
                                 type="number"
+                                aria-label={`Score (0 to ${maxScore})`}
                                 min={0}
                                 max={maxScore}
                                 step={0.5}
-                                value={displayBandScore || ""}
+                                value={displayBandScore ?? ""}
                                 onChange={(e) => {
                                     const value = parseFloat(e.target.value);
                                     if (!isNaN(value)) {
-                                        onBandScoreChange(Math.min(value, maxScore));
+                                        onBandScoreChange(Math.min(Math.max(value, 0), maxScore));
                                     }
                                 }}
                                 className="w-16 h-8 text-center"
@@ -182,8 +190,10 @@ export function RubricScoring({
                 {/* Band Score */}
                 <div className="space-y-3">
                     <div className="flex items-center gap-2">
-                        <Calculator className="w-4 h-4 text-muted-foreground" />
-                        <Label className="text-sm font-medium">IELTS Band Score</Label>
+                        <Calculator className="w-4 h-4 text-muted-foreground" aria-hidden="true" />
+                        <Label htmlFor="band-score-input" className="text-sm font-medium">
+                            IELTS Band Score
+                        </Label>
                     </div>
 
                     <div className="flex items-center gap-4">
@@ -193,16 +203,19 @@ export function RubricScoring({
                                 min={0}
                                 max={9}
                                 step={0.5}
+                                aria-label="IELTS Band Score slider"
                                 onValueChange={([value]) => onBandScoreChange(value)}
                             />
                         </div>
                         <div className="flex items-center gap-2">
                             <Input
+                                id="band-score-input"
                                 type="number"
+                                aria-label="IELTS Band Score"
                                 min={0}
                                 max={9}
                                 step={0.5}
-                                value={displayBandScore || ""}
+                                value={displayBandScore ?? ""}
                                 onChange={(e) => {
                                     const value = parseFloat(e.target.value);
                                     if (!isNaN(value)) {
