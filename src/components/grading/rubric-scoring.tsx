@@ -102,8 +102,11 @@ export function RubricScoring({
                                         </Label>
                                         <TooltipProvider>
                                             <Tooltip>
-                                                <TooltipTrigger>
-                                                    <Info className="w-3.5 h-3.5 text-muted-foreground" />
+                                                <TooltipTrigger
+                                                    aria-label={`${criterion.criterionName} scoring criteria info`}
+                                                    className="rounded-xs focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
+                                                >
+                                                    <Info className="w-3.5 h-3.5 text-muted-foreground" aria-hidden="true" />
                                                 </TooltipTrigger>
                                                 <TooltipContent>
                                                     <p className="max-w-xs">

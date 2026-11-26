@@ -1,7 +1,14 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogHeader,
+    DialogTitle,
+    DialogFooter
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -16,6 +23,7 @@ interface CourseDialogProps {
     onOpenChange: (open: boolean) => void;
     course?: Course | null;
     onSubmit: (data: CreateCourseInput) => Promise<void>;
+    onCloseAutoFocus?: (event: Event) => void;
     isLoading?: boolean;
 }
 
@@ -32,7 +40,14 @@ const levels = [
     { value: CourseLevel.ADVANCED, label: "Advanced" }
 ];
 
-export function CourseDialog({ open, onOpenChange, course, onSubmit, isLoading }: CourseDialogProps) {
+export function CourseDialog({
+    open,
+    onOpenChange,
+    course,
+    onSubmit,
+    onCloseAutoFocus,
+    isLoading
+}: CourseDialogProps) {
     const isEditing = !!course;
 
     const [formData, setFormData] = useState<{
@@ -95,9 +110,15 @@ export function CourseDialog({ open, onOpenChange, course, onSubmit, isLoading }
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+            <DialogContent
+                className="max-w-2xl max-h-[90vh] overflow-y-auto"
+                onCloseAutoFocus={onCloseAutoFocus}
+            >
                 <DialogHeader>
                     <DialogTitle>{isEditing ? "Edit Course" : "Create New Course"}</DialogTitle>
+                    <DialogDescription className="sr-only">
+                        Configure course metadata, instructor ID, and publish status.
+                    </DialogDescription>
                 </DialogHeader>
 
                 <form onSubmit={handleSubmit} className="space-y-4">

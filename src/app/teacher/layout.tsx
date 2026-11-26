@@ -12,8 +12,9 @@ import { cn } from "@/lib/utils";
 export default function Layout({ children }: { children: React.ReactNode }) {
     const pathname = usePathname();
 
-    // Full-width pages that should not have the top margin
+    // Full-width or hero-padded pages that manage their own top spacing
     const isFullWidthPage =
+        pathname === "/teacher" ||
         pathname === "/teacher/grading" ||
         pathname?.includes("/teacher/grading/") ||
         pathname?.includes("/teacher/assignments/builder") ||

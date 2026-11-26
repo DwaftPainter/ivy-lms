@@ -1,98 +1,141 @@
-"use client";
-
+import Link from "next/link";
+import { ArrowRight, CalendarDays, Clock } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ClassItem } from "@/store/class.store";
-import { Clock, User, SearchAlertIcon, ChevronRight } from "lucide-react";
-import { useRouter } from "next/navigation";
+import type { ClassItem } from "@/store/class.store";
 
-interface UpcomingClassesProps {
-    classes: Array<ClassItem>;
-    isLoading: boolean
+const dateLabel = new Intl.DateTimeFormat("en-US", {
+    month: "short",
+    day: "numeric",
+    timeZone: "UTC"
+});
+
+function ClassDate({ lesson }: { lesson: ClassItem }) {
+    const date = lesson.fullDate ? new Date(lesson.fullDate) : null;
+    return (
+        <time dateTime={lesson.fullDate?.slice(0, 10)} className="block leading-tight">
+            <span className="block text-xs font-medium">{lesson.day}</span>
+            <span className="mt-1 block text-lg font-semibold whitespace-nowrap">
+                {date && Number.isFinite(date.getTime()) ? dateLabel.format(date) : lesson.date}
+            </span>
+        </time>
+    );
 }
 
-export function UpcomingClasses({ classes = [], isLoading }: UpcomingClassesProps) {
-    const router = useRouter();
-    const isEmpty = classes.length === 0;
-
-    const handleViewLesson = (lessonId: string) => {
-        router.push(`/lessons/${lessonId}`);
-    };
-
+export function NextClass({
+    lesson,
+    inProgress,
+    isLoading,
+    error,
+    onRetry
+}: {
+    lesson: ClassItem | undefined;
+    inProgress: boolean;
+    isLoading: boolean;
+    error: string | null;
+    onRetry: () => void;
+}) {
     return (
-        <Card className="p-6 shadow-none border rounded-[12px]">
-            <h2 className="text-lg font-semibold text-foreground mb-6">Upcoming Classes</h2>
-
-            {isLoading ? (
-                <div className="space-y-4 py-10">
-                    {[1, 2, 3].map((i) => (
-                        <Skeleton key={i} className="h-20 w-full" />
-                    ))}
+        <section aria-labelledby="next-class-heading" className="min-w-0">
+            <Card className="h-full min-h-57 gap-5 border-primary bg-primary p-5 text-primary-foreground shadow-none sm:p-6">
+                <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1">
+                    <h2 id="next-class-heading" className="flex items-center gap-2 text-sm font-semibold">
+                        <CalendarDays className="size-4 shrink-0" aria-hidden="true" />
+                        {lesson && inProgress && !isLoading && !error ? "Class in progress" : "Next class"}
+                    </h2>
+                    <Link
+                        href="/extension?tab=schedule"
+                        className="inline-flex min-h-8 items-center rounded-sm text-sm font-medium underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary-foreground"
+                    >
+                        View schedule
+                    </Link>
                 </div>
-            ) : isEmpty ? (
-                <div className="flex flex-col items-center justify-center py-10 text-center">
-                    <SearchAlertIcon className="w-12 h-12 text-muted-foreground mb-6" />
-                    <div className="text-muted-foreground text-sm mb-2">
-                        You are not enrolled in any classes yet
+
+                {isLoading ? (
+                    <div className="space-y-3">
+                        <p role="status" className="sr-only">Loading classes</p>
+                        <Skeleton className="h-7 w-3/4 animate-none bg-primary-foreground/20" />
+                        <Skeleton className="h-4 w-1/2 animate-none bg-primary-foreground/20" />
                     </div>
-                    <p className="text-xs text-muted-foreground">
-                        Browse courses and enroll to see them here
-                    </p>
-                </div>
-            ) : (
-                <div className="space-y-4">
-                    {classes.map((lesson, idx) => (
-                        <div
-                            key={idx}
-                            className="pb-4 border-b border-border last:border-0 last:pb-0 cursor-pointer hover:bg-muted/50 rounded-lg transition-colors -mx-2 px-2 py-2"
-                            onClick={() => handleViewLesson(lesson.id)}
-                            role="button"
-                            tabIndex={0}
-                            onKeyDown={(e) => e.key === "Enter" && handleViewLesson(lesson.id)}
-                        >
-                            <div className="flex gap-5 items-start">
-                                {/* Date Box */}
-                                <div className="bg-linear-to-br from-primary/10 to-primary/5 rounded-lg p-4 text-center flex flex-col items-center justify-center w-16 shrink-0 border border-primary/10">
-                                    <div className="font-bold text-base text-foreground">{lesson.date}</div>
-                                    <div className="text-xs text-muted-foreground">{lesson.day}</div>
-                                </div>
-
-                                {/* Content */}
-                                <div className="flex-1 min-w-0">
-                                    <h3 className="font-semibold text-foreground mb-1">{lesson.title}</h3>
-                                    <p className="text-sm text-muted-foreground mb-3">{lesson.course}</p>
-
-                                    {/* <a
-                                        href="#"
-                                        className="inline-flex items-center gap-2 text-primary font-medium text-sm hover:opacity-80 transition-opacity"
-                                    >
-                                        <Paperclip className="w-4 h-4" />
-                                        View Material
-                                    </a> */}
-                                </div>
-
-                                {/* Right Info */}
-                                <div className="text-right space-y-2 shrink-0">
-                                    <div className="flex items-center justify-end gap-2 text-sm text-muted-foreground">
-                                        <Clock className="w-4 h-4" />
-                                        <span>{lesson.time}</span>
-                                    </div>
-                                    <div className="flex items-center justify-end gap-2 text-sm">
-                                        <User className="w-4 h-4 text-muted-foreground" />
-                                        <span className="font-medium text-foreground">
-                                            {lesson.instructor}
-                                        </span>
-                                    </div>
-                                    <div className="flex items-center justify-end gap-1 text-xs text-primary mt-1">
-                                        <span>View Details</span>
-                                        <ChevronRight className="w-3 h-3" />
-                                    </div>
-                                </div>
+                ) : error ? (
+                    <div className="space-y-3">
+                        <p role="alert">Could not load classes.</p>
+                        <Button variant="secondary" onClick={onRetry}>Retry classes</Button>
+                    </div>
+                ) : lesson ? (
+                    <>
+                        <div className="grid grid-cols-[auto_minmax(0,1fr)] items-start gap-3 sm:gap-4">
+                            <div className="min-w-16 rounded-md border border-primary-foreground/30 bg-primary-foreground/10 px-2.5 py-2.5 text-center sm:min-w-19">
+                                <ClassDate lesson={lesson} />
+                            </div>
+                            <div className="min-w-0">
+                                <h3 className="text-xl leading-tight font-semibold tracking-tight [overflow-wrap:anywhere] sm:text-2xl">
+                                    {lesson.title}
+                                </h3>
+                                <p className="mt-1 text-sm text-primary-foreground/90 [overflow-wrap:anywhere]">
+                                    {lesson.course}
+                                </p>
                             </div>
                         </div>
+                        <div className="mt-auto flex flex-wrap items-center justify-between gap-3">
+                            <p className="flex min-w-0 items-start gap-2 text-sm text-primary-foreground/90">
+                                <Clock className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
+                                <span>
+                                    <span className="block font-medium">{lesson.time}</span>
+                                    <span className="[overflow-wrap:anywhere]">{lesson.instructor}</span>
+                                </span>
+                            </p>
+                            <Button asChild variant="secondary" className="min-h-10 bg-primary-foreground text-primary hover:bg-primary-foreground/90 focus-visible:ring-primary-foreground">
+                                <Link href={`/lessons/${lesson.id}`} aria-label={`View lesson: ${lesson.title}`}>
+                                    View lesson <ArrowRight aria-hidden="true" />
+                                </Link>
+                            </Button>
+                        </div>
+                    </>
+                ) : (
+                    <div className="space-y-2">
+                        <h3 className="text-xl font-semibold">No upcoming classes</h3>
+                        <p className="text-sm text-primary-foreground/90">Browse courses to find your next class.</p>
+                        <Button asChild variant="secondary" className="mt-2 focus-visible:ring-primary-foreground">
+                            <Link href="/courses">Browse courses</Link>
+                        </Button>
+                    </div>
+                )}
+            </Card>
+        </section>
+    );
+}
+
+export function UpcomingClasses({ classes }: { classes: ClassItem[] }) {
+    if (classes.length === 0) return null;
+
+    return (
+        <section aria-labelledby="upcoming-classes-heading" className="min-w-0">
+            <Card className="gap-0 py-0 shadow-none">
+                <h2 id="upcoming-classes-heading" className="border-b px-4 py-4 text-base font-semibold sm:px-6">
+                    More upcoming classes
+                </h2>
+                <ul className="divide-y">
+                    {classes.map((lesson) => (
+                        <li key={lesson.id}>
+                            <Link
+                                href={`/lessons/${lesson.id}`}
+                                className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 px-4 py-3 hover:bg-muted/60 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring sm:px-6"
+                            >
+                                <div className="min-w-15 text-muted-foreground"><ClassDate lesson={lesson} /></div>
+                                <div className="min-w-0 [overflow-wrap:anywhere]">
+                                    <p className="text-sm font-semibold">{lesson.title}</p>
+                                    <p className="mt-1 text-xs text-muted-foreground">
+                                        {lesson.time}<span className="mx-1.5" aria-hidden="true">/</span>{lesson.course}
+                                    </p>
+                                </div>
+                                <ArrowRight className="size-4 text-muted-foreground" aria-hidden="true" />
+                            </Link>
+                        </li>
                     ))}
-                </div>
-            )}
-        </Card>
+                </ul>
+            </Card>
+        </section>
     );
 }

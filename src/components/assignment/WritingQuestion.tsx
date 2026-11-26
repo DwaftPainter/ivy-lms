@@ -98,6 +98,7 @@ export function WritingQuestion({
                 <Textarea
                     value={answer || ""}
                     onChange={handleChange}
+                    aria-label="Essay response"
                     placeholder="Fill in this field"
                     disabled={isSubmitted}
                     className={cn(
@@ -152,14 +153,14 @@ export function WritingQuestion({
                     </CardHeader>
                     <CardContent className="space-y-4">
                         {isAIGradingInProgress ? (
-                            <div className="flex items-center gap-3 text-muted-foreground">
-                                <Loader2 className="size-5 animate-spin" />
+                            <div className="flex items-center gap-3 text-muted-foreground" role="status" aria-live="polite">
+                                <Loader2 className="size-5 animate-spin motion-reduce:animate-none" aria-hidden="true" />
                                 <span>AI is grading your submission...</span>
                             </div>
                         ) : hasAIGrading ? (
                             <div className="space-y-3">
                                 <div className="flex items-center gap-2 text-green-600">
-                                    <CheckCircle2 className="size-5" />
+                                    <CheckCircle2 className="size-5" aria-hidden="true" />
                                     <span>Grading completed</span>
                                 </div>
                                 <div className="flex flex-wrap gap-2">

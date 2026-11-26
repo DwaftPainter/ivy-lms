@@ -1,25 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { Card } from "@/components/ui/card";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import {
-    BookOpen,
-    Plus,
-    Users,
-    Search,
-    Edit,
-    Trash2,
-    MoreHorizontal,
-    Calendar
-} from "lucide-react";
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger
-} from "@/components/ui/dropdown-menu";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
     AlertDialog,
     AlertDialogAction,
@@ -30,15 +16,52 @@ import {
     AlertDialogHeader,
     AlertDialogTitle
 } from "@/components/ui/alert-dialog";
-import { useCourseStore, type Course, type CreateCourseInput, type UpdateCourseInput } from "@/store/course.store";
+import {
+    useCourseStore,
+    type Course,
+    type CreateCourseInput,
+    type UpdateCourseInput
+} from "@/store/course.store";
+import { CourseLevel } from "@/generated/prisma/enums";
+import { getSkillLabel } from "@/lib/ielts-badges";
 import { CourseDialog } from "./course-dialog";
 import { ClassSessionsDialog } from "./class-sessions-dialog";
 import { toast } from "sonner";
+import {
+    AlertCircle,
+    BookOpen,
+    Calendar,
+    Edit,
+    Plus,
+    RotateCcw,
+    Search,
+    Trash2,
+    X
+} from "lucide-react";
+
+const COURSE_LEVEL_LABELS: Record<CourseLevel, string> = {
+    [CourseLevel.BEGINNER]: "Beginner",
+    [CourseLevel.INTERMEDIATE]: "Intermediate",
+    [CourseLevel.ADVANCED]: "Advanced"
+};
+
+function formatTeacherDisplay(course: Course): { label: string; title?: string } {
+    if (course.teacher?.firstName && course.teacher?.lastName) {
+        return { label: `${course.teacher.firstName} ${course.teacher.lastName}` };
+    }
+    const id = course.teacher?.id || course.teacherId;
+    if (!id) return { label: "Unassigned" };
+    return id.length > 20
+        ? { label: `Instructor ${id.slice(0, 8)}…`, title: id }
+        : { label: `Instructor ${id}`, title: id };
+}
 
 export function CourseManagement() {
     const {
         courses,
+        pagination,
         isLoading,
+        error,
         fetchCourses,
         createCourse,
         updateCourse,
@@ -52,16 +75,46 @@ export function CourseManagement() {
     const [deletingCourse, setDeletingCourse] = useState<Course | null>(null);
     const [sessionsDialogOpen, setSessionsDialogOpen] = useState(false);
     const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
+    const createCourseBtnRef = useRef<HTMLButtonElement>(null);
+    const dialogReturnFocusRef = useRef<HTMLElement | null>(null);
 
-    useEffect(() => {
-        fetchCourses();
+    const handleDialogCloseAutoFocus = useCallback((event: Event) => {
+        const target = dialogReturnFocusRef.current;
+        dialogReturnFocusRef.current = null;
+        event.preventDefault();
+        requestAnimationFrame(() => {
+            if (target?.isConnected) {
+                target.focus();
+            } else {
+                createCourseBtnRef.current?.focus();
+            }
+        });
+    }, []);
+
+    const loadCourses = useCallback(() => {
+        return fetchCourses({ limit: 50 });
     }, [fetchCourses]);
 
-    const filteredCourses = courses.filter(
-        (course) =>
-            course.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            course.teacher?.id.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+    useEffect(() => {
+        loadCourses();
+    }, [loadCourses]);
+
+    const normalizedQuery = searchQuery.trim().toLowerCase();
+
+    const filteredCourses = useMemo(() => {
+        if (!normalizedQuery) return courses;
+        return courses.filter((course) => {
+            const titleMatch = course.title.toLowerCase().includes(normalizedQuery);
+            const teacherMatch = (course.teacher?.id || course.teacherId || "")
+                .toLowerCase()
+                .includes(normalizedQuery);
+            const skillMatch = getSkillLabel(course.skill).toLowerCase().includes(normalizedQuery);
+            const levelMatch = COURSE_LEVEL_LABELS[course.level]
+                .toLowerCase()
+                .includes(normalizedQuery);
+            return titleMatch || teacherMatch || skillMatch || levelMatch;
+        });
+    }, [courses, normalizedQuery]);
 
     const handleCreate = async (data: CreateCourseInput) => {
         try {
@@ -97,173 +150,287 @@ export function CourseManagement() {
         }
     };
 
-    const openEditDialog = (course: Course) => {
+    const openEditDialog = (course: Course, trigger?: HTMLElement | null) => {
+        dialogReturnFocusRef.current = trigger ?? null;
         setEditingCourse(course);
         setDialogOpen(true);
     };
 
-    const openCreateDialog = () => {
+    const openCreateDialog = (trigger?: HTMLElement | null) => {
+        dialogReturnFocusRef.current = trigger ?? createCourseBtnRef.current;
         setEditingCourse(null);
         setDialogOpen(true);
     };
 
-    const confirmDelete = (course: Course) => {
+    const confirmDelete = (course: Course, trigger?: HTMLElement | null) => {
+        dialogReturnFocusRef.current = trigger ?? null;
         setDeletingCourse(course);
         setDeleteDialogOpen(true);
     };
 
-    const openSessionsDialog = (course: Course) => {
+    const openSessionsDialog = (course: Course, trigger?: HTMLElement | null) => {
+        dialogReturnFocusRef.current = trigger ?? null;
         setSelectedCourse(course);
         setSessionsDialogOpen(true);
     };
 
+    const totalCount = pagination.total || courses.length;
+
     return (
-        <>
-            <Card className="p-6 shadow-sm border">
-                <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-lg font-semibold text-foreground">
-                        Course Management
-                    </h2>
-                    <Button
-                        size="sm"
-                        className="bg-primary text-white"
-                        onClick={openCreateDialog}
-                    >
-                        <Plus className="w-4 h-4 mr-2" />
-                        Add Course
-                    </Button>
-                </div>
-
-                <div className="relative mb-4">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                    <Input
-                        placeholder="Search courses..."
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        className="pl-9"
-                    />
-                </div>
-
-                <div className="space-y-4">
-                    {isLoading ? (
-                        <div className="text-center py-8 text-muted-foreground">
-                            Loading courses...
-                        </div>
-                    ) : filteredCourses.length === 0 ? (
-                        <div className="text-center py-8 text-muted-foreground">
-                            No courses found
-                        </div>
-                    ) : (
-                        filteredCourses.map((course) => (
-                            <div
-                                key={course.id}
-                                className="p-4 rounded-lg border border-border/50 hover:border-border transition-colors"
+        <section aria-labelledby="admin-courses-heading" className="min-w-0">
+            <Card className="gap-0 py-0 shadow-none">
+                {/* Header & search */}
+                <div className="space-y-4 border-b px-4 py-4 sm:px-6">
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                        <div className="flex items-center gap-2">
+                            <BookOpen className="size-4 shrink-0 text-primary" aria-hidden="true" />
+                            <h2
+                                id="admin-courses-heading"
+                                className="text-base font-semibold text-foreground"
                             >
-                                <div className="flex items-start justify-between mb-3">
-                                    <div className="flex items-center gap-3">
-                                        <div className="bg-primary/10 p-2 rounded-lg">
-                                            <BookOpen className="w-5 h-5 text-primary" />
-                                        </div>
-                                        <div>
-                                            <h3 className="font-medium text-foreground">
-                                                {course.title}
-                                            </h3>
-                                            <p className="text-sm text-muted-foreground">
-                                                Instructor:{" "}
-                                                {course.teacher?.firstName && course.teacher?.lastName
-                                                    ? `${course.teacher.firstName} ${course.teacher.lastName}`
-                                                    : course.teacher?.id
-                                                      ? `ID: ${course.teacher.id.slice(0, 8)}...`
-                                                      : "Unknown"}
-                                            </p>
-                                        </div>
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                        <span
-                                            className={`px-2 py-1 rounded-full text-xs font-medium ${
-                                                course.isPublished
-                                                    ? "bg-green-100 text-green-700"
-                                                    : "bg-yellow-100 text-yellow-700"
-                                            }`}
-                                        >
-                                            {course.isPublished
-                                                ? "Published"
-                                                : "Draft"}
-                                        </span>
-                                        <DropdownMenu>
-                                            <DropdownMenuTrigger asChild>
-                                                <Button
-                                                    variant="ghost"
-                                                    size="icon"
-                                                    className="h-8 w-8"
-                                                >
-                                                    <MoreHorizontal className="w-4 h-4" />
-                                                </Button>
-                                            </DropdownMenuTrigger>
-                                            <DropdownMenuContent align="end">
-                                                <DropdownMenuItem
-                                                    onClick={() =>
-                                                        openEditDialog(course)
-                                                    }
-                                                >
-                                                    <Edit className="w-4 h-4 mr-2" />
-                                                    Edit
-                                                </DropdownMenuItem>
-                                                <DropdownMenuItem
-                                                    onClick={() =>
-                                                        openSessionsDialog(course)
-                                                    }
-                                                >
-                                                    <Calendar className="w-4 h-4 mr-2" />
-                                                    Manage Lessons
-                                                </DropdownMenuItem>
-                                                <DropdownMenuItem
-                                                    className="text-destructive"
-                                                    onClick={() =>
-                                                        confirmDelete(course)
-                                                    }
-                                                >
-                                                    <Trash2 className="w-4 h-4 mr-2" />
-                                                    Delete
-                                                </DropdownMenuItem>
-                                            </DropdownMenuContent>
-                                        </DropdownMenu>
-                                    </div>
-                                </div>
+                                Courses
+                            </h2>
+                            {!isLoading && !error && (
+                                <span className="text-sm text-muted-foreground tabular-nums">
+                                    ({totalCount})
+                                </span>
+                            )}
+                        </div>
+                        <Button
+                            ref={createCourseBtnRef}
+                            type="button"
+                            size="sm"
+                            onClick={(e) => openCreateDialog(e.currentTarget)}
+                            className="shrink-0 focus-visible:outline-solid focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+                        >
+                            <Plus className="size-4" aria-hidden="true" />
+                            <span>Create course</span>
+                        </Button>
+                    </div>
 
-                                <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                                    <span className="flex items-center gap-1">
-                                        <Users className="w-4 h-4" />
-                                        {course._count?.enrollments || 0}{" "}
-                                        students
-                                    </span>
-                                    <span>
-                                        {course._count?.lessons || 0} lessons
-                                    </span>
-                                    <span className="capitalize">
-                                        {course.level.toLowerCase()}
-                                    </span>
-                                    <span className="capitalize">
-                                        {course.skill.toLowerCase()}
-                                    </span>
-                                </div>
-                            </div>
-                        ))
+                    {(!isLoading || courses.length > 0) && !error && courses.length > 0 && (
+                        <div className="relative">
+                            <Search
+                                className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
+                                aria-hidden="true"
+                            />
+                            <Input
+                                type="search"
+                                placeholder="Search by course, skill, level, or instructor ID..."
+                                aria-label="Search courses"
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                className={searchQuery ? "pl-9 pr-9" : "pl-9"}
+                            />
+                            {searchQuery && (
+                                <button
+                                    type="button"
+                                    onClick={() => setSearchQuery("")}
+                                    aria-label="Clear course search"
+                                    className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded-sm p-1 text-muted-foreground hover:text-foreground focus-visible:outline-2 focus-visible:outline-ring"
+                                >
+                                    <X className="size-3.5" aria-hidden="true" />
+                                </button>
+                            )}
+                        </div>
                     )}
                 </div>
 
-                <div className="mt-4 pt-4 border-t">
-                    <Button variant="outline" className="w-full">
-                        View All Courses
-                    </Button>
-                </div>
+                {/* Body states */}
+                {isLoading && courses.length === 0 ? (
+                    <div className="divide-y" aria-busy="true">
+                        <p role="status" className="sr-only">
+                            Loading courses
+                        </p>
+                        {[1, 2, 3].map((row) => (
+                            <div key={row} className="space-y-2.5 px-4 py-4 sm:px-6">
+                                <Skeleton className="h-5 w-60 max-w-full motion-reduce:animate-none" />
+                                <Skeleton className="h-4 w-44 max-w-full motion-reduce:animate-none" />
+                            </div>
+                        ))}
+                    </div>
+                ) : error && courses.length === 0 ? (
+                    <CardContent className="px-4 py-6 sm:px-6">
+                        <div role="alert" className="flex items-start gap-3">
+                            <AlertCircle
+                                className="mt-0.5 size-5 shrink-0 text-destructive"
+                                aria-hidden="true"
+                            />
+                            <div className="space-y-3">
+                                <div>
+                                    <h3 className="text-sm font-semibold text-foreground">
+                                        Could not load courses
+                                    </h3>
+                                    <p className="mt-1 text-sm text-muted-foreground">{error}</p>
+                                </div>
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={loadCourses}
+                                >
+                                    <RotateCcw className="size-4" aria-hidden="true" />
+                                    Retry courses
+                                </Button>
+                            </div>
+                        </div>
+                    </CardContent>
+                ) : courses.length === 0 ? (
+                    <CardContent className="px-4 py-6 sm:px-6">
+                        <div className="space-y-3">
+                            <div>
+                                <h3 className="text-sm font-semibold text-foreground">
+                                    No courses yet
+                                </h3>
+                                <p className="mt-1 text-sm text-muted-foreground">
+                                    Create your first course to organize class sessions and
+                                    enrollments.
+                                </p>
+                            </div>
+                            <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={(e) => openCreateDialog(e.currentTarget)}
+                            >
+                                <Plus className="size-4" aria-hidden="true" />
+                                Create course
+                            </Button>
+                        </div>
+                    </CardContent>
+                ) : filteredCourses.length === 0 ? (
+                    <CardContent className="px-4 py-6 sm:px-6">
+                        <div className="space-y-3">
+                            <div>
+                                <h3 className="text-sm font-semibold text-foreground">
+                                    No matching courses
+                                </h3>
+                                <p className="mt-1 text-sm text-muted-foreground">
+                                    No courses match &ldquo;{searchQuery.trim()}&rdquo;.
+                                </p>
+                            </div>
+                            <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setSearchQuery("")}
+                            >
+                                <RotateCcw className="size-4" aria-hidden="true" />
+                                Reset search
+                            </Button>
+                        </div>
+                    </CardContent>
+                ) : (
+                    <ul className="divide-y">
+                        {filteredCourses.map((course) => {
+                            const enrollmentCount = course._count?.enrollments ?? 0;
+                            const lessonCount = course._count?.lessons ?? 0;
+                            const teacherInfo = formatTeacherDisplay(course);
+
+                            return (
+                                <li
+                                    key={course.id}
+                                    className="px-4 py-4 transition-colors hover:bg-muted/40 sm:px-6"
+                                >
+                                    <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between lg:gap-4">
+                                        {/* Record summary */}
+                                        <div className="min-w-0 flex-1">
+                                            <h3 className="text-base font-semibold text-foreground [overflow-wrap:anywhere]">
+                                                {course.title}
+                                            </h3>
+
+                                            <p
+                                                title={teacherInfo.title}
+                                                className="mt-0.5 text-xs text-muted-foreground [overflow-wrap:anywhere]"
+                                            >
+                                                {teacherInfo.label}
+                                            </p>
+
+                                            <div className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1.5 text-xs text-muted-foreground">
+                                                <Badge
+                                                    variant={
+                                                        course.isPublished ? "secondary" : "outline"
+                                                    }
+                                                >
+                                                    {course.isPublished ? "Published" : "Draft"}
+                                                </Badge>
+                                                <Badge variant="secondary" className="font-medium">
+                                                    {getSkillLabel(course.skill)}
+                                                </Badge>
+                                                <Badge variant="outline">
+                                                    {COURSE_LEVEL_LABELS[course.level]}
+                                                </Badge>
+                                                <span className="tabular-nums">
+                                                    {enrollmentCount}{" "}
+                                                    {enrollmentCount === 1 ? "student" : "students"}
+                                                </span>
+                                                <span aria-hidden="true">/</span>
+                                                <span className="tabular-nums">
+                                                    {lessonCount}{" "}
+                                                    {lessonCount === 1 ? "lesson" : "lessons"}
+                                                </span>
+                                            </div>
+                                        </div>
+
+                                        {/* Direct record actions */}
+                                        <div className="flex flex-wrap items-center gap-2 lg:shrink-0">
+                                            <Button
+                                                type="button"
+                                                variant="outline"
+                                                size="sm"
+                                                onClick={(e) =>
+                                                    openSessionsDialog(course, e.currentTarget)
+                                                }
+                                                aria-label={`Manage sessions: ${course.title}`}
+                                                className="focus-visible:outline-solid focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+                                            >
+                                                <Calendar className="size-3.5" aria-hidden="true" />
+                                                <span>Manage sessions</span>
+                                            </Button>
+                                            <Button
+                                                type="button"
+                                                variant="outline"
+                                                size="sm"
+                                                onClick={(e) =>
+                                                    openEditDialog(course, e.currentTarget)
+                                                }
+                                                aria-label={`Edit course: ${course.title}`}
+                                                className="focus-visible:outline-solid focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+                                            >
+                                                <Edit className="size-3.5" aria-hidden="true" />
+                                                <span>Edit course</span>
+                                            </Button>
+                                            <Button
+                                                type="button"
+                                                variant="ghost"
+                                                size="sm"
+                                                onClick={(e) =>
+                                                    confirmDelete(course, e.currentTarget)
+                                                }
+                                                aria-label={`Delete course: ${course.title}`}
+                                                className="text-destructive hover:bg-destructive/10 hover:text-destructive focus-visible:outline-solid focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+                                            >
+                                                <Trash2 className="size-3.5" aria-hidden="true" />
+                                                <span>Delete</span>
+                                            </Button>
+                                        </div>
+                                    </div>
+                                </li>
+                            );
+                        })}
+                    </ul>
+                )}
             </Card>
 
             <CourseDialog
                 open={dialogOpen}
-                onOpenChange={setDialogOpen}
+                onOpenChange={(open) => {
+                    setDialogOpen(open);
+                    if (!open) setEditingCourse(null);
+                }}
                 course={editingCourse}
                 onSubmit={editingCourse ? handleUpdate : handleCreate}
+                onCloseAutoFocus={handleDialogCloseAutoFocus}
                 isLoading={isLoading}
             />
 
@@ -271,33 +438,31 @@ export function CourseManagement() {
                 open={sessionsDialogOpen}
                 onOpenChange={setSessionsDialogOpen}
                 course={selectedCourse}
+                onCloseAutoFocus={handleDialogCloseAutoFocus}
             />
 
             <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-                <AlertDialogContent>
+                <AlertDialogContent onCloseAutoFocus={handleDialogCloseAutoFocus}>
                     <AlertDialogHeader>
-                        <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                        <AlertDialogTitle>Delete course?</AlertDialogTitle>
                         <AlertDialogDescription>
-                            This will permanently delete the course &quot;
-                            {deletingCourse?.title}&quot;. This action cannot be
-                            undone.
+                            This will permanently delete the course &ldquo;{deletingCourse?.title}
+                            &rdquo;. This action cannot be undone.
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                        <AlertDialogCancel
-                            onClick={() => setDeleteDialogOpen(false)}
-                        >
+                        <AlertDialogCancel onClick={() => setDeleteDialogOpen(false)}>
                             Cancel
                         </AlertDialogCancel>
                         <AlertDialogAction
                             onClick={handleDelete}
-                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                            className="bg-destructive text-white hover:bg-destructive/90"
                         >
                             Delete
                         </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
-        </>
+        </section>
     );
 }

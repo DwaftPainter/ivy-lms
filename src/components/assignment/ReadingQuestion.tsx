@@ -81,6 +81,7 @@ export function ReadingQuestion({ question, answer, onAnswerChange, questionNumb
                         <Input
                             value={answer || ""}
                             onChange={(e) => onAnswerChange(e.target.value)}
+                            aria-label={`Answer for question ${questionNumber}`}
                             placeholder="Type your answer here"
                             className="max-w-md"
                         />
@@ -92,6 +93,7 @@ export function ReadingQuestion({ question, answer, onAnswerChange, questionNumb
                     <select
                         value={answer || ""}
                         onChange={(e) => onAnswerChange(e.target.value)}
+                        aria-label={`Answer for question ${questionNumber}`}
                         className="w-full max-w-md p-2 rounded-md border border-input bg-background"
                     >
                         <option value="">Select an answer</option>
@@ -108,6 +110,7 @@ export function ReadingQuestion({ question, answer, onAnswerChange, questionNumb
                     <Textarea
                         value={answer || ""}
                         onChange={(e) => onAnswerChange(e.target.value)}
+                        aria-label={`Answer for question ${questionNumber}`}
                         placeholder="Type your answer here"
                         className="min-h-[120px]"
                     />
@@ -131,12 +134,14 @@ export function ReadingQuestion({ question, answer, onAnswerChange, questionNumb
                         variant="ghost"
                         size="icon"
                         onClick={() => setShowHint(!showHint)}
+                        aria-label={showHint ? "Hide passage hint" : "Show passage hint"}
+                        aria-expanded={showHint}
                         className={cn(
                             "shrink-0",
                             showHint && "text-primary"
                         )}
                     >
-                        <Eye className="size-4" />
+                        <Eye className="size-4" aria-hidden="true" />
                     </Button>
                 </div>
             </CardHeader>

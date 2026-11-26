@@ -1,163 +1,222 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { Card } from "@/components/ui/card";
+import { useEffect, useRef, useState } from "react";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { MoreHorizontal, UserPlus } from "lucide-react";
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger
-} from "@/components/ui/dropdown-menu";
-import { useTeacherStore, CreateTeacherInput } from "@/store/teacher.store";
-import { CreateTeacherDialog } from "./create-teacher-dialog";
-import { AlertCircle } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useTeacherStore, type CreateTeacherInput } from "@/store/teacher.store";
+import { getSkillLabel } from "@/lib/ielts-badges";
+import { CreateTeacherDialog } from "./create-teacher-dialog";
+import { AlertCircle, CheckCircle2, RotateCcw, UserPlus, Users, X } from "lucide-react";
 
-interface User {
-    id: string;
-    name: string;
-    email: string;
-    role: string;
-    status: "active" | "inactive";
+function getInitials(firstName: string, lastName: string): string {
+    const first = firstName.trim()[0] || "";
+    const last = lastName.trim()[0] || "";
+    return `${first}${last}`.toUpperCase() || "T";
 }
 
 export function UserManagement() {
     const [isDialogOpen, setIsDialogOpen] = useState(false);
-    const [showSuccessAlert, setShowSuccessAlert] = useState(false);
-    const [createdPassword, setCreatedPassword] = useState<string | null>(null);
-    const { teachers, isLoading, error, fetchTeachers, createTeacher } =
-        useTeacherStore();
+    const addTeacherBtnRef = useRef<HTMLButtonElement>(null);
+    const [createdTeacher, setCreatedTeacher] = useState<{
+        name: string;
+        temporaryPassword: string;
+    } | null>(null);
+
+    const { teachers, isLoading, error, fetchTeachers, createTeacher } = useTeacherStore();
 
     useEffect(() => {
         fetchTeachers();
     }, [fetchTeachers]);
 
     const handleCreateTeacher = async (data: CreateTeacherInput) => {
-        try {
-            const result = await createTeacher(data);
-            setCreatedPassword(result.temporaryPassword);
-            setIsDialogOpen(false);
-            setShowSuccessAlert(true);
-
-            // Auto-hide success alert after 10 seconds
-            setTimeout(() => {
-                setShowSuccessAlert(false);
-                setCreatedPassword(null);
-            }, 10000);
-        } catch (err) {
-            // Error is already handled in the store
-            console.error("Failed to create teacher:", err);
-        }
+        const result = await createTeacher(data);
+        setCreatedTeacher({
+            name: `${result.firstName} ${result.lastName}`.trim(),
+            temporaryPassword: result.temporaryPassword
+        });
+        setIsDialogOpen(false);
     };
-
-    const mapTeachersToUsers = (teacherList: typeof teachers): User[] => {
-        return teacherList.map((teacher) => ({
-            id: teacher.id,
-            name: `${teacher.firstName} ${teacher.lastName}`,
-            email: teacher.email,
-            role: "Teacher",
-            status: "active"
-        }));
-    };
-
-    const users = mapTeachersToUsers(teachers);
 
     return (
-        <Card className="p-6 shadow-sm border">
-            {showSuccessAlert && (
-                <Alert className="mb-4 bg-green-50 border-green-200">
-                    <AlertCircle className="h-4 w-4 text-green-600" />
-                    <AlertDescription className="text-green-800">
-                        Teacher created successfully! Temporary password: {" "}
-                        <code className="bg-green-100 px-2 py-1 rounded text-sm font-mono">
-                            {createdPassword}
-                        </code>
-                    </AlertDescription>
-                </Alert>
-            )}
+        <section aria-labelledby="admin-teachers-heading" className="min-w-0">
+            <Card className="gap-0 py-0 shadow-none">
+                <div className="flex flex-wrap items-center justify-between gap-3 border-b px-4 py-4 sm:px-6">
+                    <div className="flex items-center gap-2">
+                        <Users className="size-4 shrink-0 text-primary" aria-hidden="true" />
+                        <h2 id="admin-teachers-heading" className="text-base font-semibold text-foreground">
+                            Teachers
+                        </h2>
+                        {!isLoading && !error && (
+                            <span className="text-sm text-muted-foreground tabular-nums">
+                                ({teachers.length})
+                            </span>
+                        )}
+                    </div>
+                    <Button
+                        ref={addTeacherBtnRef}
+                        type="button"
+                        size="sm"
+                        onClick={() => setIsDialogOpen(true)}
+                        className="shrink-0 focus-visible:outline-solid focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+                    >
+                        <UserPlus className="size-4" aria-hidden="true" />
+                        <span>Add teacher</span>
+                    </Button>
+                </div>
 
-            {error && (
-                <Alert className="mb-4 bg-red-50 border-red-200">
-                    <AlertCircle className="h-4 w-4 text-red-600" />
-                    <AlertDescription className="text-red-800">
-                        {error}
-                    </AlertDescription>
-                </Alert>
-            )}
+                {createdTeacher && (
+                    <div className="border-b px-4 py-3 sm:px-6">
+                        <Alert className="border-primary/20 bg-primary/5">
+                            <CheckCircle2 className="size-4 text-primary" aria-hidden="true" />
+                            <AlertDescription className="flex items-start justify-between gap-3 text-sm text-foreground">
+                                <div className="min-w-0 [overflow-wrap:anywhere]">
+                                    <p className="font-medium">
+                                        Added {createdTeacher.name}. Temporary password:
+                                    </p>
+                                    <code className="mt-1 inline-block rounded bg-muted px-2 py-0.5 font-mono text-xs text-foreground">
+                                        {createdTeacher.temporaryPassword}
+                                    </code>
+                                </div>
+                                <button
+                                    type="button"
+                                    onClick={() => setCreatedTeacher(null)}
+                                    aria-label="Dismiss teacher password notice"
+                                    className="rounded-sm p-1 text-muted-foreground hover:text-foreground focus-visible:outline-2 focus-visible:outline-ring"
+                                >
+                                    <X className="size-4" aria-hidden="true" />
+                                </button>
+                            </AlertDescription>
+                        </Alert>
+                    </div>
+                )}
 
-            <div className="flex items-center justify-between mb-6">
-                <h2 className="text-lg font-semibold text-foreground">User Management</h2>
-                <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                        <Button size="sm" className="bg-primary text-white">
-                            <UserPlus className="w-4 h-4 mr-2" />
-                            Add User
-                        </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => setIsDialogOpen(true)}>
-                            Add Teacher
-                        </DropdownMenuItem>
-                        <DropdownMenuItem disabled>Add Student (Coming Soon)</DropdownMenuItem>
-                    </DropdownMenuContent>
-                </DropdownMenu>
-            </div>
+                {isLoading && teachers.length === 0 ? (
+                    <div className="divide-y" aria-busy="true">
+                        <p role="status" className="sr-only">
+                            Loading teachers
+                        </p>
+                        {[1, 2].map((item) => (
+                            <div key={item} className="flex items-center gap-3 px-4 py-4 sm:px-6">
+                                <Skeleton className="size-9 rounded-full shrink-0 motion-reduce:animate-none" />
+                                <div className="flex-1 space-y-2">
+                                    <Skeleton className="h-4 w-36 motion-reduce:animate-none" />
+                                    <Skeleton className="h-3 w-48 motion-reduce:animate-none" />
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                ) : error && teachers.length === 0 ? (
+                    <CardContent className="px-4 py-6 sm:px-6">
+                        <div role="alert" className="flex items-start gap-3">
+                            <AlertCircle
+                                className="mt-0.5 size-5 shrink-0 text-destructive"
+                                aria-hidden="true"
+                            />
+                            <div className="space-y-3">
+                                <div>
+                                    <h3 className="text-sm font-semibold text-foreground">
+                                        Could not load teachers
+                                    </h3>
+                                    <p className="mt-1 text-sm text-muted-foreground">{error}</p>
+                                </div>
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => fetchTeachers()}
+                                >
+                                    <RotateCcw className="size-4" aria-hidden="true" />
+                                    Retry teachers
+                                </Button>
+                            </div>
+                        </div>
+                    </CardContent>
+                ) : teachers.length === 0 ? (
+                    <CardContent className="px-4 py-6 sm:px-6">
+                        <div className="space-y-3">
+                            <div>
+                                <h3 className="text-sm font-semibold text-foreground">
+                                    No teachers yet
+                                </h3>
+                                <p className="mt-1 text-sm text-muted-foreground">
+                                    Add a teacher account to assign instructors to courses.
+                                </p>
+                            </div>
+                            <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setIsDialogOpen(true)}
+                            >
+                                <UserPlus className="size-4" aria-hidden="true" />
+                                Add teacher
+                            </Button>
+                        </div>
+                    </CardContent>
+                ) : (
+                    <>
+                        {error && (
+                            <div className="border-b px-4 py-3 sm:px-6">
+                                <Alert variant="destructive">
+                                    <AlertCircle className="size-4" aria-hidden="true" />
+                                    <AlertDescription>{error}</AlertDescription>
+                                </Alert>
+                            </div>
+                        )}
+                        <ul className="divide-y">
+                            {teachers.map((teacher) => {
+                                const fullName = `${teacher.firstName} ${teacher.lastName}`.trim();
+                                const expertise = teacher.teacherProfile?.expertise ?? [];
+
+                                return (
+                                    <li
+                                        key={teacher.id}
+                                        className="flex items-start gap-3 px-4 py-3.5 sm:px-6"
+                                    >
+                                        <Avatar className="mt-0.5 size-9 shrink-0">
+                                            <AvatarFallback className="bg-primary/10 text-xs font-medium text-primary">
+                                                {getInitials(teacher.firstName, teacher.lastName)}
+                                            </AvatarFallback>
+                                        </Avatar>
+                                        <div className="min-w-0 flex-1">
+                                            <h3 className="text-sm font-semibold text-foreground [overflow-wrap:anywhere]">
+                                                {fullName}
+                                            </h3>
+                                            <p className="mt-0.5 text-xs text-muted-foreground [overflow-wrap:anywhere]">
+                                                {teacher.email}
+                                            </p>
+                                            {expertise.length > 0 && (
+                                                <div className="mt-2 flex flex-wrap gap-1.5">
+                                                    {expertise.map((skill) => (
+                                                        <Badge key={skill} variant="secondary">
+                                                            {getSkillLabel(skill)}
+                                                        </Badge>
+                                                    ))}
+                                                </div>
+                                            )}
+                                        </div>
+                                    </li>
+                                );
+                            })}
+                        </ul>
+                    </>
+                )}
+            </Card>
 
             <CreateTeacherDialog
                 open={isDialogOpen}
                 onOpenChange={setIsDialogOpen}
                 onSubmit={handleCreateTeacher}
+                onCloseAutoFocus={(event) => {
+                    event.preventDefault();
+                    requestAnimationFrame(() => addTeacherBtnRef.current?.focus());
+                }}
                 isLoading={isLoading}
             />
-
-            <div className="space-y-4">
-                {users.map((user) => (
-                    <div
-                        key={user.id}
-                        className="flex items-center justify-between p-3 rounded-lg hover:bg-muted/50 transition-colors"
-                    >
-                        <div className="flex items-center gap-3">
-                            <Avatar className="h-10 w-10">
-                                <AvatarFallback className="bg-primary/10 text-primary">
-                                    {user.name
-                                        .split(" ")
-                                        .map((n) => n[0])
-                                        .join("")}
-                                </AvatarFallback>
-                            </Avatar>
-                            <div>
-                                <p className="font-medium text-foreground">{user.name}</p>
-                                <p className="text-sm text-muted-foreground">{user.email}</p>
-                            </div>
-                        </div>
-
-                        <div className="flex items-center gap-3">
-                            <span className="text-sm text-muted-foreground">{user.role}</span>
-                            <span
-                                className={`px-2 py-1 rounded-full text-xs font-medium ${
-                                    user.status === "active"
-                                        ? "bg-green-100 text-green-700"
-                                        : "bg-gray-100 text-gray-700"
-                                }`}
-                            >
-                                {user.status}
-                            </span>
-                            <Button variant="ghost" size="icon" className="h-8 w-8">
-                                <MoreHorizontal className="w-4 h-4" />
-                            </Button>
-                        </div>
-                    </div>
-                ))}
-            </div>
-
-            <div className="mt-4 pt-4 border-t">
-                <Button variant="outline" className="w-full">
-                    View All Users
-                </Button>
-            </div>
-        </Card>
+        </section>
     );
 }

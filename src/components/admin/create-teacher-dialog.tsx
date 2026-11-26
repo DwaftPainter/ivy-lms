@@ -4,6 +4,7 @@ import { useState } from "react";
 import {
     Dialog,
     DialogContent,
+    DialogDescription,
     DialogHeader,
     DialogTitle,
     DialogFooter
@@ -20,6 +21,7 @@ interface CreateTeacherDialogProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
     onSubmit: (data: CreateTeacherInput) => Promise<void>;
+    onCloseAutoFocus?: (event: Event) => void;
     isLoading?: boolean;
 }
 
@@ -34,6 +36,7 @@ export function CreateTeacherDialog({
     open,
     onOpenChange,
     onSubmit,
+    onCloseAutoFocus,
     isLoading
 }: CreateTeacherDialogProps) {
     const [formData, setFormData] = useState<{
@@ -101,6 +104,7 @@ export function CreateTeacherDialog({
             bio: "",
             expertise: []
         });
+        setErrors({});
     };
 
     const toggleExpertise = (skill: IeltsSkill) => {
@@ -129,20 +133,28 @@ export function CreateTeacherDialog({
 
     return (
         <Dialog open={open} onOpenChange={handleOpenChange}>
-            <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+            <DialogContent
+                className="max-w-lg max-h-[90vh] overflow-y-auto"
+                onCloseAutoFocus={onCloseAutoFocus}
+            >
                 <DialogHeader>
                     <DialogTitle>Create New Teacher</DialogTitle>
+                    <DialogDescription>
+                        Enter instructor details to generate an account with a temporary password.
+                    </DialogDescription>
                 </DialogHeader>
 
                 <form onSubmit={handleSubmit} className="space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                         <div className="space-y-2">
                             <Label htmlFor="firstName">
-                                First Name <span className="text-red-500">*</span>
+                                First Name <span className="text-destructive">*</span>
                             </Label>
                             <Input
                                 id="firstName"
                                 value={formData.firstName}
+                                aria-invalid={Boolean(errors.firstName)}
+                                aria-describedby={errors.firstName ? "firstName-error" : undefined}
                                 onChange={(e) =>
                                     setFormData({
                                         ...formData,
@@ -153,7 +165,7 @@ export function CreateTeacherDialog({
                                 disabled={isLoading}
                             />
                             {errors.firstName && (
-                                <p className="text-sm text-red-500">
+                                <p id="firstName-error" className="text-sm text-destructive" role="alert">
                                     {errors.firstName}
                                 </p>
                             )}
@@ -161,11 +173,13 @@ export function CreateTeacherDialog({
 
                         <div className="space-y-2">
                             <Label htmlFor="lastName">
-                                Last Name <span className="text-red-500">*</span>
+                                Last Name <span className="text-destructive">*</span>
                             </Label>
                             <Input
                                 id="lastName"
                                 value={formData.lastName}
+                                aria-invalid={Boolean(errors.lastName)}
+                                aria-describedby={errors.lastName ? "lastName-error" : undefined}
                                 onChange={(e) =>
                                     setFormData({
                                         ...formData,
@@ -176,7 +190,7 @@ export function CreateTeacherDialog({
                                 disabled={isLoading}
                             />
                             {errors.lastName && (
-                                <p className="text-sm text-red-500">
+                                <p id="lastName-error" className="text-sm text-destructive" role="alert">
                                     {errors.lastName}
                                 </p>
                             )}
@@ -185,12 +199,14 @@ export function CreateTeacherDialog({
 
                     <div className="space-y-2">
                         <Label htmlFor="email">
-                            Email <span className="text-red-500">*</span>
+                            Email <span className="text-destructive">*</span>
                         </Label>
                         <Input
                             id="email"
                             type="email"
                             value={formData.email}
+                            aria-invalid={Boolean(errors.email)}
+                            aria-describedby={errors.email ? "teacher-email-error" : undefined}
                             onChange={(e) =>
                                 setFormData({ ...formData, email: e.target.value })
                             }
@@ -198,7 +214,9 @@ export function CreateTeacherDialog({
                             disabled={isLoading}
                         />
                         {errors.email && (
-                            <p className="text-sm text-red-500">{errors.email}</p>
+                            <p id="teacher-email-error" className="text-sm text-destructive" role="alert">
+                                {errors.email}
+                            </p>
                         )}
                     </div>
 

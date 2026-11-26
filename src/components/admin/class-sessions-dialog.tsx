@@ -55,6 +55,7 @@ interface ClassSessionsDialogProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
     course: Course | null;
+    onCloseAutoFocus?: (event: Event) => void;
 }
 
 const sessionTypes = [
@@ -73,7 +74,8 @@ const skills = [
 export function ClassSessionsDialog({
     open,
     onOpenChange,
-    course
+    course,
+    onCloseAutoFocus
 }: ClassSessionsDialogProps) {
     const {
         sessions,
@@ -206,7 +208,10 @@ export function ClassSessionsDialog({
     return (
         <>
             <Dialog open={open} onOpenChange={onOpenChange}>
-                <DialogContent className="max-w-4xl max-h-[90vh] p-0">
+                <DialogContent
+                    className="max-w-4xl max-h-[90vh] p-0"
+                    onCloseAutoFocus={onCloseAutoFocus}
+                >
                     <DialogHeader className="p-6 pb-0">
                         <DialogTitle className="text-xl">
                             Manage Lessons - {course?.title}
@@ -256,7 +261,7 @@ export function ClassSessionsDialog({
                                                 setFormData({ ...formData, skill: value as IeltsSkill })
                                             }
                                         >
-                                            <SelectTrigger>
+                                            <SelectTrigger id="skill">
                                                 <SelectValue />
                                             </SelectTrigger>
                                             <SelectContent>
@@ -277,7 +282,7 @@ export function ClassSessionsDialog({
                                                 setFormData({ ...formData, sessionType: value })
                                             }
                                         >
-                                            <SelectTrigger>
+                                            <SelectTrigger id="sessionType">
                                                 <SelectValue />
                                             </SelectTrigger>
                                             <SelectContent>
@@ -456,17 +461,19 @@ export function ClassSessionsDialog({
                                                     <Button
                                                         variant="ghost"
                                                         size="icon"
+                                                        aria-label={`Edit ${session.title}`}
                                                         onClick={() => openEditForm(session)}
                                                     >
-                                                        <Edit className="w-4 h-4" />
+                                                        <Edit className="w-4 h-4" aria-hidden="true" />
                                                     </Button>
                                                     <Button
                                                         variant="ghost"
                                                         size="icon"
+                                                        aria-label={`Delete ${session.title}`}
                                                         className="text-destructive hover:text-destructive"
                                                         onClick={() => openDeleteConfirm(session)}
                                                     >
-                                                        <Trash2 className="w-4 h-4" />
+                                                        <Trash2 className="w-4 h-4" aria-hidden="true" />
                                                     </Button>
                                                 </div>
                                             </div>
