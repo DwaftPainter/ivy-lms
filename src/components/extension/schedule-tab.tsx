@@ -91,7 +91,7 @@ export function ScheduleTab({ lessons }: ScheduleTabProps) {
     return (
         <div className="grid grid-cols-1 xl:grid-cols-4 gap-6">
             {/* Main Calendar */}
-            <Card className="p-6 shadow-none border rounded-3xl xl:col-span-4">
+            <Card className="p-6 border rounded-3xl xl:col-span-4">
                 {/* Custom Header */}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
                     <div>

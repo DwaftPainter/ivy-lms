@@ -19,14 +19,14 @@ export function AssignmentsLoadingSkeleton() {
                 <Skeleton className="h-9 w-56 motion-reduce:animate-none" />
                 <Skeleton className="h-5 w-72 max-w-full motion-reduce:animate-none" />
             </div>
-            <Card className="p-4 shadow-none">
+            <Card className="p-4">
                 <div className="flex flex-col gap-3 sm:flex-row">
                     <Skeleton className="h-9 flex-1 motion-reduce:animate-none" />
                     <Skeleton className="h-9 w-full sm:w-40 motion-reduce:animate-none" />
                     <Skeleton className="h-9 w-full sm:w-40 motion-reduce:animate-none" />
                 </div>
             </Card>
-            <Card className="gap-0 py-0 shadow-none">
+            <Card className="gap-0 py-0">
                 <div className="border-b px-4 py-4 sm:px-6">
                     <Skeleton className="h-6 w-32 motion-reduce:animate-none" />
                 </div>
@@ -57,7 +57,7 @@ export function AssignmentsErrorState({
                     Assignments
                 </h1>
             </header>
-            <Card className="p-6 shadow-none">
+            <Card className="p-6">
                 <div role="alert" className="flex items-start gap-3">
                     <AlertCircle className="mt-0.5 size-5 shrink-0 text-destructive" aria-hidden="true" />
                     <div className="space-y-3">
@@ -80,7 +80,7 @@ export function AssignmentsErrorState({
 
 export function AssignmentsEmptyState() {
     return (
-        <Card className="p-6 shadow-none sm:p-8">
+        <Card className="p-6 sm:p-8">
             <div className="flex flex-col items-start gap-4">
                 <div className="space-y-1.5">
                     <h2 className="text-lg font-semibold text-foreground">No assignments yet</h2>
@@ -99,7 +99,7 @@ export function AssignmentsEmptyState() {
 
 export function AssignmentsNoMatchState({ onReset }: { onReset: () => void }) {
     return (
-        <Card className="p-6 shadow-none sm:p-8">
+        <Card className="p-6 sm:p-8">
             <div className="flex flex-col items-start gap-4">
                 <div className="space-y-1.5">
                     <h2 className="text-lg font-semibold text-foreground">
@@ -127,7 +127,7 @@ export function TodoAssignmentsSection({
 }) {
     return (
         <section aria-labelledby="todo-section-heading" className="min-w-0">
-            <Card className="gap-0 border-primary/15 py-0 shadow-none">
+            <Card className="gap-0 border-primary/15 py-0">
                 <div className="flex flex-wrap items-center justify-between gap-2 border-b px-4 py-4 sm:px-6">
                     <div className="flex items-center gap-2">
                         <ClipboardList className="size-4 shrink-0 text-primary" aria-hidden="true" />
@@ -188,7 +188,7 @@ export function CompletedAssignmentsSection({ items }: { items: ClassifiedAssign
 
     return (
         <section aria-labelledby="completed-section-heading" className="min-w-0">
-            <Card className="gap-0 py-0 shadow-none">
+            <Card className="gap-0 py-0">
                 <div className="flex flex-wrap items-center justify-between gap-2 border-b px-4 py-4 sm:px-6">
                     <div className="flex items-center gap-2">
                         <CheckCircle2

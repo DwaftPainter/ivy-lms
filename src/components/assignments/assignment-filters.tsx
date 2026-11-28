@@ -39,7 +39,7 @@ export function AssignmentFiltersBar({
 }: AssignmentFiltersBarProps) {
     return (
         <section aria-label="Filter assignments">
-            <Card className="bg-muted/25 p-3.5 shadow-none sm:p-4">
+            <Card className="bg-muted/25 p-3.5 shadow-xs sm:p-4">
                 <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
                     <div className="relative flex-1 min-w-0">
                         <Search

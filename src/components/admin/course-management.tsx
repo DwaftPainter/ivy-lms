@@ -148,7 +148,7 @@ export function CourseManagement() {
 
     return (
         <section aria-labelledby="admin-courses-heading" className="min-w-0">
-            <Card className="gap-0 py-0 shadow-none">
+            <Card className="gap-0 py-0">
                 <div className="space-y-4 border-b px-4 py-4 sm:px-6">
                     <div className="flex flex-wrap items-center justify-between gap-3">
                         <div className="flex items-center gap-2">
