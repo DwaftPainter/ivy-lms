@@ -7,6 +7,7 @@ import { NavMain } from "./nav-main";
 import { NavUser } from "./nav-user";
 import { useAuthStore } from "@/store/auth.store";
 import { LucideIcon } from "lucide-react";
+
 export interface NavItem {
     title: string;
     url: string;
@@ -20,9 +21,10 @@ export interface NavItem {
 
 interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
     navMain: NavItem[];
+    homeUrl?: string;
 }
 
-const AppSidebar: React.FC<AppSidebarProps> = ({ navMain, ...props }) => {
+const AppSidebar: React.FC<AppSidebarProps> = ({ navMain, homeUrl, ...props }) => {
     const { user } = useAuthStore();
 
     // Filter nav items based on user role
@@ -33,10 +35,13 @@ const AppSidebar: React.FC<AppSidebarProps> = ({ navMain, ...props }) => {
         return true;
     });
 
+    const resolvedHomeUrl =
+        homeUrl ?? filteredNav.find((item) => item.url && item.url !== "#")?.url ?? "/";
+
     return (
-        <Sidebar collapsible="icon" {...props}>
+        <Sidebar variant="inset" collapsible="icon" {...props}>
             <SidebarHeader className="pr-10 md:pr-2">
-                <TeamSwitcher />
+                <TeamSwitcher homeUrl={resolvedHomeUrl} />
             </SidebarHeader>
             <SidebarContent>
                 <NavMain items={filteredNav} />

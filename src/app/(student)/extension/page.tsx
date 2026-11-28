@@ -39,7 +39,7 @@ const ExtensionPage = () => {
 
     if (isLoading) {
         return (
-            <div className="p-4 size-full flex items-center justify-center">
+            <div className="mx-auto flex size-full w-full max-w-6xl items-center justify-center px-4 py-12 sm:px-6 lg:px-8">
                 <div className="flex flex-col items-center gap-4">
                     <Loader />
                 </div>
@@ -48,7 +48,16 @@ const ExtensionPage = () => {
     }
 
     return (
-        <div className="p-4 w-full">
+        <div className="mx-auto w-full max-w-6xl space-y-6 px-4 pb-12 pt-6 sm:px-6 sm:pt-8 lg:px-8">
+            <header>
+                <h1 className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
+                    Extension
+                </h1>
+                <p className="mt-1.5 text-sm text-text-primary sm:text-base">
+                    Browse your schedule, upcoming classes, and coursework.
+                </p>
+            </header>
+
             {/* Tabs */}
             <Tabs
                 value={activeTab}

@@ -53,10 +53,10 @@ function StudentItem({
             onClick={onClick}
             aria-current={isSelected ? "true" : undefined}
             className={cn(
-                "w-full flex items-start gap-3 p-3 rounded-lg text-left transition-colors",
+                "w-full flex items-start gap-3 p-3 rounded-lg text-left transition-colors focus-visible:outline-2 focus-visible:outline-ring",
                 isSelected
-                    ? "bg-primary/10 border border-primary/20"
-                    : "hover:bg-accent border border-transparent"
+                    ? "bg-background border border-primary/30 shadow-xs ring-1 ring-primary/15"
+                    : "hover:bg-background/70 border border-transparent"
             )}
         >
             <Avatar className="h-9 w-9 shrink-0">
@@ -111,9 +111,9 @@ export function StudentSubmissionList({
     ).length;
 
     return (
-        <div className={cn("flex flex-col h-full bg-card border-r", className)}>
-            <div className="p-4 border-b space-y-3">
-                <h2 className="font-semibold text-sm">Submissions</h2>
+        <div className={cn("flex flex-col h-full min-h-0 bg-muted/20 border-r border-border/80", className)}>
+            <div className="p-4 border-b border-border/80 space-y-2.5 shrink-0">
+                <h2 className="font-semibold text-sm text-foreground">Submissions</h2>
                 <div className="flex items-center gap-4 text-xs">
                     <div className="flex items-center gap-1.5">
                         <div className="w-2 h-2 rounded-full bg-amber-500" />
@@ -126,7 +126,7 @@ export function StudentSubmissionList({
                 </div>
             </div>
 
-            <ScrollArea className="flex-1">
+            <ScrollArea className="flex-1 min-h-0">
                 <div className="p-3 space-y-1">
                     {submissions.length === 0 ? (
                         <div className="text-center py-8 text-sm text-muted-foreground">

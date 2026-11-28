@@ -126,7 +126,7 @@ export default function AssignmentBuilderPage() {
 
     if (!assignment || isFetching) {
         return (
-            <div className="flex items-center justify-center h-[calc(100dvh-3rem)]">
+            <div className="flex flex-1 min-h-0 items-center justify-center">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
             </div>
         );
@@ -134,7 +134,7 @@ export default function AssignmentBuilderPage() {
 
     return (
         <DndProvider>
-            <div className="h-[calc(100dvh-3rem)] min-w-0 w-full flex flex-col bg-background overflow-hidden">
+            <div className="flex-1 min-h-0 h-full min-w-0 w-full flex flex-col bg-background overflow-hidden">
                 <BuilderTopBar
                     isEditMode={isEditMode}
                     assignmentTitle={assignment.title}

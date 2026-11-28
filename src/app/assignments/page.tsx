@@ -3,11 +3,8 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import AuthGuard from "@/components/layout/auth-guard";
-import AppSidebar from "@/components/layout/app-sidebar";
-import MainHeader from "@/components/layout/main-header";
-import { WorkInProgressWrapper } from "@/components/custom-ui/work-in-progress";
+import { AppShell } from "@/components/layout/app-shell";
 import { sidebarNavConfig } from "@/config/student/side-bar-config";
-import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { AssignmentFiltersBar } from "@/components/assignments/assignment-filters";
 import {
     AssignmentsEmptyState,
@@ -95,78 +92,68 @@ export default function StudentAssignmentsPage() {
 
     return (
         <AuthGuard>
-            <SidebarProvider>
-                <AppSidebar navMain={sidebarNavConfig} />
-                <SidebarInset className="min-w-0">
-                    <MainHeader navMain={sidebarNavConfig} />
-                    <WorkInProgressWrapper>
-                        <main className="flex-1 min-w-0 bg-[rgb(241,241,241)]">
-                            <div className="mx-auto w-full max-w-6xl px-4 pb-12 pt-6 sm:px-7 sm:pt-10 lg:px-9">
-                                {isLoading ? (
-                                    <AssignmentsLoadingSkeleton />
-                                ) : error ? (
-                                    <AssignmentsErrorState error={error} onRetry={fetchAssignments} />
-                                ) : (
-                                    <div className="space-y-6">
-                                        <header className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-                                            <div className="min-w-0">
-                                                <h1 className="text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
-                                                    Assignments
-                                                </h1>
-                                                <p className="mt-1.5 text-sm text-text-primary [overflow-wrap:anywhere] sm:text-base">
-                                                    {classified.length === 0
-                                                        ? "Assignments from your courses will appear here."
-                                                        : formatAssignmentsSummaryLine(overviewCounts)}
-                                                </p>
-                                            </div>
-                                            <Link
-                                                href="/dashboard"
-                                                className="inline-flex min-h-8 shrink-0 items-center self-start rounded-sm text-sm font-medium text-primary underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ring sm:self-auto"
-                                            >
-                                                Back to study plan
-                                            </Link>
-                                        </header>
+            <AppShell navMain={sidebarNavConfig} homeUrl="/dashboard">
+                <div className="mx-auto w-full max-w-6xl px-4 pb-12 pt-6 sm:px-6 sm:pt-8 lg:px-8">
+                    {isLoading ? (
+                        <AssignmentsLoadingSkeleton />
+                    ) : error ? (
+                        <AssignmentsErrorState error={error} onRetry={fetchAssignments} />
+                    ) : (
+                        <div className="space-y-6">
+                            <header className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+                                <div className="min-w-0">
+                                    <h1 className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
+                                        Assignments
+                                    </h1>
+                                    <p className="mt-1.5 text-sm text-text-primary [overflow-wrap:anywhere] sm:text-base">
+                                        {classified.length === 0
+                                            ? "Assignments from your courses will appear here."
+                                            : formatAssignmentsSummaryLine(overviewCounts)}
+                                    </p>
+                                </div>
+                                <Link
+                                    href="/dashboard"
+                                    className="inline-flex min-h-8 shrink-0 items-center self-start rounded-sm text-sm font-medium text-primary underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ring sm:self-auto"
+                                >
+                                    Back to study plan
+                                </Link>
+                            </header>
 
-                                        {classified.length === 0 ? (
-                                            <AssignmentsEmptyState />
-                                        ) : (
-                                            <>
-                                                <AssignmentFiltersBar
-                                                    searchQuery={searchQuery}
-                                                    onSearchChange={setSearchQuery}
-                                                    statusFilter={statusFilter}
-                                                    onStatusChange={setStatusFilter}
-                                                    skillFilter={skillFilter}
-                                                    onSkillChange={setSkillFilter}
-                                                    hasActiveFilters={hasActiveFilters}
-                                                    onReset={resetFilters}
+                            {classified.length === 0 ? (
+                                <AssignmentsEmptyState />
+                            ) : (
+                                <>
+                                    <AssignmentFiltersBar
+                                        searchQuery={searchQuery}
+                                        onSearchChange={setSearchQuery}
+                                        statusFilter={statusFilter}
+                                        onStatusChange={setStatusFilter}
+                                        skillFilter={skillFilter}
+                                        onSkillChange={setSkillFilter}
+                                        hasActiveFilters={hasActiveFilters}
+                                        onReset={resetFilters}
+                                    />
+
+                                    {filteredItems.length === 0 ? (
+                                        <AssignmentsNoMatchState onReset={resetFilters} />
+                                    ) : (
+                                        <div className="space-y-6">
+                                            {!isCompletedOnlyFilter && (
+                                                <TodoAssignmentsSection
+                                                    todoGroups={todoGroups}
+                                                    totalCount={todoFilteredCount}
                                                 />
+                                            )}
 
-                                                {filteredItems.length === 0 ? (
-                                                    <AssignmentsNoMatchState onReset={resetFilters} />
-                                                ) : (
-                                                    <div className="space-y-6">
-                                                        {!isCompletedOnlyFilter && (
-                                                            <TodoAssignmentsSection
-                                                                todoGroups={todoGroups}
-                                                                totalCount={todoFilteredCount}
-                                                            />
-                                                        )}
-
-                                                        <CompletedAssignmentsSection
-                                                            items={completedItems}
-                                                        />
-                                                    </div>
-                                                )}
-                                            </>
-                                        )}
-                                    </div>
-                                )}
-                            </div>
-                        </main>
-                    </WorkInProgressWrapper>
-                </SidebarInset>
-            </SidebarProvider>
+                                            <CompletedAssignmentsSection items={completedItems} />
+                                        </div>
+                                    )}
+                                </>
+                            )}
+                        </div>
+                    )}
+                </div>
+            </AppShell>
         </AuthGuard>
     );
 }

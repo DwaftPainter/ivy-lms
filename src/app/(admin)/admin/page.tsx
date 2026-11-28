@@ -31,9 +31,9 @@ export default function AdminPage() {
     })();
 
     return (
-        <div className="mx-auto w-full max-w-6xl px-4 pb-12 pt-6 sm:px-7 sm:pt-10 lg:px-9">
+        <div className="mx-auto w-full max-w-6xl px-4 pb-12 pt-6 sm:px-6 sm:pt-8 lg:px-8">
             <header className="mb-5 sm:mb-7">
-                <h1 className="text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
+                <h1 className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
                     Admin overview
                 </h1>
                 <p className="mt-1.5 text-sm text-text-primary [overflow-wrap:anywhere] sm:text-base">

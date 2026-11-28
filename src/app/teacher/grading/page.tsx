@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
     GradingQueueCard,
@@ -16,7 +16,7 @@ import {
     filterGradingAssignments,
     type GradingAssignmentSummary
 } from "@/lib/grading-submission";
-import { AlertCircle, Clock } from "lucide-react";
+import { AlertCircle, RefreshCw, RotateCcw } from "lucide-react";
 
 interface DashboardData {
     greeting: string;
@@ -57,65 +57,92 @@ export default function TeacherGradingOverviewPage() {
         selectedSkill
     );
 
+    const pendingTotal = data?.summary?.totalSubmissionsToGrade || 0;
+
     if (isLoading) {
         return (
-            <div className="h-full p-6 space-y-6">
-                <Skeleton className="h-8 w-64" />
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="mx-auto w-full max-w-6xl space-y-6 px-4 pb-12 pt-6 sm:px-6 sm:pt-8 lg:px-8" aria-busy="true">
+                <p role="status" className="sr-only">
+                    Loading grading queue
+                </p>
+                <div className="space-y-2">
+                    <Skeleton className="h-9 w-56 motion-reduce:animate-none" />
+                    <Skeleton className="h-5 w-72 max-w-full motion-reduce:animate-none" />
+                </div>
+                <div className="grid grid-cols-2 gap-3 lg:grid-cols-4 lg:gap-4">
                     {[1, 2, 3, 4].map((i) => (
-                        <Skeleton key={i} className="h-32" />
+                        <Skeleton key={i} className="h-24 motion-reduce:animate-none" />
                     ))}
                 </div>
-                <Skeleton className="h-96" />
+                <Skeleton className="h-16 motion-reduce:animate-none" />
+                <Skeleton className="h-72 motion-reduce:animate-none" />
             </div>
         );
     }
 
     if (error) {
         return (
-            <div className="h-full p-6">
-                <Alert variant="destructive">
-                    <AlertCircle className="h-4 w-4" />
-                    <AlertTitle>Error</AlertTitle>
-                    <AlertDescription>{error}</AlertDescription>
-                </Alert>
+            <div className="mx-auto w-full max-w-6xl space-y-6 px-4 pb-12 pt-6 sm:px-6 sm:pt-8 lg:px-8">
+                <header>
+                    <h1 className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
+                        Grading queue
+                    </h1>
+                </header>
+                <Card className="p-6 shadow-none">
+                    <Alert variant="destructive" className="border-none p-0">
+                        <AlertCircle className="h-4 w-4" aria-hidden="true" />
+                        <AlertTitle>Could not load grading queue</AlertTitle>
+                        <AlertDescription className="mt-1 space-y-3">
+                            <p>{error}</p>
+                            <Button type="button" variant="outline" size="sm" onClick={fetchGradingData}>
+                                <RotateCcw className="size-4" aria-hidden="true" />
+                                Try again
+                            </Button>
+                        </AlertDescription>
+                    </Alert>
+                </Card>
             </div>
         );
     }
 
     return (
-        <div className="h-full flex flex-col bg-background">
-            <div className="shrink-0 p-6 border-b bg-card">
-                <div className="flex items-center justify-between">
-                    <div>
-                        <h1 className="text-2xl font-bold">Grading Center</h1>
-                        <p className="text-sm text-muted-foreground mt-1">
-                            {data?.greeting} - You have{" "}
-                            {data?.summary?.totalSubmissionsToGrade || 0} submissions awaiting review
-                        </p>
-                    </div>
-                    <Button variant="outline" onClick={fetchGradingData}>
-                        <Clock className="w-4 h-4 mr-2" />
-                        Refresh
-                    </Button>
+        <div className="mx-auto w-full max-w-6xl space-y-6 px-4 pb-12 pt-6 sm:px-6 sm:pt-8 lg:px-8">
+            <header className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+                <div className="min-w-0">
+                    <h1 className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
+                        Grading queue
+                    </h1>
+                    <p className="mt-1.5 text-sm text-text-primary [overflow-wrap:anywhere] sm:text-base">
+                        {data?.greeting ? `${data.greeting} — ` : ""}
+                        {pendingTotal === 1
+                            ? "1 submission awaiting review."
+                            : `${pendingTotal} submissions awaiting review.`}
+                    </p>
                 </div>
-            </div>
+                <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={fetchGradingData}
+                    className="self-start sm:self-auto"
+                >
+                    <RefreshCw className="size-4" aria-hidden="true" />
+                    Refresh
+                </Button>
+            </header>
 
-            <ScrollArea className="flex-1">
-                <div className="p-6 space-y-6 max-w-7xl mx-auto">
-                    <GradingStatsGrid stats={data?.summary} />
-                    <GradingQueueCard
-                        assignments={filteredAssignments}
-                        searchQuery={searchQuery}
-                        onSearchChange={setSearchQuery}
-                        selectedSkill={selectedSkill}
-                        onSkillChange={setSelectedSkill}
-                        onGradeClick={(assignmentId) =>
-                            router.push(`/teacher/assignments/${assignmentId}/grade`)
-                        }
-                    />
-                </div>
-            </ScrollArea>
+            <GradingStatsGrid stats={data?.summary} />
+
+            <GradingQueueCard
+                assignments={filteredAssignments}
+                searchQuery={searchQuery}
+                onSearchChange={setSearchQuery}
+                selectedSkill={selectedSkill}
+                onSkillChange={setSelectedSkill}
+                onGradeClick={(assignmentId) =>
+                    router.push(`/teacher/assignments/${assignmentId}/grade`)
+                }
+            />
         </div>
     );
 }
