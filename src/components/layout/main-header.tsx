@@ -15,7 +15,7 @@ interface MainHeaderProps {
     navMain?: NavItem[];
 }
 
-const ROOT_PORTAL_PATHS = new Set(["/", "/teacher", "/dashboard"]);
+const ROOT_PORTAL_PATHS = new Set(["/", "/teacher", "/dashboard", "/admin"]);
 
 function resolveTaskRouteTitle(pathname: string): string {
     if (pathname.startsWith("/teacher/assignments/builder")) {
@@ -27,8 +27,14 @@ function resolveTaskRouteTitle(pathname: string): string {
     if (pathname.startsWith("/teacher/lessons/") || pathname.startsWith("/lessons/")) {
         return "Lesson Details";
     }
+    if (pathname.startsWith("/teacher/messages")) {
+        return "Messages";
+    }
     if (pathname.startsWith("/assignments")) {
         return "Assignments";
+    }
+    if (pathname.startsWith("/admin")) {
+        return "Admin";
     }
     return "";
 }
@@ -37,11 +43,9 @@ const MainHeader = ({ navMain = [] }: MainHeaderProps) => {
     const pathname = usePathname();
 
     const pageTitle = useMemo(() => {
-        // Find exact match first
         const exactMatch = navMain.find((item) => item.url === pathname);
         if (exactMatch) return exactMatch.title;
 
-        // Find section parent route match (excluding root portal dashboards)
         const parentMatch = navMain.find(
             (item) =>
                 item.url !== "#" &&
@@ -54,19 +58,20 @@ const MainHeader = ({ navMain = [] }: MainHeaderProps) => {
     }, [pathname, navMain]);
 
     return (
-        <header
-            className="sticky top-0 z-50 w-full px-4 bg-primary flex h-12 shrink-0 items-center justify-between gap-2"
-        >
-            <div className="flex items-center gap-2 overflow-hidden">
-                <SidebarTrigger className="text-text-secondary shrink-0" />
-                <Separator orientation="vertical" className="mr-2 data-[orientation=vertical]:h-4 shrink-0" />
+        <header className="sticky top-0 z-30 flex h-14 w-full shrink-0 items-center justify-between gap-3 border-b border-border/80 bg-background/95 px-3 backdrop-blur-xs sm:px-6 md:static md:bg-background md:backdrop-blur-none">
+            <div className="flex min-w-0 items-center gap-2.5 overflow-hidden">
+                <SidebarTrigger />
+                <Separator
+                    orientation="vertical"
+                    className="data-[orientation=vertical]:h-4 shrink-0"
+                />
                 {pageTitle && (
-                    <p className="text-text-secondary font-semibold truncate">
+                    <span className="truncate text-sm font-medium text-foreground">
                         {pageTitle}
-                    </p>
+                    </span>
                 )}
             </div>
-            <div className="flex gap-2">
+            <div className="flex shrink-0 items-center gap-1.5">
                 <NotificationBell />
             </div>
         </header>

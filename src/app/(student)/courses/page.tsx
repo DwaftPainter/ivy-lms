@@ -47,7 +47,7 @@ const CoursesPage = () => {
 
     if (isLoading) {
         return (
-            <div className="p-4 size-full flex items-center justify-center">
+            <div className="mx-auto flex size-full w-full max-w-6xl items-center justify-center px-4 py-12 sm:px-6 lg:px-8">
                 <div className="flex flex-col items-center gap-4">
                     <Loader />
                 </div>
@@ -55,39 +55,16 @@ const CoursesPage = () => {
         );
     }
 
-    // if (isEmpty) {
-    //     return (
-    //         <div className="p-4 w-full">
-    //             {/* Header */}
-    //             <div className="mb-6">
-    //                 <h1 className="text-2xl font-bold text-foreground">My Courses</h1>
-    //                 <p className="text-muted-foreground mt-1">
-    //                     View and manage all your enrolled courses
-    //                 </p>
-    //             </div>
-
-    //             <div className="flex flex-col items-center justify-center py-16 text-center">
-    //                 <BookOpen className="w-16 h-16 text-muted-foreground mb-6" />
-    //                 <h3 className="text-lg font-medium text-foreground mb-2">
-    //                     No enrolled courses yet
-    //                 </h3>
-    //                 <p className="text-sm text-muted-foreground max-w-sm">
-    //                     You haven&apos;t enrolled in any courses yet. Browse available courses to get started.
-    //                 </p>
-    //             </div>
-    //         </div>
-    //     );
-    // }
-
     return (
-        <div className="p-4 w-full">
-            {/* Header
-            <div className="mb-6">
-                <h1 className="text-2xl font-bold text-foreground">My Courses</h1>
-                <p className="text-muted-foreground mt-1">
-                    View and manage all your enrolled courses
+        <div className="mx-auto w-full max-w-6xl space-y-6 px-4 pb-12 pt-6 sm:px-6 sm:pt-8 lg:px-8">
+            <header>
+                <h1 className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
+                    Courses
+                </h1>
+                <p className="mt-1.5 text-sm text-text-primary sm:text-base">
+                    View and manage your enrolled IELTS courses.
                 </p>
-            </div> */}
+            </header>
 
             {/* Tabs */}
             <Tabs

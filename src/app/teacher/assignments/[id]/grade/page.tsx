@@ -131,12 +131,12 @@ export default function TeacherGradingPage() {
     })) ?? [];
 
     return (
-        <div className="min-h-full xl:h-full flex flex-col bg-background">
-            {/* Header */}
-            <div className="shrink-0 p-4 sm:p-6 border-b bg-card">
+        <div className="flex flex-1 min-h-0 flex-col bg-background xl:overflow-hidden">
+            {/* Task Sub-Header inside white frame */}
+            <div className="shrink-0 border-b border-border/80 bg-background px-4 py-3.5 sm:px-6">
                 <GradingHeader />
 
-                <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t pt-3 xl:hidden">
+                <div className="mt-3 flex flex-wrap items-center justify-between gap-3 border-t border-border/70 pt-3 xl:hidden">
                     <Sheet open={submissionsSheetOpen} onOpenChange={setSubmissionsSheetOpen}>
                         <SheetTrigger asChild>
                             <Button variant="outline" size="sm" className="gap-2">
@@ -195,20 +195,20 @@ export default function TeacherGradingPage() {
             </div>
 
             {/* Main Content */}
-            <div className="flex-1 flex flex-col xl:flex-row xl:overflow-hidden min-w-0">
+            <div className="flex flex-1 min-h-0 flex-col xl:flex-row xl:overflow-hidden min-w-0">
                 {/* Sidebar - Student List (>= 1280px inline rail) */}
-                <div ref={submissionRailRef} className="hidden xl:block w-72 shrink-0">
+                <div ref={submissionRailRef} className="hidden xl:flex w-72 shrink-0 min-h-0">
                     <StudentSubmissionList
                         submissions={submissions}
                         currentSubmissionId={currentSubmissionId}
                         onSelect={setCurrentSubmission}
-                        className="h-full"
+                        className="h-full w-full"
                     />
                 </div>
 
                 {/* Main Area */}
-                <div className="flex-1 flex flex-col min-w-0">
-                    <div className="flex-1 xl:overflow-auto p-4 sm:p-6">
+                <div className="flex flex-1 min-w-0 min-h-0 flex-col bg-background">
+                    <div className="flex-1 min-h-0 xl:overflow-y-auto p-4 sm:p-6">
                         {currentSubmission ? (
                             <div className="max-w-5xl mx-auto space-y-6">
                                 <Tabs defaultValue="submission" className="w-full">
@@ -255,7 +255,7 @@ export default function TeacherGradingPage() {
                     </div>
 
                     {/* Action Bar */}
-                    <div className="shrink-0 p-4 border-t bg-card">
+                    <div className="shrink-0 border-t border-border/80 bg-background px-4 py-3 sm:px-6">
                         <GradingActionBar />
                     </div>
                 </div>

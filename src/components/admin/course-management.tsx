@@ -14,6 +14,13 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue
+} from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { filterAdminCourses } from "@/lib/admin-courses";
 import {
@@ -41,6 +48,7 @@ export function CourseManagement() {
     } = useCourseStore();
 
     const [searchQuery, setSearchQuery] = useState("");
+    const [statusFilter, setStatusFilter] = useState<"all" | "published" | "draft">("all");
     const [dialogOpen, setDialogOpen] = useState(false);
     const [editingCourse, setEditingCourse] = useState<Course | null>(null);
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -69,10 +77,14 @@ export function CourseManagement() {
         loadCourses();
     }, [loadCourses]);
 
-    const filteredCourses = useMemo(
-        () => filterAdminCourses(courses, searchQuery),
-        [courses, searchQuery]
-    );
+    const filteredCourses = useMemo(() => {
+        const searched = filterAdminCourses(courses, searchQuery);
+        if (statusFilter === "published") return searched.filter((c) => c.isPublished);
+        if (statusFilter === "draft") return searched.filter((c) => !c.isPublished);
+        return searched;
+    }, [courses, searchQuery, statusFilter]);
+
+    const hasActiveCourseFilters = searchQuery.trim().length > 0 || statusFilter !== "all";
 
     const handleCreate = async (data: CreateCourseInput) => {
         try {
@@ -169,29 +181,49 @@ export function CourseManagement() {
                     </div>
 
                     {(!isLoading || courses.length > 0) && !error && courses.length > 0 && (
-                        <div className="relative">
-                            <Search
-                                className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
-                                aria-hidden="true"
-                            />
-                            <Input
-                                type="search"
-                                placeholder="Search by course, skill, level, or instructor ID..."
-                                aria-label="Search courses"
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                                className={searchQuery ? "pl-9 pr-9" : "pl-9"}
-                            />
-                            {searchQuery && (
-                                <button
-                                    type="button"
-                                    onClick={() => setSearchQuery("")}
-                                    aria-label="Clear course search"
-                                    className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded-sm p-1 text-muted-foreground hover:text-foreground focus-visible:outline-2 focus-visible:outline-ring"
+                        <div className="flex flex-col gap-2.5 rounded-lg border border-border/70 bg-muted/25 p-2.5 sm:flex-row sm:items-center">
+                            <div className="relative min-w-0 flex-1">
+                                <Search
+                                    className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
+                                    aria-hidden="true"
+                                />
+                                <Input
+                                    type="search"
+                                    placeholder="Search by course, skill, level, or instructor..."
+                                    aria-label="Search courses"
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    className={searchQuery ? "bg-background pl-9 pr-9" : "bg-background pl-9"}
+                                />
+                                {searchQuery && (
+                                    <button
+                                        type="button"
+                                        onClick={() => setSearchQuery("")}
+                                        aria-label="Clear course search"
+                                        className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded-sm p-1 text-muted-foreground hover:text-foreground focus-visible:outline-2 focus-visible:outline-ring"
+                                    >
+                                        <X className="size-3.5" aria-hidden="true" />
+                                    </button>
+                                )}
+                            </div>
+                            <Select
+                                value={statusFilter}
+                                onValueChange={(value) =>
+                                    setStatusFilter(value as "all" | "published" | "draft")
+                                }
+                            >
+                                <SelectTrigger
+                                    aria-label="Filter courses by status"
+                                    className="w-full bg-background sm:w-36"
                                 >
-                                    <X className="size-3.5" aria-hidden="true" />
-                                </button>
-                            )}
+                                    <SelectValue placeholder="All statuses" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="all">All statuses</SelectItem>
+                                    <SelectItem value="published">Published</SelectItem>
+                                    <SelectItem value="draft">Draft</SelectItem>
+                                </SelectContent>
+                            </Select>
                         </div>
                     )}
                 </div>
@@ -265,17 +297,22 @@ export function CourseManagement() {
                                     No matching courses
                                 </h3>
                                 <p className="mt-1 text-sm text-muted-foreground">
-                                    No courses match &ldquo;{searchQuery.trim()}&rdquo;.
+                                    {hasActiveCourseFilters
+                                        ? "No courses match your current search or status filter."
+                                        : "No courses found."}
                                 </p>
                             </div>
                             <Button
                                 type="button"
                                 variant="outline"
                                 size="sm"
-                                onClick={() => setSearchQuery("")}
+                                onClick={() => {
+                                    setSearchQuery("");
+                                    setStatusFilter("all");
+                                }}
                             >
                                 <RotateCcw className="size-4" aria-hidden="true" />
-                                Reset search
+                                Reset filters
                             </Button>
                         </div>
                     </CardContent>

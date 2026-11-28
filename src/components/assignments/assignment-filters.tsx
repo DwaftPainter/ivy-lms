@@ -39,7 +39,7 @@ export function AssignmentFiltersBar({
 }: AssignmentFiltersBarProps) {
     return (
         <section aria-label="Filter assignments">
-            <Card className="p-3.5 shadow-none sm:p-4">
+            <Card className="bg-muted/25 p-3.5 shadow-none sm:p-4">
                 <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
                     <div className="relative flex-1 min-w-0">
                         <Search
@@ -52,7 +52,7 @@ export function AssignmentFiltersBar({
                             aria-label="Search assignments"
                             value={searchQuery}
                             onChange={(e) => onSearchChange(e.target.value)}
-                            className={cn("pl-9", searchQuery && "pr-9")}
+                            className={cn("bg-background pl-9", searchQuery && "pr-9")}
                         />
                         {searchQuery && (
                             <button
@@ -71,7 +71,7 @@ export function AssignmentFiltersBar({
                             value={statusFilter}
                             onValueChange={(value) => onStatusChange(value as StatusFilterValue)}
                         >
-                            <SelectTrigger aria-label="Filter by status" className="w-full sm:w-44">
+                            <SelectTrigger aria-label="Filter by status" className="w-full bg-background sm:w-44">
                                 <SelectValue placeholder="All statuses" />
                             </SelectTrigger>
                             <SelectContent>
@@ -87,7 +87,7 @@ export function AssignmentFiltersBar({
                         </Select>
 
                         <Select value={skillFilter} onValueChange={onSkillChange}>
-                            <SelectTrigger aria-label="Filter by skill" className="w-full sm:w-40">
+                            <SelectTrigger aria-label="Filter by skill" className="w-full bg-background sm:w-40">
                                 <SelectValue placeholder="All skills" />
                             </SelectTrigger>
                             <SelectContent>
