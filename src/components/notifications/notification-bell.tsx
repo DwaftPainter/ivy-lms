@@ -67,39 +67,37 @@ export function NotificationBell() {
     return (
         <Popover open={open} onOpenChange={setOpen}>
             <div className="relative">
-                <div className="border-gradient size-9 flex items-center justify-center cursor-pointer">
-                    <PopoverTrigger asChild>
-                        <button
-                            type="button"
-                            aria-label={
-                                unreadCount > 0
-                                    ? `Notifications (${unreadCount} unread)`
-                                    : "Notifications"
-                            }
-                            className="p-1.5 flex items-center h-9 w-9 cursor-pointer relative"
-                        >
-                            <span className="flex items-center justify-center size-full">
-                                <BellIcon className="text-text-secondary size-4" aria-hidden="true" />
-                            </span>
-                        </button>
-                    </PopoverTrigger>
-                </div>
+                <PopoverTrigger asChild>
+                    <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        aria-label={
+                            unreadCount > 0
+                                ? `Notifications (${unreadCount} unread)`
+                                : "Notifications"
+                        }
+                        className="relative size-8 text-muted-foreground hover:bg-muted hover:text-foreground"
+                    >
+                        <BellIcon className="size-4" aria-hidden="true" />
+                    </Button>
+                </PopoverTrigger>
                 {unreadCount > 0 && (
                     <span
                         aria-hidden="true"
-                        className="pointer-events-none absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-600 text-[10px] font-medium text-white ring-2 ring-primary"
+                        className="pointer-events-none absolute -top-0.5 -right-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-semibold text-primary-foreground ring-2 ring-background tabular-nums"
                     >
                         {unreadCount > 9 ? "9+" : unreadCount}
                     </span>
                 )}
             </div>
             <PopoverContent
-                className="w-[400px] p-0"
+                className="w-[min(24rem,calc(100vw-1.5rem))] p-0"
                 align="end"
                 sideOffset={8}
             >
-                <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
-                    <h3 className="font-semibold text-lg text-gray-900">
+                <div className="flex items-center justify-between border-b border-border px-4 py-3">
+                    <h3 className="text-base font-semibold text-foreground">
                         Alerts
                     </h3>
                     <div className="flex items-center gap-1">
@@ -109,7 +107,7 @@ export function NotificationBell() {
                                     variant="ghost"
                                     size="icon"
                                     aria-label="Filter notifications"
-                                    className="h-8 w-8 text-gray-500 hover:text-gray-700"
+                                    className="h-8 w-8 text-muted-foreground hover:text-foreground"
                                 >
                                     <ListFilterIcon className="h-4 w-4" aria-hidden="true" />
                                 </Button>
@@ -117,17 +115,13 @@ export function NotificationBell() {
                             <DropdownMenuContent align="end">
                                 <DropdownMenuItem
                                     onClick={() => setFilter("all")}
-                                    className={cn(
-                                        filter === "all" && "bg-gray-100"
-                                    )}
+                                    className={cn(filter === "all" && "bg-muted")}
                                 >
                                     All notifications
                                 </DropdownMenuItem>
                                 <DropdownMenuItem
                                     onClick={() => setFilter("unread")}
-                                    className={cn(
-                                        filter === "unread" && "bg-gray-100"
-                                    )}
+                                    className={cn(filter === "unread" && "bg-muted")}
                                 >
                                     Unread only
                                 </DropdownMenuItem>
@@ -137,7 +131,7 @@ export function NotificationBell() {
                             variant="ghost"
                             size="icon"
                             aria-label="Mark all as read"
-                            className="h-8 w-8 text-gray-500 hover:text-gray-700"
+                            className="h-8 w-8 text-muted-foreground hover:text-foreground"
                             onClick={handleMarkAllAsRead}
                             disabled={unreadCount === 0}
                             title="Mark all as read"
@@ -147,79 +141,76 @@ export function NotificationBell() {
                     </div>
                 </div>
 
-                <ScrollArea className="h-[400px]">
+                <ScrollArea className="h-[360px]">
                     {isLoading ? (
                         <div className="flex items-center justify-center py-12">
-                            <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+                            <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent motion-reduce:animate-none" />
                         </div>
                     ) : filteredNotifications.length === 0 ? (
-                        <Empty className="py-12 border-none">
+                        <Empty className="border-none py-12">
                             <EmptyHeader>
                                 <EmptyTitle>No notifications</EmptyTitle>
                                 <EmptyDescription>You&apos;re all caught up!</EmptyDescription>
                             </EmptyHeader>
                         </Empty>
                     ) : (
-                        <div className="divide-y divide-gray-100">
+                        <ul className="divide-y divide-border">
                             {filteredNotifications.map((notification) => (
-                                <div
-                                    key={notification.id}
-                                    onClick={() =>
-                                        handleNotificationClick(notification)
-                                    }
-                                    className={cn(
-                                        "px-4 py-4 cursor-pointer transition-colors hover:bg-gray-50",
-                                        !notification.isRead && "bg-gray-50/50"
-                                    )}
-                                >
-                                    <div className="flex items-start gap-3">
-                                        <div className="flex-shrink-0 mt-1">
-                                            <div
-                                                className={cn(
-                                                    "w-2.5 h-2.5 rounded-full",
-                                                    notification.isRead
-                                                        ? "bg-transparent border border-gray-300"
-                                                        : "bg-blue-600"
-                                                )}
-                                            />
-                                        </div>
-                                        <div className="flex-1 min-w-0">
-                                            <div className="flex items-center gap-2 mb-1">
-                                                <span className="text-xs text-gray-500">
-                                                    {format(
-                                                        new Date(
-                                                            notification.createdAt
-                                                        ),
-                                                        "MMM d 'at' h:mm a"
+                                <li key={notification.id}>
+                                    <button
+                                        type="button"
+                                        onClick={() => handleNotificationClick(notification)}
+                                        className={cn(
+                                            "w-full px-4 py-3.5 text-left transition-colors hover:bg-muted/50 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring",
+                                            !notification.isRead && "bg-primary/4"
+                                        )}
+                                    >
+                                        <div className="flex items-start gap-3">
+                                            <div className="mt-1.5 shrink-0">
+                                                <div
+                                                    className={cn(
+                                                        "h-2 w-2 rounded-full",
+                                                        notification.isRead
+                                                            ? "border border-muted-foreground/40 bg-transparent"
+                                                            : "bg-primary"
                                                     )}
-                                                </span>
+                                                />
                                             </div>
-                                            <h4
-                                                className={cn(
-                                                    "text-sm font-semibold mb-1",
-                                                    !notification.isRead
-                                                        ? "text-gray-900"
-                                                        : "text-gray-700"
-                                                )}
-                                            >
-                                                {notification.title}
-                                            </h4>
-                                            <p className="text-sm text-gray-600 line-clamp-3">
-                                                {notification.body}
-                                            </p>
+                                            <div className="min-w-0 flex-1">
+                                                <div className="mb-1 flex items-center gap-2">
+                                                    <span className="text-xs text-muted-foreground">
+                                                        {format(
+                                                            new Date(notification.createdAt),
+                                                            "MMM d 'at' h:mm a"
+                                                        )}
+                                                    </span>
+                                                </div>
+                                                <h4
+                                                    className={cn(
+                                                        "mb-1 text-sm font-semibold",
+                                                        !notification.isRead
+                                                            ? "text-foreground"
+                                                            : "text-text-primary"
+                                                    )}
+                                                >
+                                                    {notification.title}
+                                                </h4>
+                                                <p className="line-clamp-3 text-sm text-muted-foreground">
+                                                    {notification.body}
+                                                </p>
+                                            </div>
                                         </div>
-                                    </div>
-                                </div>
+                                    </button>
+                                </li>
                             ))}
-                        </div>
+                        </ul>
                     )}
                 </ScrollArea>
 
                 {filteredNotifications.length > 0 && (
-                    <div className="px-4 py-3 border-t border-gray-100 text-center">
-                        <p className="text-sm text-gray-500">
-                            {filter === "unread" &&
-                            filteredNotifications.length === 0
+                    <div className="border-t border-border px-4 py-2.5 text-center">
+                        <p className="text-xs text-muted-foreground">
+                            {filter === "unread" && filteredNotifications.length === 0
                                 ? "No unread notifications"
                                 : "No more alerts"}
                         </p>

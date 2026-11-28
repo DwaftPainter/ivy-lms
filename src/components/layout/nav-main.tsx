@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ChevronRight, type LucideIcon } from "lucide-react";
 
@@ -16,7 +17,7 @@ import {
 } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
 
-const ROOT_PORTAL_PATHS = new Set(["/", "/teacher", "/dashboard"]);
+const ROOT_PORTAL_PATHS = new Set(["/", "/teacher", "/dashboard", "/admin"]);
 
 function isLinkActive(pathname: string, url: string): boolean {
     if (url === "#" || !url) return false;
@@ -57,7 +58,8 @@ export function NavMain({
             <SidebarMenu>
                 {items.map((item) => {
                     const itemIsActive = item.isActive ?? isLinkActive(pathname, item.url);
-                    const hasActiveChild = item.items?.some((subItem) => isLinkActive(pathname, subItem.url)) ?? false;
+                    const hasActiveChild =
+                        item.items?.some((subItem) => isLinkActive(pathname, subItem.url)) ?? false;
 
                     return item.items && item.items.length > 0 ? (
                         <Collapsible
@@ -71,21 +73,24 @@ export function NavMain({
                                     <SidebarMenuButton
                                         tooltip={item.title}
                                         className={cn(
-                                            "transition-colors",
-                                            (itemIsActive || hasActiveChild) && "bg-muted text-primary font-semibold"
+                                            "group/menu-button transition-colors hover:bg-background/70 hover:text-foreground",
+                                            (itemIsActive || hasActiveChild) &&
+                                                "border border-border/80 bg-background font-semibold text-foreground shadow-xs max-md:border-primary/20 max-md:bg-primary/8 max-md:text-primary"
                                         )}
                                     >
                                         {item.icon && (
                                             <item.icon
-                                                className="font-semibold size-5"
-                                                fill="#FFFFFF"
-                                                stroke="#4A4A4A"
+                                                className={cn(
+                                                    "size-4 shrink-0 transition-colors",
+                                                    itemIsActive || hasActiveChild
+                                                        ? "text-primary"
+                                                        : "text-muted-foreground group-hover/menu-button:text-foreground"
+                                                )}
+                                                aria-hidden="true"
                                             />
                                         )}
-                                        <span className="font-[550] text-[13px] text-text-primary">
-                                            {item.title}
-                                        </span>
-                                        <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
+                                        <span className="text-[13px]">{item.title}</span>
+                                        <ChevronRight className="ml-auto size-4 text-muted-foreground transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
                                     </SidebarMenuButton>
                                 </CollapsibleTrigger>
                                 <CollapsibleContent>
@@ -98,17 +103,22 @@ export function NavMain({
                                                     <SidebarMenuSubButton
                                                         asChild
                                                         isActive={subItemIsActive}
-                                                        className={cn(subItemIsActive && "bg-muted text-primary font-semibold")}
+                                                        className={cn(
+                                                            subItemIsActive &&
+                                                                "bg-background font-semibold text-primary shadow-xs"
+                                                        )}
                                                     >
-                                                        <a
+                                                        <Link
                                                             href={subItem.url}
-                                                            aria-current={subItemIsActive ? "page" : undefined}
+                                                            aria-current={
+                                                                subItemIsActive ? "page" : undefined
+                                                            }
                                                             onClick={handleMobileNav}
                                                         >
-                                                            <span className="font-[550] text-[13px] text-text-primary">
+                                                            <span className="text-[13px]">
                                                                 {subItem.title}
                                                             </span>
-                                                        </a>
+                                                        </Link>
                                                     </SidebarMenuSubButton>
                                                 </SidebarMenuSubItem>
                                             );
@@ -123,24 +133,37 @@ export function NavMain({
                                 asChild
                                 isActive={itemIsActive}
                                 tooltip={item.title}
-                                className={cn("transition-colors", itemIsActive && "bg-muted text-primary font-semibold")}
+                                className={cn(
+                                    "group/menu-button transition-colors hover:bg-background/70 hover:text-foreground",
+                                    "data-[active=true]:border data-[active=true]:border-border/80 data-[active=true]:bg-background data-[active=true]:font-semibold data-[active=true]:text-foreground data-[active=true]:shadow-xs",
+                                    "max-md:data-[active=true]:border-primary/20 max-md:data-[active=true]:bg-primary/8 max-md:data-[active=true]:text-primary"
+                                )}
                             >
-                                <a
+                                <Link
                                     href={item.url}
                                     aria-current={itemIsActive ? "page" : undefined}
                                     onClick={handleMobileNav}
                                 >
                                     {item.icon && (
                                         <item.icon
-                                            className="font-semibold size-5"
-                                            fill="#FFFFFF"
-                                            stroke="#4A4A4A"
+                                            className={cn(
+                                                "size-4 shrink-0 transition-colors",
+                                                itemIsActive
+                                                    ? "text-primary"
+                                                    : "text-muted-foreground group-hover/menu-button:text-foreground"
+                                            )}
+                                            aria-hidden="true"
                                         />
                                     )}
-                                    <span className="font-[550] text-[13px] text-text-primary">
+                                    <span
+                                        className={cn(
+                                            "text-[13px]",
+                                            itemIsActive ? "font-semibold" : "font-medium text-text-primary group-hover/menu-button:text-foreground"
+                                        )}
+                                    >
                                         {item.title}
                                     </span>
-                                </a>
+                                </Link>
                             </SidebarMenuButton>
                         </SidebarMenuItem>
                     );
