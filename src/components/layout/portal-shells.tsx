@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import Image from "next/image";
 import { useParams, usePathname, useRouter } from "next/navigation";
 import { ArrowLeft, CheckCircle2, HelpCircle, Maximize2, Minimize2, X } from "lucide-react";
 import { AdminGuard } from "@/components/admin/admin-guard";
@@ -39,10 +40,35 @@ export function AuthLayoutShell({ children }: { children: React.ReactNode }) {
     }, [isAuthenticated, user, router]);
 
     return (
-        <div className="flex h-screen w-screen">
-            {children}
-            <div className="hidden h-full basis-1/2 bg-linear-to-r from-[oklch(0.55_0.19_20)] via-[oklch(0.52_0.19_27)] to-[oklch(0.48_0.18_35)] lg:block" />
-        </div>
+        <main className="flex min-h-dvh justify-center bg-muted/60 px-4 py-4 sm:px-8 sm:py-8">
+            <div className="my-auto grid w-full max-w-5xl min-w-0 rounded-xl border bg-card text-card-foreground lg:grid-cols-[1.1fr_1fr]">
+                <div className="flex min-w-0 items-center justify-center px-5 py-8 sm:px-10 sm:py-12">
+                    <div className="w-full max-w-[26rem] min-w-0">
+                        <div className="mb-6 flex items-center gap-3 lg:hidden">
+                            <Image src="/IVY_IELTS_Logo.svg" alt="" width={36} height={36} className="rounded-sm" />
+                            <span className="text-sm font-semibold">IVY LMS</span>
+                        </div>
+                        {children}
+                    </div>
+                </div>
+                <div className="relative m-3 hidden min-h-136 flex-col justify-between gap-12 overflow-hidden rounded-lg bg-primary p-10 text-primary-foreground lg:flex xl:p-12">
+                    <div className="flex items-center gap-3">
+                        <Image src="/IVY_IELTS_Logo.svg" alt="" width={52} height={52} className="rounded-sm" />
+                        <span className="text-lg font-semibold">IVY LMS</span>
+                    </div>
+                    <div className="space-y-6">
+                        <p className="max-w-[10ch] text-5xl font-semibold leading-tight tracking-tight">
+                            IELTS practice and assessment
+                        </p>
+                        <div className="grid grid-cols-4 gap-2" aria-hidden="true">
+                            {[0, 1, 2, 3].map((segment) => (
+                                <span key={segment} className="h-1 rounded-full bg-primary-foreground/45" />
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
     );
 }
 
