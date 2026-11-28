@@ -141,7 +141,7 @@ export default function LessonDetailPage() {
             </Button>
 
             {/* Header Section */}
-            <Card className="mb-6 shadow-none border min-w-0">
+            <Card className="mb-6 border min-w-0">
                 <CardHeader className="pb-4 min-w-0">
                     <div className="flex flex-wrap items-start gap-2 mb-3">
                         <Badge variant="secondary" className="font-medium">
@@ -205,7 +205,7 @@ export default function LessonDetailPage() {
             </Card>
 
             {/* Teacher Information */}
-            <Card className="mb-6 shadow-none border">
+            <Card className="mb-6 border">
                 <CardHeader>
                     <h2 className="text-lg font-semibold">Instructor</h2>
                 </CardHeader>
@@ -270,7 +270,7 @@ export default function LessonDetailPage() {
             </Card> */}
 
             {/* Assignments Section */}
-            <Card className="mb-6 shadow-none border">
+            <Card className="mb-6 border">
                 <CardHeader>
                     <h2 className="text-lg font-semibold">Linked Assignments</h2>
                 </CardHeader>

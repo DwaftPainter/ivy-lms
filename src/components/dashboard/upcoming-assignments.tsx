@@ -48,7 +48,7 @@ export function NextAssignment({
 
     return (
         <section aria-labelledby="next-assignment-heading" className="min-w-0">
-            <Card className="h-full min-h-57 gap-5 border-primary/15 bg-card p-5 shadow-none sm:p-6">
+            <Card className="h-full min-h-57 gap-5 border-primary/15 bg-card p-5 sm:p-6">
                 <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1">
                     <h2 id="next-assignment-heading" className="flex items-center gap-2 text-sm font-semibold">
                         <ClipboardList className="size-4 shrink-0 text-primary" aria-hidden="true" />
@@ -111,7 +111,7 @@ export function UpcomingAssignments({ items }: { items: DashboardAssignment[] })
 
     return (
         <section aria-labelledby="upcoming-assignments-heading" className="min-w-0">
-            <Card className="gap-0 py-0 shadow-none">
+            <Card className="gap-0 py-0">
                 <h2 id="upcoming-assignments-heading" className="border-b px-4 py-4 text-base font-semibold sm:px-6">
                     More assignments to do
                 </h2>

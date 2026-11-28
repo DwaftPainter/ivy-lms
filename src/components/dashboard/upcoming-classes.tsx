@@ -38,7 +38,7 @@ export function NextClass({
 }) {
     return (
         <section aria-labelledby="next-class-heading" className="min-w-0">
-            <Card className="h-full min-h-57 gap-5 border-primary bg-primary p-5 text-primary-foreground shadow-none sm:p-6">
+            <Card className="h-full min-h-57 gap-5 border-primary bg-primary p-5 text-primary-foreground sm:p-6">
                 <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1">
                     <h2 id="next-class-heading" className="flex items-center gap-2 text-sm font-semibold">
                         <CalendarDays className="size-4 shrink-0" aria-hidden="true" />
@@ -112,7 +112,7 @@ export function UpcomingClasses({ classes }: { classes: ClassItem[] }) {
 
     return (
         <section aria-labelledby="upcoming-classes-heading" className="min-w-0">
-            <Card className="gap-0 py-0 shadow-none">
+            <Card className="gap-0 py-0">
                 <h2 id="upcoming-classes-heading" className="border-b px-4 py-4 text-base font-semibold sm:px-6">
                     More upcoming classes
                 </h2>
