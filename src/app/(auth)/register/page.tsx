@@ -54,7 +54,7 @@ const Register = () => {
                 className="flex flex-col lg:basis-1/2 lg:p-22 md:p-14 p-7 w-full justify-center md:gap-8 gap-5"
             >
                 <div className="flex-col flex gap-4">
-                    <Image src="/IVY_IELTS_Logo.svg" alt="" width={40} height={40} className="h-10 w-10 -ml-1" />
+                    <Image src="/IVY_IELTS_Logo.svg" alt="IVY IELTS" width={40} height={40} className="h-10 w-10 -ml-1" />
                     <h1 className="text-xl font-medium">Welcome</h1>
                     <div className="flex justify-between text-[13px] items-center">
                         <p>

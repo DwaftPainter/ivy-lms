@@ -1,26 +1,33 @@
-"use client";
+import { AuthLayoutShell } from "@/components/layout/portal-shells";
+import { getSiteUrl, SITE_DESCRIPTION, SITE_NAME } from "@/lib/seo";
 
-import { useAuthStore } from "@/store/auth.store";
-import { useRouter } from "next/navigation";
-import React from "react";
+const siteUrl = getSiteUrl().origin;
 
-const AuthLayout = ({ children }: { children: React.ReactNode }) => {
-    const router = useRouter();
-
-    const { isAuthenticated, user } = useAuthStore();
-
-    React.useEffect(() => {
-        if (user && isAuthenticated) {
-            router.push("/");
-        }
-    }, [isAuthenticated, user, router]);
-
-    return (
-        <div className="flex w-screen h-screen">
-            {children}
-            <div className="basis-1/2 lg:block hidden h-full bg-linear-to-r from-[oklch(0.55_0.19_20)] via-[oklch(0.52_0.19_27)] to-[oklch(0.48_0.18_35)]" />
-        </div>
-    );
+const webAppStructuredData = {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    name: SITE_NAME,
+    url: siteUrl,
+    applicationCategory: "EducationalApplication",
+    operatingSystem: "Web",
+    description: SITE_DESCRIPTION,
+    provider: {
+        "@type": "EducationalOrganization",
+        name: "IVY IELTS",
+        url: siteUrl
+    }
 };
 
-export default AuthLayout;
+export default function AuthLayout({ children }: { children: React.ReactNode }) {
+    return (
+        <>
+            <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{
+                    __html: JSON.stringify(webAppStructuredData).replace(/</g, "\\u003c")
+                }}
+            />
+            <AuthLayoutShell>{children}</AuthLayoutShell>
+        </>
+    );
+}
