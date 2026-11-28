@@ -20,29 +20,28 @@ const CallbackPage = () => {
 
     if (error) {
         return (
-            <div className="flex flex-col h-screen lg:basis-1/2 w-full justify-center items-center px-6">
-                <div className="w-full max-w-md space-y-4">
-                    <Alert variant="destructive">
-                        <AlertCircle className="h-4 w-4" aria-hidden="true" />
-                        <AlertTitle>Sign-in failed</AlertTitle>
-                        <AlertDescription>
-                            {error.message || "Unable to complete Google sign-in. Please try again."}
-                        </AlertDescription>
-                    </Alert>
-                    <Button asChild variant="outline" className="w-full">
-                        <Link href="/login">Back to log in</Link>
-                    </Button>
-                </div>
+            <div className="space-y-5">
+                <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">Sign-in failed</h1>
+                <Alert variant="destructive">
+                    <AlertCircle className="size-4" aria-hidden="true" />
+                    <AlertTitle>Google sign-in</AlertTitle>
+                    <AlertDescription>
+                        {error.message || "Unable to complete Google sign-in. Please try again."}
+                    </AlertDescription>
+                </Alert>
+                <Button asChild variant="outline" className="min-h-11 w-full">
+                    <Link href="/login">Back to sign in</Link>
+                </Button>
             </div>
         );
     }
 
     return (
-        <div className="flex flex-col h-screen lg:basis-1/2 w-full justify-center items-center gap-4 px-6 text-center">
+        <div className="space-y-5">
             <Loader />
-            <div role="status" aria-live="polite" className="space-y-1">
-                <p className="text-sm font-medium text-foreground">Signing you in…</p>
-                <p className="text-xs text-muted-foreground">
+            <div role="status" className="space-y-2">
+                <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">Signing you in…</h1>
+                <p className="text-sm text-muted-foreground">
                     Completing authentication and redirecting to your portal.
                 </p>
             </div>
