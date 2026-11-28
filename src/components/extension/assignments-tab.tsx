@@ -46,7 +46,7 @@ export function AssignmentsTab({ assignments, enrolledCourses }: AssignmentsTabP
     const pendingCount = assignments.filter((a) => a.submissionStatus === SubmissionStatus.PENDING).length;
 
     return (
-        <Card className="p-6 shadow-none border rounded-[12px]">
+        <Card className="p-6 border rounded-[12px]">
             <div className="flex items-center justify-between mb-6">
                 <h2 className="text-lg font-semibold text-foreground">All Assignments</h2>
                 <div className="text-sm text-muted-foreground">

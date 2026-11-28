@@ -64,7 +64,7 @@ export function GradingStatsGrid({ stats }: { stats?: GradingOverviewStats }) {
     return (
         <section aria-label="Grading summary" className="grid grid-cols-2 gap-3 lg:grid-cols-4 lg:gap-4">
             {cards.map((card) => (
-                <Card key={card.label} className="shadow-none">
+                <Card key={card.label}>
                     <CardContent className="p-4 sm:p-5">
                         <div className="flex items-center justify-between gap-2">
                             <p className="text-xs font-medium text-muted-foreground sm:text-sm">
@@ -109,7 +109,7 @@ export function GradingQueueCard({
     return (
         <div className="space-y-4">
             <section aria-label="Filter grading queue">
-                <Card className="bg-muted/25 p-3.5 shadow-none sm:p-4">
+                <Card className="bg-muted/25 p-3.5 shadow-xs sm:p-4">
                     <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
                         <div className="relative min-w-0 flex-1">
                             <Search
@@ -176,7 +176,7 @@ export function GradingQueueCard({
             </section>
 
             <section aria-labelledby="grading-queue-heading" className="min-w-0">
-                <Card className="gap-0 border-primary/15 py-0 shadow-none">
+                <Card className="gap-0 border-primary/15 py-0">
                     <div className="flex flex-wrap items-center justify-between gap-2 border-b px-4 py-4 sm:px-6">
                         <div className="flex items-center gap-2">
                             <ClipboardCheck className="size-4 shrink-0 text-primary" aria-hidden="true" />

@@ -61,7 +61,7 @@ export function TeacherNextClass({
 }) {
     return (
         <section aria-labelledby="teacher-next-class-heading" className="min-w-0">
-            <Card className="h-full min-h-57 gap-5 border-primary bg-primary p-5 text-primary-foreground shadow-none sm:p-6">
+            <Card className="h-full min-h-57 gap-5 border-primary bg-primary p-5 text-primary-foreground sm:p-6">
                 <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1">
                     <h2
                         id="teacher-next-class-heading"
@@ -160,7 +160,7 @@ export function TeacherUpcomingClasses({ classes }: { classes: TeacherDashboardC
 
     return (
         <section aria-labelledby="teacher-more-classes-heading" className="min-w-0">
-            <Card className="gap-0 py-0 shadow-none">
+            <Card className="gap-0 py-0">
                 <div className="flex items-center justify-between border-b px-4 py-4 sm:px-6">
                     <h2 id="teacher-more-classes-heading" className="text-base font-semibold">
                         More upcoming classes

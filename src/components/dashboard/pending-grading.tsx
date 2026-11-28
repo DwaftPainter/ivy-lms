@@ -49,7 +49,7 @@ export function TeacherNeedsGrading({
 }) {
     return (
         <section aria-labelledby="teacher-needs-grading-heading" className="min-w-0">
-            <Card className="h-full min-h-57 gap-5 border-primary/15 bg-card p-5 shadow-none sm:p-6">
+            <Card className="h-full min-h-57 gap-5 border-primary/15 bg-card p-5 sm:p-6">
                 <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1">
                     <h2
                         id="teacher-needs-grading-heading"
@@ -165,7 +165,7 @@ export function PendingGrading({ items }: { items: TeacherGradingTask[] }) {
 
     return (
         <section aria-labelledby="teacher-more-grading-heading" className="min-w-0">
-            <Card className="gap-0 py-0 shadow-none">
+            <Card className="gap-0 py-0">
                 <div className="flex items-center justify-between border-b px-4 py-4 sm:px-6">
                     <h2 id="teacher-more-grading-heading" className="text-base font-semibold">
                         More assignments to grade

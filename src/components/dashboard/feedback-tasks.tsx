@@ -15,7 +15,7 @@ export function FeedbackTasks({ tasks = [], isLoading = false }: FeedbackTasksPr
 
     if (isLoading) {
         return (
-            <Card className="p-6 shadow-none border rounded-[12px]">
+            <Card className="p-6 border rounded-[12px]">
                 <Skeleton className="h-6 w-40 mb-6" />
                 <div className="space-y-4">
                     {[1, 2].map((i) => (
@@ -37,7 +37,7 @@ export function FeedbackTasks({ tasks = [], isLoading = false }: FeedbackTasksPr
     }
 
     return (
-        <Card className="p-6 shadow-none border rounded-[12px]">
+        <Card className="p-6 border rounded-[12px]">
             <h2 className="text-lg font-semibold text-foreground mb-6">
                 Feedback Tasks
             </h2>

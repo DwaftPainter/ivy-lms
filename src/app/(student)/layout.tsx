@@ -1,15 +1,14 @@
-"use client";
+import type { Metadata } from "next";
+import { StudentLayoutShell } from "@/components/layout/portal-shells";
+import { PRIVATE_ROBOTS } from "@/lib/seo";
 
-import AuthGuard from "@/components/layout/auth-guard";
-import { AppShell } from "@/components/layout/app-shell";
-import { sidebarNavConfig } from "@/config/student/side-bar-config";
+export const metadata: Metadata = {
+    title: "Student Portal",
+    description:
+        "View your IELTS study plan, enrolled courses, schedule, and lesson resources on IVY LMS.",
+    robots: PRIVATE_ROBOTS
+};
 
 export default function Layout({ children }: { children: React.ReactNode }) {
-    return (
-        <AuthGuard>
-            <AppShell navMain={sidebarNavConfig} homeUrl="/dashboard">
-                {children}
-            </AppShell>
-        </AuthGuard>
-    );
+    return <StudentLayoutShell>{children}</StudentLayoutShell>;
 }

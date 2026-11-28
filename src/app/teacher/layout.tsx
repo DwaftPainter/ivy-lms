@@ -1,32 +1,14 @@
-"use client";
+import type { Metadata } from "next";
+import { TeacherLayoutShell } from "@/components/layout/portal-shells";
+import { PRIVATE_ROBOTS } from "@/lib/seo";
 
-import AuthGuard from "@/components/layout/auth-guard";
-import { AppShell } from "@/components/layout/app-shell";
-import { teacherSidebarNavConfig } from "@/config/teacher/side-bar-config";
-import { usePathname } from "next/navigation";
+export const metadata: Metadata = {
+    title: "Teacher Portal",
+    description:
+        "Manage IELTS class sessions, build assignments, and grade student submissions on IVY LMS.",
+    robots: PRIVATE_ROBOTS
+};
 
 export default function Layout({ children }: { children: React.ReactNode }) {
-    const pathname = usePathname();
-
-    const isBuilderPage = pathname?.includes("/teacher/assignments/builder");
-    const isGraderPage =
-        pathname?.includes("/teacher/assignments/") && pathname?.includes("/grade");
-
-    const mainClassName = isBuilderPage
-        ? "flex flex-col overflow-hidden"
-        : isGraderPage
-          ? "flex flex-col xl:overflow-hidden"
-          : undefined;
-
-    return (
-        <AuthGuard>
-            <AppShell
-                navMain={teacherSidebarNavConfig}
-                homeUrl="/teacher"
-                mainClassName={mainClassName}
-            >
-                {children}
-            </AppShell>
-        </AuthGuard>
-    );
+    return <TeacherLayoutShell>{children}</TeacherLayoutShell>;
 }

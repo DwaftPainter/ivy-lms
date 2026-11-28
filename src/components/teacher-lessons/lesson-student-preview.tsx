@@ -47,7 +47,7 @@ export function LessonStudentPreview({
                 </AlertDescription>
             </Alert>
 
-            <Card className="shadow-none border">
+            <Card className="border">
                 <CardHeader className="pb-4">
                     <div className="flex flex-wrap items-start gap-3 mb-3">
                         <Badge
@@ -123,7 +123,7 @@ export function LessonStudentPreview({
                 </CardContent>
             </Card>
 
-            <Card className="shadow-none border">
+            <Card className="border">
                 <CardHeader>
                     <h2 className="text-lg font-semibold">Session Materials</h2>
                 </CardHeader>
@@ -160,7 +160,7 @@ export function LessonStudentPreview({
                 </CardContent>
             </Card>
 
-            <Card className="shadow-none border">
+            <Card className="border">
                 <CardHeader>
                     <h2 className="text-lg font-semibold">Linked Assignments</h2>
                 </CardHeader>

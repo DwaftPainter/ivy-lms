@@ -1,15 +1,13 @@
-"use client";
+import type { Metadata } from "next";
+import { AdminLayoutShell } from "@/components/layout/portal-shells";
+import { PRIVATE_ROBOTS } from "@/lib/seo";
 
-import { AdminGuard } from "@/components/admin/admin-guard";
-import { AppShell } from "@/components/layout/app-shell";
-import { adminSidebarNavConfig } from "@/config/admin/side-bar-config";
+export const metadata: Metadata = {
+    title: "Admin Portal",
+    description: "Manage IVY LMS teachers, IELTS courses, and class sessions.",
+    robots: PRIVATE_ROBOTS
+};
 
 export default function Layout({ children }: { children: React.ReactNode }) {
-    return (
-        <AdminGuard>
-            <AppShell navMain={adminSidebarNavConfig} homeUrl="/admin" useWipWrapper={false}>
-                {children}
-            </AppShell>
-        </AdminGuard>
-    );
+    return <AdminLayoutShell>{children}</AdminLayoutShell>;
 }

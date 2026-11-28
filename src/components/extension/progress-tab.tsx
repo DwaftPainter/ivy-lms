@@ -9,7 +9,7 @@ interface ProgressTabProps {
 
 export function ProgressTab({ enrolledCourses }: ProgressTabProps) {
     return (
-        <Card className="p-6 shadow-none border rounded-[12px]">
+        <Card className="p-6 border rounded-[12px]">
             <h2 className="text-lg font-semibold text-foreground mb-6">Course Progress</h2>
             {enrolledCourses.length === 0 ? (
                 <div className="text-center py-10 text-muted-foreground">No enrolled courses</div>
